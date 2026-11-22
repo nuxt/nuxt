@@ -50,7 +50,8 @@ export function formOf (el: Element) {
 
 /** The first submit button of `form` the user can activate, or its first submit button when none can be. */
 export function submitterOf (form: Element) {
-  const submitters = [...form.querySelectorAll<HTMLElement>('[type="submit"], button:not([type])')]
+  const submitters = [...form.querySelectorAll<HTMLButtonElement | HTMLInputElement>('button, input')]
+    .filter(control => control.type === 'submit' && (!(form instanceof HTMLFormElement) || control.form === form))
   return submitters.find(submitter => !isDisabled(submitter)) ?? submitters[0] ?? null
 }
 
@@ -121,8 +122,15 @@ function controlSchema (controls: FieldControl[], value: unknown): JSONSchema | 
   switch (control.type) {
     case 'radio':
       return choice()
-    case 'checkbox':
-      return Array.isArray(value) ? { type: 'array', items: choice() } : { type: 'boolean' }
+    case 'checkbox': {
+      if (Array.isArray(value)) {
+        return { type: 'array', items: choice() }
+      }
+      const { _trueValue: checked = true, _falseValue: unchecked = false } = control as { _trueValue?: unknown, _falseValue?: unknown }
+      return checked === true && unchecked === false
+        ? { type: 'boolean' }
+        : { oneOf: [{ const: checked, title: 'checked' }, { const: unchecked, title: 'unchecked' }] }
+    }
     case 'number':
     case 'range':
       return {
@@ -240,13 +248,17 @@ function coerce (value: unknown, current: unknown) {
 
 /** Writes input values through the form's `v-model` targets; returns problems with the input. */
 export function fillFields (fields: FormFields, input: Record<string, unknown>) {
-  const problems: string[] = []
   const keys = Object.keys(fields)
-  for (const name of Object.keys(input)) {
-    if (!keys.some(key => key === name || key.startsWith(`${name}.`))) {
-      problems.push(`${name}: not a field of this form`)
+  const unknown = (value: unknown, path: string): string[] => {
+    if (keys.includes(path)) {
+      return []
     }
+    if (!value || typeof value !== 'object' || Array.isArray(value) || !keys.some(key => key.startsWith(`${path}.`))) {
+      return [path]
+    }
+    return Object.entries(value).flatMap(([name, item]) => unknown(item, `${path}.${name}`))
   }
+  const problems = Object.entries(input).flatMap(([name, value]) => unknown(value, name)).map(path => `${path}: not a field of this form`)
   if (problems.length) {
     return problems
   }
@@ -286,7 +298,7 @@ function selects (value: unknown, choice: Choice) {
 
 /**
  * Problems with input for a field the user could not edit: one that is not rendered, one whose
- * controls are disabled, read-only or hidden, a disabled choice, or a disabled checkbox of a group.
+ * controls are disabled, read-only or hidden, a choice that is disabled or not offered, or a disabled checkbox of a group.
  * Input that repeats the current value of a locked field is accepted when `schema` publishes that value as its default.
  */
 export function lockedProblems (fields: FormFields, form: Element, input: Record<string, unknown>, schema?: JSONSchema) {
@@ -313,7 +325,16 @@ export function lockedProblems (fields: FormFields, form: Element, input: Record
       }
       continue
     }
-    const refused = choicesOf(controlsOf(markers), current).filter(choice => isLockedChoice(choice)
+    const choices = choicesOf(controlsOf(markers), current)
+    const items = (list: unknown) => (Array.isArray(list) ? list : [list]).filter(item => item != null && item !== '')
+    const unmatched = choices.length
+      ? items(next).filter(item => !choices.some(choice => selects(item, choice)) && !items(current).some(selected => String(selected) === String(item)))
+      : []
+    if (unmatched.length) {
+      problems.push(`${key}: ${unmatched.map(item => `${JSON.stringify(item)} is not one of the choices`).join(', ')}`)
+      continue
+    }
+    const refused = choices.filter(choice => isLockedChoice(choice)
       && selects(next, choice) !== selects(current, choice)
       && (selects(next, choice) || (choice instanceof HTMLInputElement && choice.type === 'checkbox')))
     if (refused.length) {
@@ -347,6 +368,16 @@ export function nativeProblems (fields: FormFields, form: Element) {
     }
   }
   return problems
+}
+
+/** Constraint validation messages from the controls that stop `form` from submitting with `submitter`. */
+export function submitProblems (form: Element, submitter: Element | null) {
+  if (!(form instanceof HTMLFormElement) || form.noValidate || (submitter as HTMLButtonElement | null)?.formNoValidate) {
+    return []
+  }
+  return [...form.elements]
+    .filter((control): control is FieldControl => control.matches(INPUTS) && !(control as FieldControl).checkValidity())
+    .map(control => `${describe([], [control]) ?? (control.name || 'A field')}: ${control.validationMessage}`)
 }
 
 let active: (() => void) | undefined

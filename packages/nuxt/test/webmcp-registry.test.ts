@@ -299,6 +299,24 @@ describe('agent tool registry', () => {
     expect(execute).not.toHaveBeenCalled()
   })
 
+  it('does not run a call whose tool becomes disabled while its input validates', async () => {
+    const { registry } = setup()
+    const execute = vi.fn()
+    let enabled = true
+    let validated!: (result: { value: unknown }) => void
+    registry.activate({
+      name: 'lookup',
+      description: 'Look something up. Use when asked.',
+      input: { '~standard': { version: 1, vendor: 'test', validate: () => new Promise<{ value: unknown }>((resolve) => { validated = resolve }) } },
+      execute,
+    }, { enabled: () => enabled })
+    const call = registry.call('lookup', {})
+    enabled = false
+    validated({ value: {} })
+    expect(await call).toEqual({ isError: true, content: [{ type: 'text', text: '"lookup" is currently disabled.' }] })
+    expect(execute).not.toHaveBeenCalled()
+  })
+
   it('returns the result of a call that withdraws its own tool as it runs', async () => {
     const { registry } = setup()
     const tool = registry.activate({

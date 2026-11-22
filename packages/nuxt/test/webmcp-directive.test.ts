@@ -5,7 +5,7 @@ import { KeepAlive, createApp, defineComponent, effectScope, h, nextTick, reacti
 import type { AgentToolBinding } from '../src/webmcp/runtime/directive.ts'
 import { createAgentToolDirective, createSubmitCapture } from '../src/webmcp/runtime/directive.ts'
 import { createAgentToolRegistry } from '../src/webmcp/runtime/registry.ts'
-import { highlight } from '../src/webmcp/runtime/dom.ts'
+import { highlight, submitterOf } from '../src/webmcp/runtime/dom.ts'
 import { agentToolRegistryKey, defineAgentTool, useAgentActivity, useAgentTool } from '../src/webmcp/runtime/composables.ts'
 
 const cleanups: (() => void)[] = []
@@ -241,6 +241,143 @@ describe('agent tool directive', () => {
     expect(await registry.call('ship', { quantity: '4', express: 'true' })).not.toHaveProperty('isError')
     expect(sent).toHaveBeenCalledOnce()
     expect(state).toEqual({ quantity: 4, express: true })
+  })
+
+  it('restores the fields it wrote when a later field cannot be written', async () => {
+    const state = reactive({ name: 'Daniel', age: 30 })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('save', sent)
+      },
+    }, [
+      h('input', { 'data-agent-field': 'state.name' }),
+      h('input', { 'data-agent-field': 'state.age' }),
+    ]), [[directive, binding({
+      name: 'save',
+      kind: 'form',
+      fields: {
+        name: { source: 'state.name', get: () => state.name, set: (value) => { state.name = value as string } },
+        age: {
+          source: 'state.age',
+          get: () => state.age,
+          set: (value) => {
+            if (typeof value !== 'number' || value < 0) {
+              throw new Error('age must be a positive number')
+            }
+            state.age = value
+          },
+        },
+      },
+    })]]))
+    await nextTick()
+
+    expect(await registry.call('save', { name: 'Sarah', age: -1 })).toEqual({ isError: true, content: [{ type: 'text', text: 'age must be a positive number' }] })
+    expect(sent).not.toHaveBeenCalled()
+    expect(state).toEqual({ name: 'Daniel', age: 30 })
+  })
+
+  it('rejects input for unknown fields of a nested object', async () => {
+    const state = reactive({ address: { city: 'London' } })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('ship', sent)
+      },
+    }, [
+      h('input', { 'data-agent-field': 'state.address.city' }),
+    ]), [[directive, binding({
+      name: 'ship',
+      kind: 'form',
+      fields: { 'address.city': { source: 'state.address.city', get: () => state.address.city, set: (value) => { state.address.city = value as string } } },
+    })]]))
+    await nextTick()
+
+    expect(await registry.call('ship', { address: { county: 'Kent' } })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. address.county: not a field of this form' }] })
+    expect(await registry.call('ship', { address: 'Kent' })).toEqual({ isError: true, content: [{ type: 'text', text: 'The form was not submitted. address: not a field of this form' }] })
+    expect(sent).not.toHaveBeenCalled()
+
+    expect(await registry.call('ship', { address: { city: 'Canterbury' } })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalledOnce()
+    expect(state.address.city).toBe('Canterbury')
+  })
+
+  it('rejects input that selects a choice the form does not offer', async () => {
+    const state = reactive({ plan: '', size: 'm', extras: ['gift'] })
+    const sent = vi.fn()
+    const fields = Object.fromEntries(Object.keys(state).map(key => [key, {
+      source: `state.${key}`,
+      get: () => state[key as keyof typeof state],
+      set: (value: unknown) => { (state as Record<string, unknown>)[key] = value },
+    }]))
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('order', sent)
+      },
+    }, [
+      h('select', { 'data-agent-field': 'state.plan' }, [h('option', { value: 'free' }, 'Free'), h('option', { value: 'pro' }, 'Pro')]),
+      ...['s', 'm'].map(value => h('input', { 'type': 'radio', 'name': 'size', value, 'data-agent-field': 'state.size' })),
+      ...['gift', 'card'].map(value => h('input', { 'type': 'checkbox', value, 'data-agent-field': 'state.extras' })),
+    ]), [[directive, binding({ name: 'order', kind: 'form', fields })]]))
+    await nextTick()
+
+    expect(await registry.call('order', { plan: 'enterprise', size: 'xl', extras: ['gift', 'ribbon'] })).toEqual({
+      isError: true,
+      content: [{ type: 'text', text: 'The form was not submitted. plan: "enterprise" is not one of the choices; size: "xl" is not one of the choices; extras: "ribbon" is not one of the choices' }],
+    })
+    expect(sent).not.toHaveBeenCalled()
+
+    expect(await registry.call('order', { plan: 'pro', size: 's', extras: [] })).not.toHaveProperty('isError')
+    expect(await registry.call('order', { plan: '' })).not.toHaveProperty('isError')
+    expect(sent).toHaveBeenCalledTimes(2)
+    expect(state).toEqual({ plan: '', size: 's', extras: [] })
+  })
+
+  it('describes a checkbox with `true-value` and `false-value` by the values it writes', async () => {
+    const state = reactive({ newsletter: 'no', terms: false })
+    const fields = Object.fromEntries(Object.keys(state).map(key => [key, {
+      source: `state.${key}`,
+      get: () => state[key as keyof typeof state],
+      set: (value: unknown) => { (state as Record<string, unknown>)[key] = value },
+    }]))
+    const { registry } = mount(directive => () => withDirectives(h('form', [
+      h('input', { 'type': 'checkbox', 'true-value': 'yes', 'false-value': 'no', 'data-agent-field': 'state.newsletter' }),
+      h('input', { 'type': 'checkbox', 'data-agent-field': 'state.terms' }),
+    ]), [[directive, binding({ name: 'join', kind: 'form', fields })]]))
+    await nextTick()
+
+    expect(registry.list()[0]!.inputSchema.properties).toEqual({
+      newsletter: { oneOf: [{ const: 'yes', title: 'checked' }, { const: 'no', title: 'unchecked' }], default: 'no' },
+      terms: { type: 'boolean', default: false },
+    })
+  })
+
+  it('restores a form that a field outside its input stops from submitting', async () => {
+    const state = reactive({ email: 'daniel@example.com' })
+    const sent = vi.fn()
+    const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
+      onSubmit: (event: Event) => {
+        event.preventDefault()
+        submits.capture('send', sent)
+      },
+    }, [
+      h('input', { 'data-agent-field': 'state.email' }),
+      h('label', ['Order number ', h('input', { name: 'order', required: true })]),
+    ]), [[directive, binding({
+      name: 'send',
+      kind: 'form',
+      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+    })]]))
+    await nextTick()
+
+    const started = Date.now()
+    expect(await registry.call('send', { email: 'sarah@example.com' })).toEqual({ isError: true, content: [{ type: 'text', text: expect.stringMatching(/^The form was not submitted\. Order number: \S/) }] })
+    expect(Date.now() - started).toBeLessThan(1000)
+    expect(sent).not.toHaveBeenCalled()
+    expect(state.email).toBe('daniel@example.com')
   })
 
   it('rejects input that changes a disabled, read-only or hidden field', async () => {
@@ -513,11 +650,12 @@ describe('agent tool directive', () => {
     let validated!: () => void
     const validating = new Promise<void>((resolve) => { validated = resolve })
     const schema = { '~standard': { version: 1, vendor: 'test', validate: (value: unknown) => validating.then(() => ({ value })) } }
-    const { registry } = mount(directive => () => withDirectives(h('form'), [[directive, binding({
+    const set = vi.fn((value: unknown) => { state.email = value as string })
+    const { registry } = mount(directive => () => withDirectives(h('form', [h('input', { 'data-agent-field': 'state.email' })]), [[directive, binding({
       name: 'send',
       kind: 'form',
       schema: () => schema,
-      fields: { email: { source: 'state.email', get: () => state.email, set: (value) => { state.email = value as string } } },
+      fields: { email: { source: 'state.email', get: () => state.email, set } },
     })]]))
     await nextTick()
     registry.onActivity(activities => activities.forEach(activity => activity.stop()))
@@ -525,6 +663,7 @@ describe('agent tool directive', () => {
     expect(await registry.call('send', { email: 'sarah@example.com' })).toMatchObject({ isError: true })
     validated()
     await new Promise(resolve => setTimeout(resolve))
+    expect(set).not.toHaveBeenCalled()
     expect(state.email).toBe('daniel@example.com')
   })
 
@@ -546,12 +685,13 @@ describe('agent tool directive', () => {
       : h('p'))
     await nextTick()
 
-    const call = registry.call('send', {})
+    const call = registry.call('send', { email: 'sarah@example.com' })
     shown.value = false
     await nextTick()
     validated()
     expect(await call).toEqual({ isError: true, content: [{ type: 'text', text: '"send" is not available on the current page.' }] })
     await new Promise(resolve => setTimeout(resolve))
+    expect(state.email).toBe('daniel@example.com')
     expect(sent).not.toHaveBeenCalled()
   })
 
@@ -643,6 +783,16 @@ describe('agent tool directive', () => {
 
     app.unmount()
     expect(registry.list()).toEqual([])
+  })
+
+  it('submits a form with a submit button that belongs to it', () => {
+    const container = document.createElement('div')
+    container.innerHTML = '<form id="other"></form><form id="main"><span type="submit">Go</span><button form="other">Search</button><button type="button">Reset</button><button>Send</button></form>'
+    document.body.append(container)
+    cleanups.push(() => container.remove())
+    // happy-dom does not associate a control with the form its `form` attribute names
+    Object.defineProperty(container.querySelector('[form]'), 'form', { value: container.querySelector('#other') })
+    expect(submitterOf(container.querySelector('#main')!)?.textContent).toBe('Send')
   })
 
   it('focuses the submit button of a form handed to the user', async () => {

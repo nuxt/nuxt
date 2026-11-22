@@ -3,7 +3,7 @@ import { nextTick, toRaw } from 'vue'
 import type { AgentToolDefinition, AgentToolRegistry, JSONSchema } from './registry'
 import { formatIssues, isStandardSchema, text, toJsonSchema } from './registry'
 import type { FormFields } from './dom'
-import { describeSchema, fillFields, formOf, formSchema, highlight, isDisabled, itemLabel, labelOf, lockedProblems, mergeInput, nativeProblems, readFields, submitterOf } from './dom'
+import { describeSchema, fillFields, formOf, formSchema, highlight, isDisabled, itemLabel, labelOf, lockedProblems, mergeInput, nativeProblems, readFields, submitProblems, submitterOf } from './dom'
 
 /** Compiled from a template binding of a `@tool` function. */
 export interface AgentToolBinding {
@@ -117,17 +117,24 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
       return text(`The form was not submitted. ${locked.join('; ')}`, true)
     }
     const previous = Object.values(fields).map(field => field.get())
-    const problems = fillFields(fields, input)
+    const restore = () => Object.values(fields).forEach((field, i) => field.set(previous[i]))
+    let problems: string[]
+    try {
+      problems = fillFields(fields, input)
+    } catch (error) {
+      restore()
+      throw error
+    }
     await nextTick()
     if (!problems.length) {
       problems.push(...nativeProblems(fields, form))
       const submitter = submitterOf(form)
-      if (!problems.length && !binding.confirm && submitter && isDisabled(submitter)) {
-        problems.push('The submit button is disabled.')
+      if (!problems.length && !binding.confirm) {
+        problems.push(...submitter && isDisabled(submitter) ? ['The submit button is disabled.'] : submitProblems(form, submitter))
       }
     }
     if (problems.length || signal.aborted) {
-      Object.values(fields).forEach((field, i) => field.set(previous[i]))
+      restore()
       return problems.length ? text(`The form was not submitted. ${problems.join('; ')}`, true) : undefined
     }
   }
