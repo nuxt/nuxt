@@ -244,8 +244,9 @@ describe('agent tool directive', () => {
   })
 
   it('restores the fields it wrote when a later field cannot be written', async () => {
-    const state = reactive({ name: 'Daniel', age: 30 })
+    const state = reactive({ plan: 'pro', name: 'Daniel', age: 30 })
     const sent = vi.fn()
+    const setPlan = vi.fn(() => { throw new Error('plan is fixed') })
     const { registry } = mount((directive, submits) => () => withDirectives(h('form', {
       onSubmit: (event: Event) => {
         event.preventDefault()
@@ -258,6 +259,7 @@ describe('agent tool directive', () => {
       name: 'save',
       kind: 'form',
       fields: {
+        plan: { source: 'state.plan', get: () => state.plan, set: setPlan },
         name: { source: 'state.name', get: () => state.name, set: (value) => { state.name = value as string } },
         age: {
           source: 'state.age',
@@ -275,7 +277,8 @@ describe('agent tool directive', () => {
 
     expect(await registry.call('save', { name: 'Sarah', age: -1 })).toEqual({ isError: true, content: [{ type: 'text', text: 'age must be a positive number' }] })
     expect(sent).not.toHaveBeenCalled()
-    expect(state).toEqual({ name: 'Daniel', age: 30 })
+    expect(setPlan).not.toHaveBeenCalled()
+    expect(state).toEqual({ plan: 'pro', name: 'Daniel', age: 30 })
   })
 
   it('rejects input for unknown fields of a nested object', async () => {

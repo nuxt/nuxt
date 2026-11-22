@@ -117,7 +117,7 @@ export function createAgentToolDirective (registry: AgentToolRegistry, submits: 
       return text(`The form was not submitted. ${locked.join('; ')}`, true)
     }
     const previous = Object.values(fields).map(field => field.get())
-    const restore = () => Object.values(fields).forEach((field, i) => field.set(previous[i]))
+    const restore = () => Object.values(fields).forEach((field, i) => field.get() !== previous[i] && field.set(previous[i]))
     let problems: string[]
     try {
       problems = fillFields(fields, input)
