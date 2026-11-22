@@ -304,14 +304,14 @@ function isLocked (el: Element) {
   return !!el.closest(LOCKED)
 }
 
-/** The options of a select, the radios of a group, or the checkboxes bound to one array. */
-function choicesOf (controls: FieldControl[], value: unknown): Choice[] {
+/** The options of a select, the radios of a group, or the checkboxes bound to one array; `undefined` for a field that takes any value. */
+function choicesOf (controls: FieldControl[], value: unknown): Choice[] | undefined {
   const [control] = controls
   if (control instanceof HTMLSelectElement) {
     return [...control.options]
   }
   const grouped = control instanceof HTMLInputElement && (control.type === 'radio' || (control.type === 'checkbox' && Array.isArray(value)))
-  return grouped ? controls as HTMLInputElement[] : []
+  return grouped ? controls as HTMLInputElement[] : undefined
 }
 
 function isLockedChoice (choice: Choice) {
@@ -353,14 +353,14 @@ export function lockedProblems (fields: FormFields, form: Element, input: Record
     }
     const choices = choicesOf(controlsOf(markers), current)
     const items = (list: unknown) => (Array.isArray(list) ? list : [list]).filter(item => item != null && item !== '')
-    const unmatched = choices.length
+    const unmatched = choices
       ? items(next).filter(item => !choices.some(choice => selects(item, choice)) && !items(current).some(selected => String(selected) === String(item)))
       : []
     if (unmatched.length) {
       problems.push(`${key}: ${unmatched.map(item => `${JSON.stringify(item)} is not one of the choices`).join(', ')}`)
       continue
     }
-    const refused = choices.filter(choice => isLockedChoice(choice)
+    const refused = (choices ?? []).filter(choice => isLockedChoice(choice)
       && selects(next, choice) !== selects(current, choice)
       && (selects(next, choice) || (choice instanceof HTMLInputElement && choice.type === 'checkbox')))
     if (refused.length) {

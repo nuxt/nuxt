@@ -388,7 +388,7 @@ describe('agent tool directive', () => {
   })
 
   it('rejects input that selects a choice the form does not offer', async () => {
-    const state = reactive({ plan: '', size: 'm', extras: ['gift'] })
+    const state = reactive({ plan: '', region: '', size: 'm', extras: ['gift'] })
     const sent = vi.fn()
     const fields = Object.fromEntries(Object.keys(state).map(key => [key, {
       source: `state.${key}`,
@@ -402,21 +402,22 @@ describe('agent tool directive', () => {
       },
     }, [
       h('select', { 'data-agent-field': 'state.plan' }, [h('option', { value: 'free' }, 'Free'), h('option', { value: 'pro' }, 'Pro')]),
+      h('select', { 'data-agent-field': 'state.region' }),
       ...['s', 'm'].map(value => h('input', { 'type': 'radio', 'name': 'size', value, 'data-agent-field': 'state.size' })),
       ...['gift', 'card'].map(value => h('input', { 'type': 'checkbox', value, 'data-agent-field': 'state.extras' })),
     ]), [[directive, binding({ name: 'order', kind: 'form', fields })]]))
     await nextTick()
 
-    expect(await registry.call('order', { plan: 'enterprise', size: 'xl', extras: ['gift', 'ribbon'] })).toEqual({
+    expect(await registry.call('order', { plan: 'enterprise', region: 'eu', size: 'xl', extras: ['gift', 'ribbon'] })).toEqual({
       isError: true,
-      content: [{ type: 'text', text: 'The form was not submitted. plan: "enterprise" is not one of the choices; size: "xl" is not one of the choices; extras: "ribbon" is not one of the choices' }],
+      content: [{ type: 'text', text: 'The form was not submitted. plan: "enterprise" is not one of the choices; region: "eu" is not one of the choices; size: "xl" is not one of the choices; extras: "ribbon" is not one of the choices' }],
     })
     expect(sent).not.toHaveBeenCalled()
 
     expect(await registry.call('order', { plan: 'pro', size: 's', extras: [] })).not.toHaveProperty('isError')
     expect(await registry.call('order', { plan: '' })).not.toHaveProperty('isError')
     expect(sent).toHaveBeenCalledTimes(2)
-    expect(state).toEqual({ plan: '', size: 's', extras: [] })
+    expect(state).toEqual({ plan: '', region: '', size: 's', extras: [] })
   })
 
   it('describes a checkbox with `true-value` and `false-value` by the values it writes', async () => {
