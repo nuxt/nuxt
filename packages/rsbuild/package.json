@@ -45,7 +45,7 @@
     "@rsbuild/plugin-type-check": "catalog:dev",
     "@rsdoctor/types": "catalog:dev",
     "h3": "1.15.11",
-    "h3-next": "npm:h3@2.0.2",
+    "h3-next": "npm:h3@2.0.8",
     "tsdown": "catalog:dev",
     "vue": "catalog:app-runtime"
   },
