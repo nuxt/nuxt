@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { describe, expect, it, vi } from 'vitest'
 import { basename, dirname, isAbsolute, join, resolve } from 'pathe'
@@ -26,6 +26,14 @@ const serverReplacements = {
 const getSchema = (nitro: Nitro) => JSON.parse((nitro.options.virtual[RUNTIME_CONFIG_SCHEMA_ID] as () => string)().split('\n')[0]!.replace(/^export default /, ''))
 
 const hasBundledVuePlugin = (nitroConfig: NitroConfig) => (nitroConfig.rollupConfig!.plugins as Array<{ name?: string }>).some(plugin => plugin?.name === 'nuxt:bundled-vue')
+
+const writePackage = async (dir: string, name: string, version: string, code: string) => {
+  const entry = `dist/${name === 'vue' ? 'vue.runtime' : name.slice('@vue/'.length)}.esm-bundler.js`
+  await mkdir(join(dir, dirname(entry)), { recursive: true })
+  await writeFile(join(dir, 'package.json'), JSON.stringify({ name, version, type: 'module', main: entry }))
+  await writeFile(join(dir, entry), code)
+  return join(dir, entry)
+}
 
 async function withNitro<T> (overrides: NuxtConfig, fn: (nitro: Nitro, nitroConfig: NitroConfig, nuxt: Nuxt) => T | Promise<T>) {
   let nitroConfig: NitroConfig | undefined
@@ -398,13 +406,6 @@ describe('nitro config', () => {
 
   it('bundles the `@vue/*` packages that vue depends on rather than hoisted copies', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-vue-package-'))
-    const writePackage = async (dir: string, name: string, version: string, code: string) => {
-      const entry = `dist/${name === 'vue' ? 'vue.runtime' : name.slice('@vue/'.length)}.esm-bundler.js`
-      await mkdir(join(dir, dirname(entry)), { recursive: true })
-      await writeFile(join(dir, 'package.json'), JSON.stringify({ name, version, type: 'module', main: entry }))
-      await writeFile(join(dir, entry), code)
-      return join(dir, entry)
-    }
     try {
       const vueDir = join(rootDir, 'node_modules/vue')
       const runtimeDomDir = join(vueDir, 'node_modules/@vue/runtime-dom')
@@ -452,6 +453,54 @@ describe('nitro config', () => {
       await rm(rootDir, { recursive: true, force: true })
     }
   })
+
+  it('bundles the copy of vue the app resolves rather than the one nuxt depends on', async () => {
+    const rootDir = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-vue-package-')))
+    const nuxtDir = join(rootDir, 'node_modules/nuxt')
+    const writeVue = async (dir: string, version: string) => {
+      const runtimeCoreDir = join(dir, 'node_modules/@vue/runtime-core')
+      await writePackage(dir, 'vue', version, `export * from '@vue/runtime-dom'`)
+      await writePackage(join(dir, 'node_modules/@vue/runtime-dom'), '@vue/runtime-dom', version, `export * from '@vue/runtime-core'`)
+      await writePackage(runtimeCoreDir, '@vue/runtime-core', version, `export * from '@vue/reactivity'`)
+      await writePackage(join(runtimeCoreDir, 'node_modules/@vue/reactivity'), '@vue/reactivity', version, `export const version = '${version}'`)
+    }
+    try {
+      await writeVue(join(nuxtDir, 'node_modules/vue'), '3.5.2')
+      await writeVue(join(rootDir, 'node_modules/vue'), '3.5.3')
+
+      const nuxt = { options: { dev: false, rootDir, appDir: join(nuxtDir, 'dist/app'), vue: {}, experimental: { externalVue: true } } } as unknown as Nuxt
+      const nitro = { options: { node: true, externals: {}, rollupConfig: {} } } as unknown as Nitro
+      setupVuePackage(nuxt, nitro)
+
+      const bundle = await rollup({
+        input: 'entry',
+        plugins: [
+          ...nitro.options.rollupConfig!.plugins as Plugin[],
+          {
+            name: 'entry',
+            resolveId (id, importer) {
+              if (id === 'entry') { return id }
+              if (!importer?.startsWith(rootDir)) { return }
+              return resolveModulePath(id, { from: importer, try: true }) ?? null
+            },
+            load: id => id === 'entry' ? 'export default 1' : undefined,
+          },
+        ],
+      })
+      const { output } = await bundle.generate({ format: 'esm' })
+      await bundle.close()
+
+      for (const name of ['vue', '@vue/runtime-dom', '@vue/runtime-core', '@vue/reactivity']) {
+        const pkg = output.find((file): file is OutputAsset => file.fileName === `node_modules/${name}/package.json`)
+        expect(JSON.parse(pkg!.source as string)).toMatchObject({ version: '3.5.3' })
+      }
+      const modules = output.flatMap(chunk => chunk.type === 'chunk' ? Object.keys(chunk.modules) : []).filter(id => id !== 'entry')
+      expect(modules).toHaveLength(4)
+      expect(modules.every(id => id.startsWith(join(rootDir, 'node_modules/vue/')))).toBe(true)
+    } finally {
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  }, 60_000)
 
   it('does not inline the dependencies of an absolute `build.transpile` directory', async () => {
     const moduleDir = resolve(fixtureDir, '../workspace-module')

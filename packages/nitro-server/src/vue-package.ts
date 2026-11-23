@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { matchesGlob } from 'node:path'
 import { dirname, join } from 'pathe'
-import { bundlerDiagnostics, parseNodeModulePath } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, parseNodeModulePath, resolveVuePackageImporter, resolveVuePackages } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import type { Nitro } from 'nitropack/types'
 import type { ModuleInfo, Plugin } from 'rollup'
@@ -97,7 +97,7 @@ function VuePackagePlugin (nuxt: Nuxt, ignoredImports: Set<string>): Plugin {
       }
     },
     async buildStart () {
-      const importer = join(nuxt.options.appDir, 'entry.js')
+      const importer = resolveVuePackageImporter(resolveVuePackages(nuxt), 'vue') ?? join(nuxt.options.appDir, 'entry.js')
       const vue = await this.resolve('vue', importer, { skipSelf: false })
       if (!vue || vue.external) {
         this.error('Could not resolve `vue` to bundle it into the server build.')
