@@ -114,8 +114,6 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
     await nuxt.callHook('vite:serverCreated', viteServer, { isClient: true, isServer: false })
   } else {
     // Build
-    logger.info('Building client...')
-    const start = Date.now()
     logger.restoreAll()
     try {
       await vite.build(clientConfig)
@@ -123,6 +121,5 @@ export async function buildClient (nuxt: Nuxt, ctx: ViteBuildContext) {
       logger.wrapAll()
     }
     await nuxt.callHook('vite:compiled')
-    logger.success(`Client built in ${Date.now() - start}ms`)
   }
 }

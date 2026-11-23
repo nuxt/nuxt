@@ -87,8 +87,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
 
   // Production build
   if (!nuxt.options.dev) {
-    const start = Date.now()
-    logger.info('Building server...')
     logger.restoreAll()
     try {
       await vite.build(serverConfig)
@@ -98,7 +96,6 @@ export async function buildServer (nuxt: Nuxt, ctx: ViteBuildContext) {
     // Write production client manifest
     await writeManifest(ctx)
     await nuxt.callHook('vite:compiled')
-    logger.success(`Server built in ${Date.now() - start}ms`)
     return
   }
 
