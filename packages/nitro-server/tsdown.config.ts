@@ -47,7 +47,7 @@ export default defineConfig([
       'src/runtime/compat/runtime-config.ts',
     ],
     unbundle: true,
-    outExtensions: () => ({ dts: '.d.ts' }),
+    outExtensions: () => ({ js: '.js' }),
     deps: {
       onlyBundle: [],
       neverBundle: [/^nitro(?:\/|$)/],
