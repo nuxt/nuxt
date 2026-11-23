@@ -24,14 +24,21 @@ export async function bundleServer (nuxt: Nuxt) {
 }
 
 async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): Promise<NuxtBuilder> {
+  // prefer our own dependency tree before walking up from rootDir
+  const resolved = resolveModulePath(builder, { from: import.meta.url, try: true })
+  const installed = !!resolved || !!resolveModulePath(builder, { from: directoryToURL(nuxt.options.rootDir), try: true })
   try {
-    // prefer our own dependency tree before walking up from rootDir
-    const resolved = resolveModulePath(builder, { from: import.meta.url, try: true })
     if (resolved) {
       return await import(pathToFileURL(resolved).href)
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
   } catch (err) {
-    throw buildDiagnostics.NUXT_B1018({ builder, installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err }, { method: 'error' })
+    throw buildDiagnostics.NUXT_B1018({
+      builder,
+      installed,
+      error: err instanceof Error ? err.message : String(err),
+      installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }),
+      cause: err,
+    }, { method: 'error' })
   }
 }
