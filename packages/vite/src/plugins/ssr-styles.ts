@@ -611,8 +611,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               ? outputOptions.assetFileNames
               : outputOptions.assetFileNames({
                   type: 'asset',
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   name: assetName,
                   names: [assetName],
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   originalFileName: assetName,
                   originalFileNames: [assetName],
                   source: '',
