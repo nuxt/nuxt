@@ -56,7 +56,7 @@
     "klona": "catalog:app-runtime",
     "mocked-exports": "catalog:build",
     "my-bad": "catalog:nitro-runtime",
-    "nitropack": "^2.13.6",
+    "nitropack": "^2.14.0",
     "nostics": "catalog:app-runtime",
     "ohash": "catalog:app-runtime",
     "pathe": "catalog:app-runtime",

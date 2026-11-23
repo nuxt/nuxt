@@ -18,13 +18,12 @@ function conflictsWithin (segments: string[], name: string, index: number): bool
  * `/:locale/:slug/about` collide and one silently loses its rules. Rule objects are not mutated:
  * a rule whose `redirect` or `proxy` target is rewritten is replaced with a copy.
  *
- * @returns each renamed key, mapped to its new name
  * @internal
  */
-export function unifyDynamicRouteRuleSegments (routeRules: Record<string, Record<string, any>>): Map<string, string> {
+export function unifyDynamicRouteRuleSegments (routeRules: Record<string, Record<string, any>>): void {
   const unifiedNames = new Map<string, string>()
   const unified: Array<[string, Record<string, any>]> = []
-  const renamedKeys = new Map<string, string>()
+  let renamed = false
 
   for (const [route, original] of Object.entries(routeRules)) {
     let rules = original
@@ -58,13 +57,11 @@ export function unifyDynamicRouteRuleSegments (routeRules: Record<string, Record
       }
     }
     const key = segments.join('/')
-    if (key !== route) {
-      renamedKeys.set(route, key)
-    }
+    renamed ||= key !== route
     unified.push([key, rules])
   }
 
-  if (!renamedKeys.size) { return renamedKeys }
+  if (!renamed) { return }
 
   for (const route of Object.keys(routeRules)) {
     delete routeRules[route]
@@ -72,5 +69,4 @@ export function unifyDynamicRouteRuleSegments (routeRules: Record<string, Record
   for (const [route, rules] of unified) {
     routeRules[route] = route in routeRules ? defu(rules, routeRules[route]) : rules
   }
-  return renamedKeys
 }
