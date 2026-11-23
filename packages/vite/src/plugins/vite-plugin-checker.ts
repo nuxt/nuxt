@@ -1,5 +1,9 @@
+import { existsSync } from 'node:fs'
+import { join } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
+import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
+import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import { readTSConfig, resolveTSConfig } from 'pkg-types'
 
 export async function VitePluginCheckerPlugin (nuxt: Nuxt): Promise<Plugin[] | undefined> {
@@ -8,11 +12,39 @@ export async function VitePluginCheckerPlugin (nuxt: Nuxt): Promise<Plugin[] | u
     return
   }
 
-  const [checker, tsconfigPath] = await Promise.all([
+  const missing = await ensureDependencyInstalled(['typescript', 'vue-tsc'], {
+    rootDir: nuxt.options.rootDir,
+    searchPaths: nuxt.options.modulesDir,
+    from: import.meta.url,
+  })
+  if (missing !== true) {
+    const diagnostic = {
+      deps: missing.map(dep => `\`${dep}\``).join(' and '),
+      installCommand: await getAddDependencyCommand(missing, nuxt.options.rootDir, { dev: true }),
+      skipped: nuxt.options.dev,
+    }
+    if (!nuxt.options.dev) {
+      throw bundlerDiagnostics.NUXT_B7040(diagnostic, { method: 'error' })
+    }
+    bundlerDiagnostics.NUXT_B7040(diagnostic)
+    return
+  }
+
+  const rootTsConfig = await resolveTSConfig(nuxt.options.rootDir).catch(() => undefined)
+  const tsconfigPath = rootTsConfig ?? join(nuxt.options.typesDir || nuxt.options.buildDir, 'tsconfig.app.json')
+  if (!existsSync(tsconfigPath)) {
+    const diagnostic = { rootDir: nuxt.options.rootDir, tsconfigPath, skipped: nuxt.options.dev }
+    if (!nuxt.options.dev) {
+      throw bundlerDiagnostics.NUXT_B7041(diagnostic, { method: 'error' })
+    }
+    bundlerDiagnostics.NUXT_B7041(diagnostic)
+    return
+  }
+
+  const [checker, supportsProjects] = await Promise.all([
     import('vite-plugin-checker').then(r => r.default),
-    resolveTSConfig(nuxt.options.rootDir),
+    rootTsConfig ? readTSConfig(rootTsConfig).then(r => !!(r.references?.length)) : false,
   ])
-  const supportsProjects = await readTSConfig(tsconfigPath).then(r => !!(r.references?.length))
   return [
     {
       applyToEnvironment: environment => environment.name === 'client',
