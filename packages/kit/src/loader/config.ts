@@ -7,7 +7,6 @@ import { loadConfig, setupDotenv } from 'c12'
 import type { NitroConfig, NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { klona } from 'klona'
 import microdiff from 'microdiff'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
@@ -510,10 +509,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   if (runtimeConfigSchemas.entries.length) {
     resolved.config.runtimeConfig = runtimeConfigSchemas.config as NuxtConfig['runtimeConfig']
   }
-  // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
-  // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
-  // would follow into infinite recursion.
-  const nuxtConfig = klona(resolved.config)
+  const nuxtConfig = cloneConfig(resolved.config)
 
   // Merge of the layers c12 produced, minus the synthetic layer it creates for `overrides`, so
   // caller-supplied `overrides`/`defaults` never appear as user configuration. Taken before the
@@ -648,6 +644,35 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   return options
+}
+
+/**
+ * Copies the plain objects and arrays of a config, so that resolving options does not write
+ * into the configs of its layers. Other values, and the entries of `plugins` arrays, are kept
+ * by reference, as bundler plugins can depend on their identity and on symbol-keyed properties.
+ */
+function cloneConfig<T> (value: T, keepEntries = false): T {
+  if (Array.isArray(value)) {
+    return value.map(entry => keepEntries && !Array.isArray(entry) ? entry : cloneConfig(entry, keepEntries)) as T
+  }
+  if (!isPlainObject(value)) {
+    return value
+  }
+  const copy = Object.create(Object.getPrototypeOf(value))
+  for (const key of Reflect.ownKeys(value)) {
+    if (Object.prototype.propertyIsEnumerable.call(value, key)) {
+      Object.defineProperty(copy, key, { value: cloneConfig(value[key], key === 'plugins'), enumerable: true, writable: true, configurable: true })
+    }
+  }
+  return copy
+}
+
+function isPlainObject (value: unknown): value is Record<PropertyKey, unknown> {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  const prototype = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
 }
 
 /**

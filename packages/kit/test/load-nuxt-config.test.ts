@@ -97,7 +97,23 @@ describe('loadNuxtConfig', () => {
     })
   }))
 
-  it.fails('should support cyclic references in build-time config', () => withTempDir({
+  it('should keep configured plugins as they are, in a copy of their array', () => withTempDir({
+    'nuxt.config.ts': `export default defineNuxtConfig({
+      vite: { plugins: [{ name: 'marked-plugin', [Symbol.for('marker')]: true }, [{ name: 'nested-plugin' }]] },
+    })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    const plugins = config.vite.plugins as unknown[]
+    const layerPlugins = config._layers[0]!.config.vite!.plugins as unknown[]
+
+    expect(plugins).not.toBe(layerPlugins)
+    expect(plugins[0]).toBe(layerPlugins[0])
+    expect((plugins[0] as Record<symbol, unknown>)[Symbol.for('marker')]).toBe(true)
+    expect(plugins[1]).not.toBe(layerPlugins[1])
+    expect((plugins[1] as unknown[])[0]).toBe((layerPlugins[1] as unknown[])[0])
+  }))
+
+  it('should support cyclic references in build-time config', () => withTempDir({
     'nuxt.config.ts': `const api: Record<string, unknown> = {}
     const plugin = { name: 'cyclic-plugin', api }
     api.plugin = plugin
