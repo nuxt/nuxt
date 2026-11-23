@@ -94,7 +94,7 @@ catalogs:
     srvx: 1.0.8
     unstorage: ^1.17.6
   nitropack:
-    rou3: ^0.12.1
+    rou3: ^0.9.2
   nitro:
     h3: ^2.0.8
     ofetch: ^2.0.0-alpha.3
