@@ -171,12 +171,18 @@ function collectConstants (program: ESTree.Program) {
 
 const UNRESOLVED = Symbol('unresolved')
 
+const BUILD_TIME_FLAGS = new Set(['server', 'client', 'dev', 'test', 'prerender', 'browser', 'nitro'])
+
 interface Constants {
   values: Map<string, ESTree.Expression>
   isShadowed: (name: string) => boolean
 }
 
-function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, constants: Constants, seen = new Set<string>()): unknown {
+function isBuildFlag (node: ESTree.MemberExpression) {
+  return !node.computed && node.object.type === 'MetaProperty' && node.object.meta.name === 'import' && node.object.property.name === 'meta' && node.property.type === 'Identifier' && BUILD_TIME_FLAGS.has(node.property.name)
+}
+
+function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, constants: Constants, seen = new Set<string>(), key?: ExtractedMetaKey): unknown {
   if (!node) { return UNRESOLVED }
   node = unwrapExpression(node)
   switch (node.type) {
@@ -196,8 +202,11 @@ function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | nu
       if (node.name === 'undefined') { return undefined }
       const init = constants.isShadowed(node.name) ? undefined : constants.values.get(node.name)
       if (!init || seen.has(node.name)) { return UNRESOLVED }
-      return resolveStaticValue(init, { values: constants.values, isShadowed: () => false }, new Set(seen).add(node.name))
+      return resolveStaticValue(init, { values: constants.values, isShadowed: () => false }, new Set(seen).add(node.name), key)
     }
+    case 'MemberExpression':
+      // Metadata is extracted once for both builds, so a build flag is `true` here.
+      return key === 'parallel' && isBuildFlag(node) ? true : UNRESOLVED
   }
   return UNRESOLVED
 }
@@ -230,7 +239,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
       continue
     }
     if (!isMetadataKey(propertyKey)) { continue }
-    const value = resolveStaticValue(property.value, constants)
+    const value = resolveStaticValue(property.value, constants, undefined, propertyKey)
     if (propertyKey === 'dependsOn') {
       if (value === undefined) { continue }
       if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {

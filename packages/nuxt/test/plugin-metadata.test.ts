@@ -81,11 +81,18 @@ describe('plugin-metadata', () => {
     ['`satisfies`', 'export default defineNuxtPlugin(({ name: \'test\', dependsOn: [\'a\'], parallel: true }) satisfies object)'],
     ['template literals', 'export default defineNuxtPlugin({ name: `test`, dependsOn: [`a`], parallel: true })'],
     ['top-level constants', 'export const NAME = \'test\'\nconst DEPS = [\'a\']\nexport default defineNuxtPlugin({ name: NAME, dependsOn: DEPS, parallel: true })'],
+    ['a top-level constant holding a build flag', 'const PARALLEL = import.meta.client\nexport default defineNuxtPlugin({ name: \'test\', dependsOn: [\'a\'], parallel: PARALLEL })'],
     ['an aliased import', 'import { defineNuxtPlugin as define } from \'#app\'\nexport default define({ name: \'test\', dependsOn: [\'a\'], parallel: true })'],
     ['top-level constants referencing a name shadowed at the call site', 'const NAME = \'test\'\nconst DEP = \'a\'\nconst DEPS = [DEP]\nexport default (() => {\n  const DEP = \'unused\'\n  return defineNuxtPlugin({ name: NAME, dependsOn: DEPS, parallel: true })\n})()'],
     ['top-level constants read from a nested call', 'const NAME = \'test\'\nexport default (() => {\n  const other = \'unrelated\'\n  return defineNuxtPlugin({ name: NAME, dependsOn: [\'a\'], parallel: true })\n})()'],
   ])('should extract static metadata written with %s', (_, code) => {
     expect(extractMetadata(code)).toEqual({ name: 'test', dependsOn: ['a'], parallel: true, order: 0 })
+  })
+
+  it.each(['server', 'client', 'dev', 'test', 'prerender', 'browser', 'nitro'])('should treat `import.meta.%s` as a static `parallel` value', async (flag) => {
+    const code = `export default defineNuxtPlugin({ name: 'test', parallel: import.meta.${flag} })`
+    expect(await metadataWarnings(code)).toEqual([])
+    expect(extractMetadata(code)).toEqual({ name: 'test', parallel: true, order: 0 })
   })
 
   it.each([
@@ -97,7 +104,8 @@ describe('plugin-metadata', () => {
 
   it.each([
     ['name', 'from an import', 'import { NAME } from \'./constants\'\nexport default defineNuxtPlugin({ name: NAME, enforce: \'pre\' })', { order: -20 }],
-    ['parallel', 'from a build flag', 'export default defineNuxtPlugin({ name: \'test\', parallel: import.meta.client })', { name: 'test', order: 0 }],
+    ['parallel', 'from `import.meta.env`', 'export default defineNuxtPlugin({ name: \'test\', parallel: import.meta.env.SSR })', { name: 'test', order: 0 }],
+    ['order', 'from a build flag', 'export default defineNuxtPlugin({ name: \'test\', order: import.meta.server })', { name: 'test', order: 0 }],
     ['enforce', 'from a `let` binding', 'let enforce = \'pre\'\nexport default defineNuxtPlugin({ name: \'test\', enforce })', { name: 'test', order: 0 }],
     ['name', 'from a constant shadowed at the call site', 'const NAME = \'outer\'\nexport default (() => {\n  const NAME = \'inner\'\n  return defineNuxtPlugin({ name: NAME })\n})()', { order: 0 }],
   ])('should warn about a non-static `%s` %s and keep the static metadata', async (key, _, code, meta) => {
@@ -300,7 +308,7 @@ describe('plugin-metadata', () => {
 
   it.each([
     ['', ''],
-    [' when it is declared by a plugin whose other metadata cannot be statically analysed', ', parallel: import.meta.client'],
+    [' when it is declared by a plugin whose other metadata cannot be statically analysed', ', parallel: config.parallel'],
   ])('should emit plugins without the dependency that closes a cycle%s', async (_, options) => {
     vi.spyOn(console, 'warn').mockImplementation(() => {})
     const app = { plugins: [{ src: '/app/a.ts' }, { src: '/app/b.ts' }] }
