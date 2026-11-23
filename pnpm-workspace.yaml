@@ -211,7 +211,7 @@ catalogs:
     rou3: ^1.0.0
     unctx: ^3.0.1
     undici: ^8.13.1
-    unenv: ^2.0.0-rc.24
+    unenv: ^2.0.0-rc.25
     unimport: ^7.0.3
     unplugin: ^3.7.0
     unrouting: ^0.3.2

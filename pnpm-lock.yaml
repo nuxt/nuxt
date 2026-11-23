@@ -415,8 +415,8 @@ catalogs:
       specifier: ^8.13.1
       version: 8.13.1
     unenv:
-      specifier: ^2.0.0-rc.24
-      version: 2.0.0-rc.24
+      specifier: ^2.0.0-rc.25
+      version: 2.0.0-rc.25
     unimport:
       specifier: ^7.0.3
       version: 7.0.3
@@ -1239,7 +1239,7 @@ importers:
         version: 3.0.1(magic-string@1.4.5)(oxc-parser@0.159.0)(rolldown@1.2.19)(unplugin@3.7.0(@rsbuild/core@2.3.3)(@rspack/core@2.3.3(@swc/helpers@0.5.24))(esbuild@0.28.2)(rolldown@1.2.19)(rollup@4.68.8)(vite@8.3.8)(webpack@5.113.0(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.33)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0)))
       unenv:
         specifier: catalog:build
-        version: 2.0.0-rc.24
+        version: 2.0.0-rc.25
       unimport:
         specifier: catalog:build
         version: 7.0.3(@rsbuild/core@2.3.3)(@rspack/core@2.3.3(@swc/helpers@0.5.24))(acorn@8.19.0)(esbuild@0.28.2)(oxc-parser@0.159.0)(rolldown@1.2.19)(rollup@4.68.8)(vite@8.3.8)(webpack@5.113.0(cssnano@7.1.9(postcss@8.5.33))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.33)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -1583,7 +1583,7 @@ importers:
         version: 1.6.4
       unenv:
         specifier: catalog:build
-        version: 2.0.0-rc.24
+        version: 2.0.0-rc.25
       vue-bundle-renderer:
         specifier: catalog:build
         version: 2.5.0
@@ -1710,7 +1710,7 @@ importers:
         version: 1.6.4
       unenv:
         specifier: catalog:build
-        version: 2.0.0-rc.24
+        version: 2.0.0-rc.25
       unplugin:
         specifier: catalog:build
         version: 3.7.0(@rsbuild/core@2.3.3)(@rspack/core@2.3.3(@swc/helpers@0.5.24))(esbuild@0.28.2)(rolldown@1.2.19)(rollup@4.68.8)(vite@8.3.8)(webpack@5.113.0(cssnano@9.9.0(postcss@8.5.33))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.33)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -1985,7 +1985,7 @@ importers:
         version: 1.6.4
       unenv:
         specifier: catalog:build
-        version: 2.0.0-rc.24
+        version: 2.0.0-rc.25
       vite:
         specifier: 8.3.8
         version: 8.3.8(@types/node@24.19.2)(@vitejs/devtools@0.8.2)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)
@@ -2185,7 +2185,7 @@ importers:
         version: 1.6.4
       unenv:
         specifier: catalog:build
-        version: 2.0.0-rc.24
+        version: 2.0.0-rc.25
       unplugin:
         specifier: catalog:build
         version: 3.7.0(@rsbuild/core@2.3.3)(@rspack/core@2.3.3(@swc/helpers@0.5.24))(esbuild@0.28.2)(rolldown@1.2.19)(rollup@4.68.8)(vite@8.3.8)(webpack@5.113.0(cssnano@9.9.0(postcss@8.5.33))(csso@5.0.5)(esbuild@0.28.2)(lightningcss@1.33.0)(postcss@8.5.33)(sharp@0.35.4(@types/node@24.19.2))(svgo@4.1.0))
@@ -11286,8 +11286,8 @@ packages:
     resolution: {integrity: sha512-i6W3epmp98tibZ2rycV6YP4FhSJvvui9JnJm7SicSC1fXzkPBGSS1g9BNZLGUqVGM6opWEq/Aw2uzD3Q0pnQOg==}
     peerDependencies:
       '@rspack/core': ^1.0.0 || ^2.0.0
-      '@vue/compiler-sfc': 3.5.46
-      vue: 3.5.46
+      '@vue/compiler-sfc': '*'
+      vue: '*'
     peerDependenciesMeta:
       '@rspack/core':
         optional: true
@@ -12061,6 +12061,9 @@ packages:
   unenv@2.0.0-rc.24:
     resolution: {integrity: sha512-i7qRCmY42zmCwnYlh9H2SvLEypEFGye5iRmEMKjcGi7zk9UquigRjFtTLz0TYqr0ZGLZhaMHl/foy1bZR+Cwlw==}
 
+  unenv@2.0.0-rc.25:
+    resolution: {integrity: sha512-oXXwuT7VhhvYRQdoy9H0f3Qqgo6kTo0Zbh/OzUxFkeSoZ6LtovJjV9Ocd3SnmKmRLndIS8yPFxo1cJbaexhRVA==}
+
   unhead@3.4.3:
     resolution: {integrity: sha512-0FZI/qCCyIey14CKlGMFpiQumWSatlthJy7Xvro7H3nmi/V2owkcCXG03k0GXDc2/TV1K6bvrbAwhzTRe5Nhdw==}
     peerDependencies:
@@ -12531,8 +12534,8 @@ packages:
   vue-loader@17.4.2:
     resolution: {integrity: sha512-yTKOA4R/VN4jqjw4y5HrynFL8AK0Z3/Jt7eOJXEitsm0GMRHDBjCfCiuTiLP7OESvsZYo2pATCWhDqxC5ZrM6w==}
     peerDependencies:
-      '@vue/compiler-sfc': 3.5.46
-      vue: 3.5.46
+      '@vue/compiler-sfc': '*'
+      vue: '*'
       webpack: ^4.1.0 || ^5.0.0-0
     peerDependenciesMeta:
       '@vue/compiler-sfc':
@@ -23499,6 +23502,10 @@ snapshots:
   undici@8.13.1: {}
 
   unenv@2.0.0-rc.24:
+    dependencies:
+      pathe: 2.0.3
+
+  unenv@2.0.0-rc.25:
     dependencies:
       pathe: 2.0.3
 
