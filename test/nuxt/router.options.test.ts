@@ -266,6 +266,86 @@ describe('scrollBehavior with cross-layout transitions (#34196)', () => {
   })
 })
 
+describe('scrollBehavior with overlapping page transition (#37130)', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+
+  let wrapper: VueWrapper<unknown>
+  let scrollTo: ReturnType<typeof vi.spyOn>
+  const cleanups: Array<() => void> = []
+
+  const pageLoadingEnd = vi.fn()
+  const pageTransitionFinish = vi.fn()
+
+  beforeAll(async () => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+
+    // Two routes whose meta opts into the default (overlapping) transition mode.
+    // `mode` is intentionally omitted: Vue treats an unset mode as `mode: 'default'`,
+    // where the old and new pages are on screen at the same time.
+    const overlapTransition = { name: 'overlap', duration: 10 }
+
+    router.addRoute({
+      name: 'overlap-a',
+      path: '/overlap-a',
+      meta: { pageTransition: overlapTransition },
+      component: defineComponent({ setup: () => () => h('div', 'Overlap A') }),
+    })
+    router.addRoute({
+      name: 'overlap-b',
+      path: '/overlap-b',
+      meta: { pageTransition: overlapTransition },
+      component: defineComponent({ setup: () => () => h('div', 'Overlap B') }),
+    })
+
+    cleanups.push(nuxtApp.hook('page:loading:end', pageLoadingEnd))
+    cleanups.push(nuxtApp.hook('page:transition:finish', pageTransitionFinish))
+
+    wrapper = await mountSuspended(defineComponent({
+      setup: () => () => h(NuxtPage, {
+        transition: overlapTransition,
+      }),
+    }), { global: { stubs: { transition: false } } })
+    await flushPromises()
+  })
+
+  beforeEach(async () => {
+    // Establish a "previous" page so the next navigation is a real page-to-page
+    // transition (not the initial load, which short-circuits in scrollBehavior).
+    scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => { })
+    await navigateTo('/overlap-a')
+    await flushPromises()
+    await expect.poll(() => pageLoadingEnd.mock.calls.length).toBeGreaterThan(0)
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    vi.clearAllMocks()
+  })
+
+  afterAll(() => {
+    router.removeRoute('overlap-a')
+    router.removeRoute('overlap-b')
+    wrapper.unmount()
+    for (const cleanup of cleanups) {
+      cleanup()
+    }
+  })
+
+  it('should scroll to top before the overlapping transition finishes', async () => {
+    await navigateTo('/overlap-b')
+    await flushPromises()
+
+    // Wait for the scroll to happen...
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+    // ...and for the transition to finish afterwards.
+    await expect.poll(() => pageTransitionFinish.mock.calls.length).toBeGreaterThan(0)
+
+    // The scroll must fire BEFORE the transition finishes, so the new page does not
+    // visibly jump to the top at the end of the fade.
+    expect(scrollTo).toHaveBeenCalledBefore(pageTransitionFinish)
+    expect(scrollTo).toHaveBeenCalledWith({ left: 0, top: 0, behavior: 'smooth' })
+  })
+})
+
 describe('scrollBehavior with scrollToTop and fixed page key', () => {
   let router: ReturnType<typeof useRouter>
   let nuxtApp: ReturnType<typeof useNuxtApp>

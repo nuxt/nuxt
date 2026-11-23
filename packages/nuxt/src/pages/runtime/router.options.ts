@@ -42,7 +42,7 @@ export default <RouterConfig>{
     }
 
     return new Promise((resolve) => {
-      const doScroll = () => {
+      const doScroll = (position?: ScrollPosition) => {
         requestAnimationFrame(() => {
           // A later navigation may have superseded this one while we waited for the
           // page transition to finish; scrolling now would apply the old destination's
@@ -51,19 +51,40 @@ export default <RouterConfig>{
             resolve(false)
             return
           }
-          resolve(_calculatePosition(to, from, savedPosition, hashScrollBehaviour))
+          resolve(position ?? _calculatePosition(to, from, savedPosition, hashScrollBehaviour))
         })
       }
       nuxtApp.hooks.hookOnce('page:loading:end', () => {
         const transitionPromise = nuxtApp['~transitionPromise'] as Promise<void> | undefined
-        if (transitionPromise) {
-          transitionPromise.then(doScroll)
+        // When the old and new pages overlap during the transition (the default Vue
+        // transition mode, i.e. no `mode` or `mode: 'default'`), scrolling only after the
+        // transition ends makes the new page visibly jump to the top at the end. Scroll
+        // while the transition runs instead so the new page fades in already moving to the
+        // top (#37130). Back/forward navigations (savedPosition) and hash targets keep the
+        // existing behaviour of waiting for the transition to finish.
+        if (transitionPromise && !savedPosition && !to.hash && _overlapsPages(to)) {
+          doScroll({
+            left: 0,
+            top: 0,
+            behavior: _prefersReducedMotion() ? 'instant' : 'smooth',
+          })
+        } else if (transitionPromise) {
+          transitionPromise.then(() => doScroll())
         } else {
           doScroll()
         }
       })
     })
   },
+}
+
+function _overlapsPages (to: RouteLocationNormalized): boolean {
+  const transition = to.meta.pageTransition
+  return typeof transition === 'object' && transition !== null && (!transition.mode || transition.mode === 'default')
+}
+
+function _prefersReducedMotion (): boolean {
+  return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches
 }
 
 function _getHashElementScrollMarginTop (hash: string): number {
