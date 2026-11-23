@@ -86,7 +86,7 @@ test('hot reloading route rules', async ({ fetch }) => {
   await poll(header, 20_000).toBe('edited in dev')
 })
 
-test.fail('removing and adding a server plugin', async ({ fetch }) => {
+test('removing and adding a server plugin', async ({ fetch }) => {
   const response = () => fetch('/api/slow').then(r => `${r.status} ${r.headers.get('x-hmr-plugin')}`)
   await poll(response).toBe('200 v1')
 
