@@ -18,6 +18,7 @@ test.describe('error-404 template', () => {
   test('offers only the home link on a direct hit', async ({ page, goto }) => {
     await goto('/does-not-exist')
 
+    await expect(page).toHaveTitle('404 - Page not found: /does-not-exist | Nuxt')
     await expect(app(page).getByRole('heading', { level: 1 })).toHaveText('404')
     await expect(page.locator('[data-back-home]')).toBeVisible()
     await expect(page.locator('[data-back-previous]')).toBeHidden()
@@ -28,6 +29,7 @@ test.describe('error-404 template', () => {
 
     await page.getByTestId('broken-link').click()
 
+    await expect(page).toHaveTitle('404 - Page not found: /does-not-exist | Nuxt')
     await expect(page.locator('[data-back-previous]')).toBeVisible()
     await expect(page.locator('[data-back-home]')).toBeHidden()
 
@@ -42,6 +44,7 @@ test.describe('error-500 template', () => {
   test('renders the error template for a fatal error', async ({ page, goto }) => {
     await goto('/crash')
 
+    await expect(page).toHaveTitle('500 - Internal Server Error | Nuxt')
     await expect(app(page).getByRole('heading', { level: 1 })).toHaveText('500')
     await expect(app(page).getByRole('heading', { level: 2 })).toHaveText('Internal Server Error')
   })

@@ -173,6 +173,31 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   })
 })
 
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application without head usage', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/minimal-no-head', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('loads unhead with the default error pages instead of the client entry', async () => {
+    const clientDir = join(rootDir, '.output/public')
+    const files = await glob(['**/*.js'], { cwd: clientDir })
+    const entryFile = files.find(file => /(?:^|\/)entry\.js$/.test(file))!
+    const entry = await fsp.readFile(join(clientDir, entryFile), 'utf8')
+    const lazyChunks = await Promise.all(files.filter(file => file !== entryFile).map(file => fsp.readFile(join(clientDir, file), 'utf8')))
+
+    expect(entry).not.toContain('tags:afterResolve')
+    expect(lazyChunks.join('\n')).toContain('tags:afterResolve')
+
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(rootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(rootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    expect(server).toContain('tags:afterResolve')
+  })
+})
+
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('noScripts route rules', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/no-scripts', import.meta.url))
 

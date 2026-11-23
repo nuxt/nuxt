@@ -2442,6 +2442,12 @@ importers:
         specifier: workspace:*
         version: link:../../../packages/nuxt
 
+  test/fixtures/minimal-no-head:
+    dependencies:
+      nuxt:
+        specifier: workspace:*
+        version: link:../../../packages/nuxt
+
   test/fixtures/minimal-pages:
     dependencies:
       nuxt:

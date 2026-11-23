@@ -4,7 +4,6 @@ import { defineLink } from '@unhead/vue'
 import { onServerPrefetch, reactive } from 'vue'
 import { isInComponentSetup, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
-import { useHead } from './head'
 import { onServerPrefetch as markServerPrefetch } from './server-prefetch'
 
 import { useRoute } from './router'
@@ -105,6 +104,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
     if (import.meta.server) {
       const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
+      const { useHead } = await import('./head')
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
       const existing = preloadedPayloads.get(payloadURL)
