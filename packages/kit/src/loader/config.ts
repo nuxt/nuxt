@@ -648,8 +648,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
 /**
  * Copies the plain objects and arrays of a config, so that resolving options does not write
- * into the configs of its layers. Other values, and the entries of `plugins` arrays, are kept
- * by reference, as bundler plugins can depend on their identity and on symbol-keyed properties.
+ * into the configs of its layers. Other values, and the entries of nested `plugins` arrays, are
+ * kept by reference, as bundler plugins can depend on their identity and on symbol-keyed properties.
  */
 function cloneConfig<T> (config: T): T {
   const copies = new WeakMap<object, unknown>()
@@ -672,7 +672,7 @@ function cloneConfig<T> (config: T): T {
     copies.set(value, copy)
     for (const key of Reflect.ownKeys(value)) {
       if (Object.prototype.propertyIsEnumerable.call(value, key)) {
-        Object.defineProperty(copy, key, { value: clone(value[key], key === 'plugins'), enumerable: true, writable: true, configurable: true })
+        Object.defineProperty(copy, key, { value: clone(value[key], value !== config && key === 'plugins'), enumerable: true, writable: true, configurable: true })
       }
     }
     return copy

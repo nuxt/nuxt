@@ -113,6 +113,16 @@ describe('loadNuxtConfig', () => {
     expect((plugins[1] as unknown[])[0]).toBe((layerPlugins[1] as unknown[])[0])
   }))
 
+  it('should copy the Nuxt plugins it is configured with', () => withTempDir({
+    'nuxt.config.ts': `export default defineNuxtConfig({ plugins: [{ src: '~/plugins/test.ts', mode: 'client' }] })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    const layerPlugin = config._layers[0]!.config.plugins![0]
+
+    expect(config.plugins[0]).not.toBe(layerPlugin)
+    expect(config.plugins[0]).toEqual(layerPlugin)
+  }))
+
   it('should support cyclic references in build-time config', () => withTempDir({
     'nuxt.config.ts': `const api: Record<string, unknown> = {}
     const plugin = { name: 'cyclic-plugin', api }
