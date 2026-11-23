@@ -56,8 +56,9 @@ minimumReleaseAgeExclude:
   - '@vue/*'
   - fetchdts@0.2.0
   - package-manager-detector@1.9.0
-  # manual bump to 2.13.6; drop once it clears the release-age window
-  - nitropack@2.13.6
+  # manual bump to 2.14.0 (and the @vercel/nft it requires); drop once they clear the release-age window
+  - nitropack@2.14.0
+  - '@vercel/nft@1.11.12'
 
 catalogs:
   app-runtime:
@@ -264,7 +265,7 @@ catalogs:
     knip: 6.47.0
     markdownlint-cli: 0.50.0
     nano-staged: 1.0.2
-    nitropack: 2.13.6
+    nitropack: 2.14.0
     nuxt-content-twoslash: 0.4.0
     oxc-transform: 0.159.0
     pkg-pr-new: 0.0.94

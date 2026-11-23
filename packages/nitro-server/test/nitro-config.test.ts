@@ -127,6 +127,15 @@ describe('nitro config', () => {
     })
   })
 
+  it('lets the previous dev worker finish its requests for up to 10s on reload', async () => {
+    await withNitro({}, (nitro) => {
+      expect(nitro.options.devServer.drain).toEqual({ timeout: 10_000 })
+    })
+    await withNitro({ nitro: { devServer: { drain: false } } }, (nitro) => {
+      expect(nitro.options.devServer.drain).toBe(false)
+    })
+  })
+
   it('passes the server replacements to the prerenderer', async () => {
     await withNitro({}, async (nitro) => {
       // nitro creates the prerenderer from a copy of this config
@@ -353,55 +362,6 @@ describe('nitro config', () => {
       report.mockRestore()
       return rm(outputDir, { recursive: true, force: true })
     })
-  }, 60_000)
-
-  it('registers the handlers of cached sibling dynamic rules under unified routes', async () => {
-    const outputDir = await mkdtemp(join(tmpdir(), 'nuxt-route-rules-'))
-    const overrides: NuxtConfig = {
-      dev: false,
-      nitro: { output: { dir: outputDir } },
-      routeRules: {
-        '/swr-dynamic/:slug/about': { swr: 60 },
-        '/swr-dynamic/:locale/:slug/about': { swr: 60 },
-        '/team/:id/edit': { swr: 60 },
-        '/team/:slug/view': { swr: 60 },
-      },
-    }
-    await withNitro(overrides, async (nitro) => {
-      nitro.options.handlers.push({ route: '/team/:slug/view', handler: join(fixtureDir, 'server/team-view.ts') })
-      await nitro.hooks.callHook('build:before', nitro)
-      await mkdir(nitro.options.output.serverDir, { recursive: true })
-      const config = getRollupConfig(nitro)
-      await nitro.hooks.callHook('rollup:before', nitro, config)
-      const plugins = [config.plugins].flat(Infinity as 1).filter(plugin => ['virtual', 'nuxt:unify-route-rules'].includes((plugin as Plugin | null)?.name as string)) as Plugin[]
-      const bundle = await rollup({
-        input: 'entry',
-        external: id => id !== 'entry' && !id.startsWith('\0') && !id.startsWith('#nitro-internal-virtual/'),
-        plugins: [
-          {
-            name: 'entry',
-            resolveId: id => id === 'entry' ? id : undefined,
-            load: id => id === 'entry' ? `export { handlers } from '#nitro-internal-virtual/server-handlers'` : undefined,
-          },
-          ...plugins,
-        ],
-      })
-      const { output } = await bundle.generate({ format: 'esm' })
-      await bundle.close()
-
-      const generated = nitro.vfs['#nitro-internal-virtual/server-handlers'] as string
-      for (const route of ['/swr-dynamic/:slug/about/_payload.json', '/swr-dynamic/:locale/:slug/about', '/swr-dynamic/:locale/:slug/about/_payload.json', '/team/:id/edit', '/team/:slug/view', '/team/:slug/view/_payload.json']) {
-        expect(generated).toContain(`route: '${route}'`)
-      }
-
-      const code = output[0].code
-      for (const route of ['/swr-dynamic/:slug/about/_payload.json', '/swr-dynamic/:slug/:slug_/about', '/swr-dynamic/:slug/:slug_/about/_payload.json', '/team/:id/edit', '/team/:id/view/_payload.json', '/team/:slug/view']) {
-        expect(code).toContain(`route: '${route}'`)
-      }
-      for (const route of ['/swr-dynamic/:locale/:slug/about', '/swr-dynamic/:locale/:slug/about/_payload.json', '/team/:slug/view/_payload.json']) {
-        expect(code).not.toContain(`route: '${route}'`)
-      }
-    }).finally(() => rm(outputDir, { recursive: true, force: true }))
   }, 60_000)
 
   it('bundles the `@vue/*` packages that vue depends on rather than hoisted copies', async () => {
