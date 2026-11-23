@@ -55,6 +55,7 @@ export const sharedPrerenderCache: SharedPrerenderCache | null = import.meta.pre
           const resolved = await value
           await useStorage('internal:nuxt:prerender:shared').setItem(key, resolved as any)
         } catch {
+          sharedPrerenderKeys.delete(key)
           // Rejections propagate through the original promise; only resolved values are persisted.
         } finally {
           sharedPrerenderPromises!.delete(key)
