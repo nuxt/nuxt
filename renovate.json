@@ -44,6 +44,19 @@
       ]
     },
     {
+      "description": "The `nitropack` catalog on 4.x keeps rou3 0.9, the pattern syntax Nuxt uses to match Nitro 2 route rules. rou3 0.10 and later follow URLPattern syntax.",
+      "matchBaseBranches": [
+        "4.x"
+      ],
+      "matchDepTypes": [
+        "pnpm.catalog.nitropack"
+      ],
+      "matchPackageNames": [
+        "rou3"
+      ],
+      "allowedVersions": "<0.10.0"
+    },
+    {
       "description": "CI pins Node.js to the minimum version in `engines`, so it is bumped by hand.",
       "matchManagers": [
         "github-actions"
