@@ -133,6 +133,16 @@ describe('nitro config', () => {
     })
   })
 
+  it.for([
+    { payloadExtraction: 'client' as const, expected: true },
+    { payloadExtraction: false, expected: false },
+  ])('renders cached payloads at runtime only when payload extraction is enabled ($payloadExtraction)', async ({ payloadExtraction, expected }) => {
+    await withNitro({ experimental: { payloadExtraction }, routeRules: { '/**': { swr: 60 } } }, async (_nitro, nitroConfig) => {
+      const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
+      expect(await rendererConfig()).toContain(`export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${expected}`)
+    })
+  })
+
   it('emits valid rest-of-path URLPatterns for noScripts wildcard rules', async () => {
     await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
       const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>

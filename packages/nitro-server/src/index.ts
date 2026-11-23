@@ -266,7 +266,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         NUXT_EARLY_404: String(early404Patterns.length > 0),
         NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),
         NUXT_SPA_PAGE_MATCHER: compilePageMatcher(spaPageSources, !nuxt.options.router.options.sensitive),
-        NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)),
+        NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(!!nuxt.options.experimental.payloadExtraction && nitro.routing.routeRules.routes.some(r => r.data.isr || r.data.cache)),
         spaTemplate: JSON.stringify(await resolveSpaLoadingTemplate(nuxt)),
         componentIslands: '_componentIslands',
         componentIslandsActive: '_componentIslandsActive',

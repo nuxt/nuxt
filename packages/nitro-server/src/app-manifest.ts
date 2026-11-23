@@ -118,9 +118,14 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
   })
 }
 
+const CATCH_ALL_RE = /(?:\/\*\*(?::[^/]+)?|:\w+[*+])$/
+const TRAILING_SLASHES_RE = /\/+$/
+const PAYLOAD_RULE_KEYS = ['isr', 'cache', 'redirect', 'proxy', 'headers', 'cors']
+
 /**
- * Add a `_payload.json` route rule for every route whose payload is extracted: a cached
- * route, and in development a prerendered one.
+ * Add a `_payload.json` route rule for every route that sets its own caching, redirect, proxy,
+ * headers or cors, is rendered only on the client, or in development is prerendered, so its
+ * payload URL resolves to the same server rules as the route.
  */
 export function setupPayloadRouteRules (nuxt: Nuxt): void {
   if (nuxt.options.dev) {
@@ -137,20 +142,21 @@ export function setupPayloadRouteRules (nuxt: Nuxt): void {
   nuxt.hook('nitro:init', (nitro) => {
     nitro.hooks.hook('build:before', (nitro) => {
       const updatedRules: Record<string, Record<string, any>> = {}
-      for (const { route, data: value } of mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)) {
-        if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
-          if (value.ssr === false) { continue }
-          if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-            const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
-            const defaults = { ssr: true } as Record<string, any>
-            for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
-              if (key in value) {
-                defaults[key] = value[key as keyof typeof value]
-              }
-            }
-            updatedRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
-          }
+      const fold = !nuxt.options.router.options.sensitive
+      const routes = mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)
+      const matcher = createNormalizedRouteRulesRouter(routes, '', fold)
+      const resolveRules = (path: string) => defu({}, ...matcher.matchAll('', normalizeRouteRuleLookupPath(path, fold)).reverse()) as Record<string, any>
+      for (const { route, data: value } of routes) {
+        if (route === '/__nuxt_error' || CATCH_ALL_RE.test(route) || route.endsWith('/_payload.json')) { continue }
+        const payloadKey = route.replace(TRAILING_SLASHES_RE, '') + '/_payload.json'
+        const ssr = defu(value, resolveRules(route)).ssr !== false
+        const keys = [...PAYLOAD_RULE_KEYS, ...nuxt.options.dev && ssr ? ['prerender'] : []].filter(key => key in value)
+        if (!keys.length && (ssr || resolveRules(payloadKey).ssr === false)) { continue }
+        const defaults: Record<string, any> = { ssr }
+        for (const key of keys) {
+          defaults[key] = value[key]
         }
+        updatedRules[payloadKey] = defu(nitro.options.routeRules[payloadKey], defaults)
       }
       if (Object.keys(updatedRules).length === 0) { return }
       nitro.options.routeRules = { ...nitro.options.routeRules, ...updatedRules }
