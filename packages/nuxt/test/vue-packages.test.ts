@@ -105,6 +105,7 @@ describe('VuePackagesPlugin', async () => {
 
   it('resolves vue and its dependencies along the dependency chain', () => {
     expect(packages.version).toBe('1.0.0')
+    expect(packages.fromApp).toBe(false)
     expect(Object.fromEntries(Object.entries(packages.dirs).map(([name, dir]) => [name, dir.slice(rootDir.length)]))).toStrictEqual({
       'vue': '/node_modules/.pnpm/vue@1.0.0/node_modules/vue',
       '@vue/runtime-dom': '/node_modules/.pnpm/@vue+runtime-dom@1.0.0/node_modules/@vue/runtime-dom',
@@ -166,6 +167,7 @@ describe('VuePackagesPlugin', async () => {
 
     it('resolves the project\'s copy of vue and its dependencies', () => {
       expect(packages.version).toBe('3.0.0')
+      expect(packages.fromApp).toBe(true)
       expect(Object.fromEntries(Object.entries(packages.dirs).map(([name, dir]) => [name, dir.slice(rootDir.length)]))).toStrictEqual({
         'vue': '/node_modules/.pnpm/vue@3.0.0/node_modules/vue',
         '@vue/runtime-dom': '/node_modules/.pnpm/@vue+runtime-dom@3.0.0/node_modules/@vue/runtime-dom',

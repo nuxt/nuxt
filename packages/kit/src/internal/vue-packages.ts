@@ -26,6 +26,8 @@ export interface VuePackages {
   dirs: Partial<Record<VuePackageName, string>>
   /** The version of `vue`, when it resolves. */
   version?: string
+  /** Whether `vue` resolved from a copy other than the one Nuxt depends on. */
+  fromApp: boolean
 }
 
 const vuePackagesCache = new WeakMap<Nuxt, VuePackages>()
@@ -49,7 +51,11 @@ export function resolveVuePackages (nuxt: Nuxt): VuePackages {
         dirs[name] = dir
       }
     }
-    packages = { dirs, version: dirs.vue && readVersion(dirs.vue) }
+    packages = {
+      dirs,
+      version: dirs.vue && readVersion(dirs.vue),
+      fromApp: !!dirs.vue && dirs.vue !== resolvePackageDir('vue', nuxt.options.appDir),
+    }
     vuePackagesCache.set(nuxt, packages)
   }
   return packages

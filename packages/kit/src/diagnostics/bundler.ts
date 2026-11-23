@@ -213,5 +213,10 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Add a root `tsconfig.json` that references the generated Nuxt tsconfigs, or run `nuxt prepare` to generate them.',
       docs: false,
     },
+    NUXT_B7042: {
+      why: (p: { version: string, expected: string }) => `Nuxt is built against \`vue@${p.expected}\`, but the app resolves \`vue@${p.version}\`.`,
+      fix: 'Run `npx nuxt upgrade --dedupe` to update `vue` alongside Nuxt, or bump `vue` yourself.',
+      docs: false,
+    },
   },
 })
