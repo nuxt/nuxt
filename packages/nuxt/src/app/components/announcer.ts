@@ -26,7 +26,13 @@ const visuallyHidden = {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function defineAnnouncerComponent (name: string, className: string, atomic: boolean, useAnnouncer: (opts: NuxtAnnouncerOpts) => Omit<NuxtAnnouncer, '_cleanup'>, separateRegions = false): DefineSetupFnComponent<AnnouncerProps, {}, AnnouncerSlots> {
+export function defineAnnouncerComponent (
+  name: string,
+  className: string,
+  atomic: boolean,
+  useAnnouncer: (opts: NuxtAnnouncerOpts) => Omit<NuxtAnnouncer, '_cleanup'>,
+  separateRegions = false,
+): DefineSetupFnComponent<AnnouncerProps, {}, AnnouncerSlots> {
   return defineComponent({
     name,
     props: {
@@ -55,15 +61,16 @@ export function defineAnnouncerComponent (name: string, className: string, atomi
       expose({ set, polite, assertive, message, politeness })
 
       if (separateRegions) {
-        const renderRegion = (urgency: AnnouncerPoliteness) => {
+        const regionRoles = { polite: 'status', assertive: 'alert', off: undefined }
+
+        const renderRegion = (urgency: AnnouncerPoliteness, allRegionsEmpty: boolean) => {
           const regionMessage = _regions[urgency].value
-          const allRegionsEmpty = Object.values(_regions).every(region => !region.value)
           const slot = slots.default
           const showSlot = regionMessage || (allRegionsEmpty && urgency === politeness.value)
           const content = slot && showSlot ? slot({ message: regionMessage }) : regionMessage
 
           return h('span', {
-            'role': urgency === 'polite' ? 'status' : urgency === 'assertive' ? 'alert' : undefined,
+            'role': regionRoles[urgency],
             'aria-live': urgency,
             'aria-atomic': props.atomic,
             'style': visuallyHidden,
@@ -71,8 +78,13 @@ export function defineAnnouncerComponent (name: string, className: string, atomi
         }
 
         // Keep both live regions mounted so assistive technology can observe changes.
-        return () => h('span', { class: className, style: { position: 'absolute' } },
-          (['polite', 'assertive', 'off'] as const).map(renderRegion))
+        return () => {
+          const allRegionsEmpty = Object.values(_regions).every(region => !region.value)
+          const children = (['polite', 'assertive', 'off'] as const)
+            .map(urgency => renderRegion(urgency, allRegionsEmpty))
+
+          return h('span', { class: className, style: { position: 'absolute' } }, children)
+        }
       }
 
       return () => h('span', {
