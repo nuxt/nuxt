@@ -1,6 +1,10 @@
 import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
+const builderLoadFix = (p: { builder: string, installCommand: string, installed: boolean }) => p.installed
+  ? `\`${p.builder}\` is installed, so the error above comes from loading it. Fix that error: a package it imports may be missing, or at a version it does not support.`
+  : `Run \`${p.installCommand}\` to install it.`
+
 /**
  * B1xxx
  * Build / compilation diagnostics.
@@ -92,13 +96,13 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B1017: {
-      why: (p: { builder: string }) => `Loading \`${p.builder}\` builder failed.`,
-      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
+      why: (p: { builder: string, error: string }) => `Loading \`${p.builder}\` builder failed: ${p.error}`,
+      fix: builderLoadFix,
       docs: false,
     },
     NUXT_B1018: {
-      why: (p: { builder: string }) => `Loading \`${p.builder}\` server builder failed.`,
-      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
+      why: (p: { builder: string, error: string }) => `Loading \`${p.builder}\` server builder failed: ${p.error}`,
+      fix: builderLoadFix,
       docs: false,
     },
     NUXT_B1019: {
