@@ -40,9 +40,11 @@ export function findUnsafeIslandPropKey (value: unknown): UnsafeIslandPropKey | 
  *   SSR attribute name cache, so every later render with dynamic attributes throws.
  *
  * A `^`-prefixed key is matched too, since the SSR renderer strips that prefix from attribute
- * names. A declared prop is the island's own API and is left alone, as is any island that opts
- * out of attribute inheritance. Only the top level is checked; props the author forwards
- * elsewhere are their responsibility.
+ * names. A declared prop is the island's own API and is left alone, as is an `as` sent to an
+ * island that opts out of attribute inheritance. `hasOwnProperty` is rejected even then, since
+ * such islands commonly forward `$attrs` to an inner element and the key has no legitimate use
+ * as an attribute. Only the top level is checked; props the author forwards elsewhere are their
+ * responsibility.
  *
  * @internal
  */
@@ -51,14 +53,15 @@ export function findReservedRootIslandPropKey (value: unknown, component: Compon
     return
   }
   const options = component as { props?: string[] | Record<string, unknown>, inheritAttrs?: boolean }
-  if (options.inheritAttrs === false) {
-    return
-  }
   for (const key of Object.keys(value)) {
     const attr = (key[0] === '^' ? key.slice(1) : key) as ReservedRootIslandPropKey
-    if (RESERVED_ROOT_ISLAND_PROP_KEYS.includes(attr) && !declaresProp(options.props, key)) {
-      return attr
+    if (!RESERVED_ROOT_ISLAND_PROP_KEYS.includes(attr) || declaresProp(options.props, key)) {
+      continue
     }
+    if (attr === 'as' && options.inheritAttrs === false) {
+      continue
+    }
+    return attr
   }
 }
 

@@ -96,7 +96,9 @@ export const renderDiagnostics = !import.meta.dev
         },
         NUXT_E4018: {
           why: (p: { name: string, key: string }) => `Island \`${p.name}\` was sent a top-level \`${p.key}\` prop it does not declare. An undeclared prop falls through as an attribute onto the island's root, where \`${p.key}\` is reserved, so the request was rejected.`,
-          fix: (p: { key: string }) => `Declare \`${p.key}\` as a prop on the island, or set \`inheritAttrs: false\` so request input cannot reach the root element.`,
+          fix: (p: { key: string }) => p.key === 'as'
+            ? `Declare \`${p.key}\` as a prop on the island, or set \`inheritAttrs: false\` so request input cannot reach the root element.`
+            : `Declare \`${p.key}\` as a prop on the island if it is part of the island's API.`,
         },
         NUXT_E4019: {
           why: (p: { scopeId: string }) => `\`<NuxtIsland>\` was passed a \`scopeId\` prop that is not a Vue scope attribute (\`${p.scopeId}\`) and it was ignored. The value is inserted into the island's opening tag, so only \`data-v-\` attributes are accepted.`,

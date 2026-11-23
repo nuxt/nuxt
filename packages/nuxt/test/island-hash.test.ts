@@ -220,9 +220,15 @@ describe('findReservedRootIslandPropKey', () => {
     expect(findReservedRootIslandPropKey({ title: 'ok', hasOwnProperty: 'x' }, { props: ['title'] })).toBe('hasOwnProperty')
   })
 
-  it('allows `hasOwnProperty` when the island declares it or opts out of attribute inheritance', () => {
+  it('returns `hasOwnProperty` when the island opts out of attribute inheritance', () => {
+    expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, { inheritAttrs: false })).toBe('hasOwnProperty')
+    expect(findReservedRootIslandPropKey({ '^hasOwnProperty': 'x' }, { inheritAttrs: false })).toBe('hasOwnProperty')
+    expect(findReservedRootIslandPropKey({ as: 'div', hasOwnProperty: 'x' }, { inheritAttrs: false })).toBe('hasOwnProperty')
+  })
+
+  it('allows `hasOwnProperty` when the island declares it', () => {
     expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, { props: ['hasOwnProperty'] })).toBeUndefined()
-    expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, { inheritAttrs: false })).toBeUndefined()
+    expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, { props: { hasOwnProperty: String }, inheritAttrs: false })).toBeUndefined()
   })
 
   it('does not match keys that merely contain `as`', () => {

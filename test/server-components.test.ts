@@ -733,9 +733,11 @@ describe.skipIf(!oncePerServer)('reserved island prop keys', () => {
   })
 
   it('rejects a top-level `hasOwnProperty` prop and keeps rendering attributes afterwards', async () => {
-    for (const key of ['hasOwnProperty', '^hasOwnProperty']) {
-      const res = await fetch(islandURL('CustomElementRoot', { props: { [key]: 'x' } }))
-      expect(res.status).toBe(400)
+    for (const name of ['CustomElementRoot', 'ForwardedAttrsRoot']) {
+      for (const key of ['hasOwnProperty', '^hasOwnProperty']) {
+        const res = await fetch(islandURL(name, { props: { [key]: 'x' } }))
+        expect(res.status).toBe(400)
+      }
     }
 
     const result = await $fetch<NuxtIslandResponse>(islandURL('CustomElementRoot', { props: { title: 'ok' } }))
