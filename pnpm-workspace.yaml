@@ -24,7 +24,7 @@ overrides:
   fork-ts-checker-webpack-plugin>minimatch: "^11.0.9"
   nuxt: "workspace:*"
   oxc-parser: "0.159.0"
-  rolldown: "1.3.3"
+  rolldown: "1.2.19"
   vite: "8.3.8"
   vue: "3.5.46"
 
@@ -121,8 +121,8 @@ catalogs:
   vite:
     magic-string: ^1.4.5
     oxc-walker: ^1.1.1
-    # needs to match vite's own `~1.2.18` pin
-    rolldown: ~1.3.3
+    # needs to match vite's own `~1.2.19` pin
+    rolldown: ~1.2.19
     rolldown-string: ^0.3.1
     # resolution is pinned via the vite override above
     vite: ^8.3.8
