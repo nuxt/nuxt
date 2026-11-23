@@ -41,7 +41,9 @@ describe('nitro v2 runtime storage mounts', () => {
   it('keeps the mounts and cache driver a project declares', () => {
     const { mounts } = createProject()
     const nitroConfig: NitroConfig = {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       storage: { data: { driver: 'redis' } },
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       devStorage: { '/build/': { driver: 'memory' } },
       $development: { cache: { driver: 'fs' } },
       $prerender: { kv: { cache: { driver: 'memory' } } },
