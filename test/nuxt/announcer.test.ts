@@ -180,6 +180,51 @@ describe('NuxtRouteAnnouncer', () => {
     el.unmount()
   })
 
+  it('keeps direct ref updates made before the component mounts', async () => {
+    const el = await mountSuspended({
+      setup () {
+        const announcer = useAnnouncer()
+        announcer.message.value = 'Ready before mount'
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    expect(el.get('[role="status"]').text()).toBe('Ready before mount')
+    el.unmount()
+  })
+
+  it('does not restore an old repeated message after a direct ref update', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Old')
+    announcer.polite('Old')
+    announcer.message.value = 'New'
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('New')
+    el.unmount()
+  })
+
+  it('does not copy an existing announcement when the politeness ref changes', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Draft saved')
+    announcer.politeness.value = 'assertive'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Draft saved')
+    expect(el.get('[role="alert"]').text()).toBe('')
+    el.unmount()
+  })
+
   it('restores a repeated message without losing an announcement in the other region', async () => {
     let announcer!: ReturnType<typeof useAnnouncer>
     const el = await mountSuspended({
@@ -254,9 +299,10 @@ describe('NuxtRouteAnnouncer', () => {
 
     await el.get('[data-testid="polite-button"]').trigger('click')
     expect(el.get('[role="status"]').text()).toBe('')
-    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Item saved'))
-
-    expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    await vi.waitFor(() => {
+      expect(el.get('[role="status"]').text()).toBe('Item saved')
+      expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    })
 
     el.unmount()
   })
@@ -283,9 +329,10 @@ describe('NuxtRouteAnnouncer', () => {
     await button.trigger('click')
     await button.trigger('click')
     expect(el.get('[role="status"]').text()).toBe('')
-    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Item saved'))
-
-    expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    await vi.waitFor(() => {
+      expect(el.get('[role="status"]').text()).toBe('Item saved')
+      expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    })
 
     el.unmount()
   })

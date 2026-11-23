@@ -1,4 +1,4 @@
-import { computed, defineComponent, h, watch } from 'vue'
+import { computed, defineComponent, h } from 'vue'
 import type { DefineSetupFnComponent, SlotsType, VNode } from 'vue'
 import type { AnnouncerPoliteness, NuxtAnnouncer, NuxtAnnouncerOpts } from '../composables/announcer'
 
@@ -40,7 +40,7 @@ export function defineAnnouncerComponent (name: string, className: string, atomi
       },
     },
     setup (props, { slots, expose }) {
-      const { set, polite, assertive, message, politeness, _regions, _isSetting } = useAnnouncer({ politeness: props.politeness })
+      const { set, polite, assertive, message, politeness, _regions } = useAnnouncer({ politeness: props.politeness })
 
       const role = computed(() => {
         if (politeness.value === 'assertive') {
@@ -55,19 +55,24 @@ export function defineAnnouncerComponent (name: string, className: string, atomi
       expose({ set, polite, assertive, message, politeness })
 
       if (separateRegions) {
-        watch([message, politeness], () => {
-          if (!_isSetting()) { _regions[politeness.value].value = message.value }
-        }, { flush: 'sync' })
+        const renderRegion = (urgency: AnnouncerPoliteness) => {
+          const regionMessage = _regions[urgency].value
+          const allRegionsEmpty = Object.values(_regions).every(region => !region.value)
+          const slot = slots.default
+          const showSlot = regionMessage || (allRegionsEmpty && urgency === politeness.value)
+          const content = slot && showSlot ? slot({ message: regionMessage }) : regionMessage
 
-        return () => h('span', { class: className, style: { position: 'absolute' } },
-          (['polite', 'assertive', 'off'] as const).map(urgency => h('span', {
+          return h('span', {
             'role': urgency === 'polite' ? 'status' : urgency === 'assertive' ? 'alert' : undefined,
             'aria-live': urgency,
             'aria-atomic': props.atomic,
             'style': visuallyHidden,
-          }, slots.default && (_regions[urgency].value || (urgency === politeness.value && !Object.values(_regions).some(region => region.value)))
-            ? slots.default({ message: _regions[urgency].value })
-            : _regions[urgency].value)))
+          }, content)
+        }
+
+        // Keep both live regions mounted so assistive technology can observe changes.
+        return () => h('span', { class: className, style: { position: 'absolute' } },
+          (['polite', 'assertive', 'off'] as const).map(renderRegion))
       }
 
       return () => h('span', {

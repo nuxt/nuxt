@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentScope, onScopeDispose, shallowRef } from 'vue'
+import { effectScope, getCurrentScope, onScopeDispose, shallowRef, watch } from 'vue'
 import { useNuxtApp } from '../nuxt'
 
 export type AnnouncerPoliteness = 'assertive' | 'polite' | 'off'
@@ -16,7 +16,6 @@ export type NuxtAnnouncer = {
   polite: (message: string) => void
   assertive: (message: string) => void
   _regions: Record<AnnouncerPoliteness, Ref<string>>
-  _isSetting: () => boolean
   _cleanup: () => void
 }
 
@@ -30,9 +29,23 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
   let updating = false
   let restore: ReturnType<typeof setTimeout> | undefined
   let pendingMessage: string | undefined
+  const scope = separateRegions ? effectScope(true) : undefined
+
+  if (scope) {
+    // A direct ref update replaces pending repetitions, just like set().
+    scope.run(() => watch(message, (value) => {
+      if (updating) { return }
+      clearTimeout(restore)
+      pendingMessage = undefined
+      clearTimeout(regionTimers[politeness.value])
+      delete pendingRegions[politeness.value]
+      regions[politeness.value].value = value
+    }, { flush: 'sync' }))
+  }
 
   function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
     if (separateRegions) {
+      // Repeat messages independently so one urgency cannot cancel the other.
       clearTimeout(regionTimers[politenessSetting])
       const region = regions[politenessSetting]
       if (import.meta.client && messageValue && (region.value === messageValue || pendingRegions[politenessSetting] === messageValue)) {
@@ -74,11 +87,11 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
     message,
     politeness,
     _regions: regions,
-    _isSetting: () => updating,
     set,
     polite: msg => set(msg, 'polite'),
     assertive: msg => set(msg, 'assertive'),
     _cleanup () {
+      scope?.stop()
       for (const urgency of ['polite', 'assertive', 'off'] as const) {
         clearTimeout(regionTimers[urgency])
         regions[urgency].value = ''
