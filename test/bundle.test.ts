@@ -4,7 +4,7 @@ import { gzipSync } from 'node:zlib'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
-import { join } from 'pathe'
+import { dirname, join } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
@@ -182,13 +182,31 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
   it('loads unhead with the default error pages instead of the client entry', async () => {
     const clientDir = join(rootDir, '.output/public')
-    const files = await glob(['**/*.js'], { cwd: clientDir })
-    const entryFile = files.find(file => /(?:^|\/)entry\.js$/.test(file))!
-    const entry = await fsp.readFile(join(clientDir, entryFile), 'utf8')
-    const lazyChunks = await Promise.all(files.filter(file => file !== entryFile).map(file => fsp.readFile(join(clientDir, file), 'utf8')))
+    const chunks = new Map(await Promise.all(
+      (await glob(['**/*.js'], { cwd: clientDir }))
+        .map(async file => [file, await fsp.readFile(join(clientDir, file), 'utf8')] as const),
+    ))
 
-    expect(entry).not.toContain('tags:afterResolve')
-    expect(lazyChunks.join('\n')).toContain('tags:afterResolve')
+    // the entry and every chunk it imports statically are loaded before an error page can render
+    const entries = [...chunks.keys()].filter(file => /(?:^|\/)entry\.js$/.test(file))
+    expect(entries).not.toHaveLength(0)
+
+    const eager = new Set<string>()
+    const queue = [...entries]
+    while (queue.length) {
+      const file = queue.pop()!
+      if (eager.has(file)) { continue }
+      eager.add(file)
+      for (const [, source] of chunks.get(file)!.matchAll(/\b(?:from|import)\s*["']\.\/([^"']+\.js)["']/g)) {
+        queue.push(join(dirname(file), source!))
+      }
+    }
+
+    const eagerlyLoadedWithHead = [...eager].filter(file => chunks.get(file)!.includes('tags:afterResolve'))
+    const lazilyLoadedWithHead = [...chunks.keys()].filter(file => !eager.has(file) && chunks.get(file)!.includes('tags:afterResolve'))
+
+    expect(eagerlyLoadedWithHead).toEqual([])
+    expect(lazilyLoadedWithHead).not.toHaveLength(0)
 
     const server = (await Promise.all(
       (await glob(['**/*.mjs'], { cwd: join(rootDir, '.output/server') }))
