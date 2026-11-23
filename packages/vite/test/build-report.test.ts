@@ -3,8 +3,9 @@ import { rm } from 'node:fs/promises'
 import { performance } from 'node:perf_hooks'
 import { fileURLToPath } from 'node:url'
 import { join } from 'pathe'
-import { afterAll, describe, expect, it } from 'vitest'
+import { afterAll, describe, expect, it, vi } from 'vitest'
 import { createHooks } from 'hookable'
+import { logger } from '@nuxt/kit'
 import type { Nuxt, NuxtBuildEnvironment, NuxtBuildEnvironmentResult, NuxtConfig, NuxtHooks } from '@nuxt/schema'
 import type { Plugin } from 'vite'
 
@@ -79,6 +80,21 @@ describe('build report', () => {
     const ssr = reported.get('ssr')!
     expect(client.doneAt).toBeLessThanOrEqual(ssr.startedAt)
     expect(new Set(logLevels)).toEqual(new Set(['error']))
+  }, 240 * 1000)
+
+  it('logs no build progress of its own', async () => {
+    const messages: string[] = []
+    const capture = (message: unknown) => { messages.push(String(message)) }
+    const info = vi.spyOn(logger, 'info').mockImplementation(capture)
+    const success = vi.spyOn(logger, 'success').mockImplementation(capture)
+    try {
+      await build({ logLevel: 'info' })
+    } finally {
+      info.mockRestore()
+      success.mockRestore()
+    }
+
+    expect(messages.filter(message => /^Building (?:client|server)\.\.\.$|^(?:Client|Server) built in \d+ms$/.test(message))).toEqual([])
   }, 240 * 1000)
 
   it.each([
