@@ -7,16 +7,24 @@ import type { Router } from 'vue-router'
 
 const nuxtApp = {
   hooks: { callHook: () => Promise.resolve() },
-  ssrContext: {},
+  ssrContext: {} as { islandContext?: object },
   $config: { app: { baseURL: '/' }, public: {} },
   $router: undefined as Router | undefined,
 }
 
-vi.mock('#app/nuxt', () => ({
-  useRuntimeConfig: () => nuxtApp.$config,
-  useNuxtApp: () => nuxtApp,
-  tryUseNuxtApp: () => nuxtApp,
-}))
+vi.mock('#app/nuxt', async () => {
+  const { getCurrentInstance } = await import('vue')
+  return {
+    useRuntimeConfig: () => nuxtApp.$config,
+    // the app cannot be resolved during rendering
+    useNuxtApp: () => {
+      const instance = getCurrentInstance() as (ComponentInternalInstance & { render?: unknown }) | null
+      if (!instance || instance.render) { throw new Error('The Nuxt instance is not available') }
+      return nuxtApp
+    },
+    tryUseNuxtApp: () => nuxtApp,
+  }
+})
 
 const { defineNuxtLink } = await import('#app/components/nuxt-link')
 const { ssrRenderNuxtLink } = await import('#app/components/nuxt-link-ssr-render')
@@ -69,6 +77,7 @@ async function renderLink (testCase: Case, server: boolean, buffer = false) {
         setup: () => () => h('div', [h(Link as any, props, slot)]),
       }))
   app.use(router)
+  ;(app as unknown as { $nuxt: typeof nuxtApp }).$nuxt = nuxtApp
 
   return renderToString(app)
 }
@@ -195,6 +204,29 @@ describe('nuxt-link ssr', () => {
     const slot = vi.fn(() => 'text')
     await renderLink({ name: 'slot', props: { to: '/parent' }, slot }, true, true)
     expect(slot).toHaveBeenCalledOnce()
+  })
+
+  it('renders an internal link without the Nuxt instance during the render', async () => {
+    const testCase = { name: 'no instance at render', props: { to: '/parent' } }
+    for (const html of [await renderLink(testCase, true), await renderLink(testCase, true, true)]) {
+      expect(html).toContain('<a href="/parent">text</a>')
+    }
+  })
+
+  it('marks an internal link for island navigation', async () => {
+    nuxtApp.ssrContext.islandContext = {}
+    try {
+      const prefetched = { name: 'island link', props: { to: '/parent', prefetchOn: 'visibility' } }
+      for (const html of [
+        await renderLink(prefetched, true),
+        await renderLink(prefetched, true, true),
+        await renderLink({ ...prefetched, attrs: { id: 'x' } }, true, true),
+      ]) {
+        expect(html).toContain('data-internal="prefetch"')
+      }
+    } finally {
+      delete nuxtApp.ssrContext.islandContext
+    }
   })
 
   describe('custom', () => {

@@ -334,9 +334,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
    * Render an internal link as a plain anchor, matching the markup `<RouterLink>` produces
    * for the same location.
    */
-  function renderStaticInternalLink (props: NuxtLinkProps, slots: { default?: (props?: any) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+  function renderStaticInternalLink (props: NuxtLinkProps, slots: { default?: (props?: any) => VNode[] }, router: Router, rawTo: RouteLocationRaw, nuxtApp: NuxtApp | undefined) {
     const link = resolveStaticLink(props, router, rawTo)
-    return h('a', staticInternalLinkAttrs(props, router, link), slots.default?.(link))
+    return h('a', staticInternalLinkAttrs(props, router, link, nuxtApp), slots.default?.(link))
   }
 
   function staticInternalLinkClasses (props: NuxtLinkProps, router: Router): [active: string, exactActive: string] {
@@ -346,9 +346,9 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     ]
   }
 
-  function staticInternalLinkDataInternal (props: NuxtLinkProps): string | undefined {
+  function staticInternalLinkDataInternal (props: NuxtLinkProps, nuxtApp: NuxtApp | undefined): string | undefined {
     let dataInternal: string | undefined
-    if (componentIslands && useNuxtApp().ssrContext?.islandContext) {
+    if (componentIslands && nuxtApp?.ssrContext?.islandContext) {
       const flags: string[] = []
       if (props.replace) { flags.push('replace') }
       const prefetchOnVisibility = typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : (props.prefetchOn?.visibility ?? options.prefetchOn?.visibility)
@@ -358,14 +358,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     return dataInternal
   }
 
-  function staticInternalLinkAttrs (props: NuxtLinkProps, router: Router, link: ReturnType<typeof resolveStaticLink>): Record<string, unknown> {
+  function staticInternalLinkAttrs (props: NuxtLinkProps, router: Router, link: ReturnType<typeof resolveStaticLink>, nuxtApp: NuxtApp | undefined): Record<string, unknown> {
     const linkClass = staticInternalLinkClass(props, router, link)
     return {
       'aria-current': link.isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
       'href': link.href,
       ...linkClass && { class: linkClass },
       'rel': props.rel || undefined,
-      'data-internal': staticInternalLinkDataInternal(props),
+      'data-internal': staticInternalLinkDataInternal(props, nuxtApp),
     }
   }
 
@@ -377,8 +377,8 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       : (activeClass !== exactActiveClass ? activeClass : '')
   }
 
-  function staticInternalLinkOpenTag (props: NuxtLinkProps, router: Router, link: ReturnType<typeof resolveStaticLink>): string {
-    const dataInternal = staticInternalLinkDataInternal(props)
+  function staticInternalLinkOpenTag (props: NuxtLinkProps, router: Router, link: ReturnType<typeof resolveStaticLink>, nuxtApp: NuxtApp | undefined): string {
+    const dataInternal = staticInternalLinkDataInternal(props, nuxtApp)
     let tag = '<a'
     if (link.isExactActive) { tag += ` aria-current="${escapeHtml(props.ariaCurrentValue ?? 'page')}"` }
     tag += ` href="${escapeHtml(link.href)}"`
@@ -399,13 +399,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     const props = directRenderProps(rawProps)
     const rawTo = props?.to
     if (!props || !rawTo || !isStaticInternalLink(props, rawTo, props.attrs?.download !== undefined)) { return }
-    const router = ((parent.appContext.app as { $nuxt?: NuxtApp }).$nuxt?.$router ?? useRouter()) as Router
+    const nuxtApp = (parent.appContext.app as { $nuxt?: NuxtApp }).$nuxt
+    const router = (nuxtApp?.$router ?? useRouter()) as Router
     const link = resolveStaticLink(props, router, rawTo)
     return {
       link,
-      openTag: props.class || props.style || props.attrs ? undefined : staticInternalLinkOpenTag(props, router, link),
+      openTag: props.class || props.style || props.attrs ? undefined : staticInternalLinkOpenTag(props, router, link, nuxtApp),
       attrs: () => {
-        const attrs = staticInternalLinkAttrs(props, router, link)
+        const attrs = staticInternalLinkAttrs(props, router, link, nuxtApp)
         if (props.attrs) { Object.assign(attrs, props.attrs) }
         if (props.class) { attrs.class = [attrs.class, props.class] }
         if (props.style) { attrs.style = props.style }
@@ -523,6 +524,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     useLink: useNuxtLink,
     setup (props, { slots, attrs }) {
       const router = useRouter()
+      const nuxtApp = import.meta.server && componentIslands ? useNuxtApp() : undefined
 
       // On the server an internal link resolves to static markup, so it is rendered directly:
       // no `<RouterLink>` instance, no reactive link state and none of the client-only
@@ -536,7 +538,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           if (import.meta.dev) {
             checkNuxtLinkNesting()
           }
-          return () => renderStaticInternalLink(props, slots, router, rawTo)
+          return () => renderStaticInternalLink(props, slots, router, rawTo, nuxtApp)
         }
       }
 
@@ -669,7 +671,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         })
 
         if (!isExternal.value && !download.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
-          const routerLinkProps: RouterLinkProps & PublicProps & AnchorHTMLAttributes & { 'data-internal'?: string } = {
+          const routerLinkProps: RouterLinkProps & PublicProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
@@ -694,15 +696,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               }
             }
             routerLinkProps.rel = props.rel || undefined
-
-            if (import.meta.server && componentIslands && useNuxtApp().ssrContext?.islandContext) {
-              // marks internal links within island HTML for client-side navigation
-              const flags: string[] = []
-              if (props.replace) { flags.push('replace') }
-              const prefetchOnVisibility = typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : (props.prefetchOn?.visibility ?? options.prefetchOn?.visibility)
-              if (prefetchOnVisibility && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true) { flags.push('prefetch') }
-              routerLinkProps['data-internal'] = flags.join(' ')
-            }
           }
 
           // Internal link
