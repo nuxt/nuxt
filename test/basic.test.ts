@@ -2598,6 +2598,23 @@ describe.skipIf(isWindows)('payload rendering', () => {
     expect(data.data).toBeDefined()
     expect(data.data['swr-in-spa-data']).toEqual({ ok: true })
   })
+
+  it.skipIf(!once)('should apply the redirect, proxy and headers rules of a page to its payload url', async () => {
+    for (const path of ['/payload-rules/redirect', '/payload-rules/redirect/_payload.json']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.status, path).toBe(307)
+      expect(res.headers.get('location'), path).toBe('/')
+    }
+    for (const path of ['/payload-rules/proxy', '/payload-rules/proxy/_payload.json']) {
+      expect(await $fetch<string>(path), path).toBe('Hello API')
+    }
+    for (const path of ['/payload-rules/headers', '/payload-rules/headers/_payload.json']) {
+      const res = await fetch(path)
+      expect(res.status, path).toBe(200)
+      expect(res.headers.get('x-payload-rules'), path).toBe('applied')
+      expect(await res.text(), path).toContain('payload-rules-headers')
+    }
+  })
 })
 
 describe.skipIf(!oncePerContext)('async context', () => {
