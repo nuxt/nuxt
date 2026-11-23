@@ -150,6 +150,72 @@ describe('NuxtRouteAnnouncer', () => {
     el.unmount()
   })
 
+  it('keeps polite and assertive announcements in separate live regions', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Draft saved')
+    announcer.assertive('Upload failed')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Draft saved')
+    expect(el.get('[role="alert"]').text()).toBe('Upload failed')
+    el.unmount()
+  })
+
+  it('updates the live region when the public message ref changes', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.message.value = 'Direct update'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Direct update')
+    el.unmount()
+  })
+
+  it('restores a repeated message without losing an announcement in the other region', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    expect(el.get('[role="alert"]').text()).toBe('Failed')
+    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Saved'))
+    el.unmount()
+  })
+
+  it('renders custom slot content for each active region', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer, null, { default: ({ message }: { message: string }) => h('strong', message) })
+      },
+    })
+    expect(el.findAll('strong')).toHaveLength(1)
+    expect(el.get('[role="status"] strong').text()).toBe('')
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    expect(el.get('[role="status"] strong').text()).toBe('Saved')
+    expect(el.get('[role="alert"] strong').text()).toBe('Failed')
+    expect(el.findAll('strong')).toHaveLength(2)
+    el.unmount()
+  })
+
   it('`useAnnouncer` should announce assertive message', async () => {
     const el = await mountSuspended({
       setup () {
