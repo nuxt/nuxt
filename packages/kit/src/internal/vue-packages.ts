@@ -31,8 +31,9 @@ export interface VuePackages {
 const vuePackagesCache = new WeakMap<Nuxt, VuePackages>()
 
 /**
- * The single copy of Vue an app is built with: `vue` as resolved from Nuxt, and each `@vue/*`
- * runtime package as resolved from the package that depends on it.
+ * The single copy of Vue an app is built with: `vue` as resolved from the app, or from Nuxt when
+ * the app does not depend on it itself, and each `@vue/*` runtime package as resolved from the
+ * package that depends on it.
  *
  * @internal
  */
@@ -40,9 +41,10 @@ export function resolveVuePackages (nuxt: Nuxt): VuePackages {
   let packages = vuePackagesCache.get(nuxt)
   if (!packages) {
     const dirs: VuePackages['dirs'] = {}
+    const vueBases = [...new Set([nuxt.options.rootDir, nuxt.options.appDir].filter(Boolean))]
     for (const [name, parent] of Object.entries(VUE_PACKAGE_PARENTS) as [VuePackageName, VuePackageName | undefined][]) {
-      const from = parent ? dirs[parent] : nuxt.options.appDir
-      const dir = from && resolvePackageDir(name, from)
+      const bases = parent ? (dirs[parent] ? [dirs[parent]] : []) : vueBases
+      const dir = bases.reduce<string | undefined>((resolved, from) => resolved || resolvePackageDir(name, from), undefined)
       if (dir) {
         dirs[name] = dir
       }
