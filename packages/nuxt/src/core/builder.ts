@@ -2,9 +2,10 @@ import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
-import { buildDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
+import { DEFAULT_JS_FILE_EXTENSIONS, buildDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
+import { resolveModulePath } from 'exsolve'
 
 import { isDirectory } from '../utils.ts'
 import { generateApp as _generateApp, assertNoCircularPluginDependencies, createApp, invalidateAppStructure } from './app.ts'
@@ -372,15 +373,23 @@ async function resolveBuilder (nuxt: Nuxt): Promise<NuxtBuilder> {
   }
 }
 
-async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
+export async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
+  // importModule below resolves with these extensions, so the probe has to as well
+  const installed = !!resolveModulePath(builder, { from: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)], extensions: DEFAULT_JS_FILE_EXTENSIONS, try: true })
   try {
     // prefer our own dependency tree before walking up from rootDir
     if (builder === '@nuxt/vite-builder') {
       return await import(builder)
     }
     return await importModule(builder, { url: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)] })
-  } catch (err: any) {
-    throw buildDiagnostics.NUXT_B1017({ builder, installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }), cause: err }, { method: 'error' })
+  } catch (err) {
+    throw buildDiagnostics.NUXT_B1017({
+      builder,
+      installed,
+      error: err instanceof Error ? err.message : String(err),
+      installCommand: await getAddDependencyCommand(builder, nuxt.options.rootDir, { dev: true }),
+      cause: err,
+    }, { method: 'error' })
   }
 }
 
