@@ -312,7 +312,7 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should not server-render a catch-all page with `ssr: false` when the path has encoded slashes', async () => {
-    for (const path of ['/catchall/client-only/page', '/catchall/client-only%2Fpage', '/catchall/client-only%2fpage']) {
+    for (const path of ['/catchall/client-only/page', '/catchall/client-only%2Fpage', '/catchall/client-only%2fpage', '/catchall//client-only/page', '/catchall/%2Fclient-only/page']) {
       const { script } = parseData(await $fetch<string>(path))
       expect(script.serverRendered, path).toEqual(false)
     }
