@@ -127,6 +127,15 @@ describe('nitro config', () => {
     })
   })
 
+  it('lets the previous dev worker finish its requests for up to 10s on reload', async () => {
+    await withNitro({}, (nitro) => {
+      expect(nitro.options.devServer.drain).toEqual({ timeout: 10_000 })
+    })
+    await withNitro({ nitro: { devServer: { drain: false } } }, (nitro) => {
+      expect(nitro.options.devServer.drain).toBe(false)
+    })
+  })
+
   it('passes the server replacements to the prerenderer', async () => {
     await withNitro({}, async (nitro) => {
       // nitro creates the prerenderer from a copy of this config
