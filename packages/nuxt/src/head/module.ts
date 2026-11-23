@@ -308,5 +308,8 @@ export default defineNuxtModule<NuxtOptions['unhead']>({
     // Add library-specific plugins
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead.client') })
     addPlugin({ src: resolve(runtimeDir, 'plugins/unhead.server') })
+    if (nuxt.options.dev) {
+      addPlugin({ src: resolve(runtimeDir, 'plugins/unhead-eager.client'), _skipTypes: true })
+    }
   },
 })

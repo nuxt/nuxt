@@ -2,7 +2,6 @@ import { headSymbol } from '@unhead/vue'
 import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { clientHeadFactory, getClientHeadState } from '../client-head-state'
-import { useClientHead } from '../client-head'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:head',
@@ -33,7 +32,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       Object.defineProperty(nuxtApp.vueApp._context.provides, headSymbol, {
         configurable: true,
         enumerable: true,
-        get: () => (import.meta.dev ? useClientHead : clientHeadFactory.create)?.(nuxtApp),
+        get: () => clientHeadFactory.create?.(nuxtApp),
         set (value) {
           Object.defineProperty(this, headSymbol, { configurable: true, enumerable: true, writable: true, value })
         },
