@@ -133,6 +133,16 @@ describe('nitro config', () => {
     })
   })
 
+  it.for([
+    { payloadExtraction: 'client' as const, expected: true },
+    { payloadExtraction: false, expected: false },
+  ])('renders cached payloads at runtime only when payload extraction is enabled ($payloadExtraction)', async ({ payloadExtraction, expected }) => {
+    await withNitro({ experimental: { payloadExtraction }, routeRules: { '/**': { swr: 60 } } }, async (_nitro, nitroConfig) => {
+      const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
+      expect(await rendererConfig()).toContain(`export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${expected}`)
+    })
+  })
+
   it('emits valid rest-of-path URLPatterns for noScripts wildcard rules', async () => {
     await withNitro({ routeRules: { '/foo/*': { noScripts: true }, '/scripted/*': { ssr: true } } }, async (_nitro, nitroConfig) => {
       const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
@@ -160,6 +170,23 @@ describe('nitro config', () => {
       expect(JSON.parse(/^export const NUXT_NO_SCRIPTS_PATTERNS = (.+)$/m.exec(code)![1]!)).toEqual(['/bar'])
     })
   }, 60_000)
+
+  it.for([
+    { renderJsonPayloads: undefined, files: ['_payload.json'] },
+    { renderJsonPayloads: false, files: ['_payload.json', '_payload.js'] },
+  ])('applies the rules of a route to its payload urls (renderJsonPayloads: $renderJsonPayloads)', async ({ renderJsonPayloads, files }) => {
+    const experimental = (renderJsonPayloads === undefined ? {} : { renderJsonPayloads }) as NuxtConfig['experimental']
+    await withNitro({ experimental, routeRules: { '/**': { isr: 60 }, '/account': { isr: false }, '/admin': { redirect: '/login' } } }, async (nitro) => {
+      await nitro.hooks.callHook('build:before', nitro)
+      for (const page of ['account', 'admin']) {
+        expect(Object.keys(nitro.options.routeRules).filter(key => key.startsWith(`/${page}/`)).sort()).toEqual(files.map(file => `/${page}/${file}`).sort())
+      }
+      for (const file of files) {
+        expect(nitro.options.routeRules[`/account/${file}`]).toMatchObject({ isr: false })
+        expect(nitro.options.routeRules[`/admin/${file}`]).toMatchObject({ redirect: { to: '/login' } })
+      }
+    })
+  })
 
   it('passes the server replacements to nitro as `replace` without nitroViteEnvironment', async () => {
     await withNitro({ experimental: { nitroViteEnvironment: false } }, (_nitro, nitroConfig, nuxt) => {

@@ -101,9 +101,14 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
   })
 }
 
+const CATCH_ALL_RE = /(?:\/\*\*(?::[^/]+)?|:\w+[*+])$/
+const TRAILING_SLASHES_RE = /\/+$/
+const PAYLOAD_RULE_KEYS = ['isr', 'cache', 'swr', 'redirect', 'proxy', 'headers', 'cors']
+
 /**
- * Add a `_payload.json` route rule for every route whose payload is extracted: a cached
- * route, and in development a prerendered one.
+ * Add a `_payload.json` (or `_payload.js`) route rule for every route that sets its own caching,
+ * redirect, proxy, headers or cors, is rendered only on the client, or in development is
+ * prerendered, so its payload URL resolves to the same server rules as the route.
  */
 export function setupPayloadRouteRules (nuxt: Nuxt): void {
   if (nuxt.options.dev) {
@@ -119,13 +124,18 @@ export function setupPayloadRouteRules (nuxt: Nuxt): void {
   }
   nuxt.hook('nitro:init', (nitro) => {
     nitro.hooks.hook('build:before', (nitro) => {
+      const payloadSuffix = nuxt.options.experimental.renderJsonPayloads ? '/_payload.json' : '/_payload.js'
+      const fold = !nuxt.options.router.options.sensitive
+      const routeRulesMatcher = createNormalizedRouteRulesRouter(Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, data })), '', fold)
       for (const [route, value] of Object.entries(nitro.options.routeRules)) {
-        if (!route.endsWith('*') && !route.endsWith('/_payload.json')) {
-          if (value.ssr === false) { continue }
-          if ((value.isr || value.cache) || (value.prerender && nuxt.options.dev)) {
-            const payloadKey = (route === '/' ? '' : route) + '/_payload.json'
-            const defaults = { ssr: true } as Record<string, any>
-            for (const key of ['isr', 'cache', ...nuxt.options.dev ? ['prerender'] : []]) {
+        if (route !== '/__nuxt_error' && !CATCH_ALL_RE.test(route) && !route.endsWith(payloadSuffix)) {
+          const payloadKey = route.replace(TRAILING_SLASHES_RE, '') + payloadSuffix
+          const ssr = defu(value, resolveRouteRules(routeRulesMatcher, route, fold)).ssr !== false
+          const setsRules = PAYLOAD_RULE_KEYS.some(key => key in value)
+          if (!ssr && !setsRules && resolveRouteRules(routeRulesMatcher, payloadKey, fold).ssr === false) { continue }
+          if (!ssr || setsRules || (value.prerender && nuxt.options.dev)) {
+            const defaults = { ssr } as Record<string, any>
+            for (const key of [...PAYLOAD_RULE_KEYS, ...nuxt.options.dev && ssr ? ['prerender'] : []]) {
               if (key in value) {
                 defaults[key] = value[key as keyof typeof value]
               }
