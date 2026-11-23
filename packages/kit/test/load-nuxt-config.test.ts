@@ -113,6 +113,14 @@ describe('loadNuxtConfig', () => {
     expect((plugins[1] as unknown[])[0]).toBe((layerPlugins[1] as unknown[])[0])
   }))
 
+  it('should keep configured plugins as they are when their array is also used elsewhere', () => withTempDir({
+    'nuxt.config.ts': `const plugins = [{ name: 'shared-plugin' }]
+    export default defineNuxtConfig({ vite: { custom: plugins, plugins } })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    expect(config.vite.plugins![0]).toBe(config._layers[0]!.config.vite!.plugins![0])
+  }))
+
   it('should copy the Nuxt plugins it is configured with', () => withTempDir({
     'nuxt.config.ts': `export default defineNuxtConfig({ plugins: [{ src: '~/plugins/test.ts', mode: 'client' }] })\n`,
   }, async (dir) => {

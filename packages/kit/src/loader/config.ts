@@ -653,16 +653,18 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
  */
 function cloneConfig<T> (config: T): T {
   const copies = new WeakMap<object, unknown>()
+  const pluginArrayCopies = new WeakMap<object, unknown>()
   const clone = (value: unknown, keepEntries: boolean): unknown => {
     if (!Array.isArray(value) && !isPlainObject(value)) {
       return value
     }
-    if (copies.has(value)) {
-      return copies.get(value)
+    const cache = Array.isArray(value) && keepEntries ? pluginArrayCopies : copies
+    if (cache.has(value)) {
+      return cache.get(value)
     }
     if (Array.isArray(value)) {
       const copy: unknown[] = []
-      copies.set(value, copy)
+      cache.set(value, copy)
       for (const entry of value) {
         copy.push(keepEntries && !Array.isArray(entry) ? entry : clone(entry, keepEntries))
       }
