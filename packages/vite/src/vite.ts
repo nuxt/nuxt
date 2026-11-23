@@ -84,8 +84,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   let fsDeny: string[] | undefined
   if (nuxt.options.dev) {
     // a configured `server.fs.deny` replaces Vite's defaults
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envFile: false, logLevel: 'silent' }, 'serve')).server.fs.deny
+    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envDir: false, logLevel: 'silent' }, 'serve')).server.fs.deny
     fsDeny = [...defaultDeny, '**/app-secret']
     if (nitro) {
       fsDeny.push(`${escapeGlob(resolve(nitro.options.output.serverDir))}/**`)

@@ -64,13 +64,13 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     {
       name: 'nuxt:components:imports-wrapper',
       enforce: 'post',
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      transformInclude,
       transform: {
         filter: {
           id: COMPONENT_QUERY_RE,
         },
         handler (_code, id) {
+          if (!transformInclude(id)) { return }
+
           // Virtual component wrapper
           const { search } = parseModuleId(id)
           const params = new URLSearchParams(search)
@@ -125,13 +125,13 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     {
       name: 'nuxt:components:imports-alias',
       enforce: 'post',
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      transformInclude,
       transform: {
         filter: {
           code: /#components/,
         },
         async handler (code, id) {
+          if (!transformInclude(id)) { return }
+
           // If package defines a "#components" import mapping, assume is used internally by the package.
           if (await hasOwnSubpathImport(id, '#components', nuxt.options.rootDir)) {
             return
