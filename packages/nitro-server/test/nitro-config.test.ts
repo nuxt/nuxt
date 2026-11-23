@@ -121,6 +121,16 @@ describe('nitro config', () => {
     })
   }, 60_000)
 
+  it.for([
+    { payloadExtraction: 'client' as const, expected: true },
+    { payloadExtraction: false, expected: false },
+  ])('renders cached payloads at runtime only when payload extraction is enabled ($payloadExtraction)', async ({ payloadExtraction, expected }) => {
+    await withNitro({ experimental: { payloadExtraction }, routeRules: { '/**': { isr: 60 } } }, async (_nitro, nitroConfig) => {
+      const rendererConfig = nitroConfig.virtual!['nuxt/internal/renderer-config'] as () => Promise<string>
+      expect(await rendererConfig()).toContain(`export const NUXT_RUNTIME_PAYLOAD_EXTRACTION = ${expected}`)
+    })
+  })
+
   it('passes the server replacements to nitro as `replace`', async () => {
     await withNitro({}, (_nitro, nitroConfig) => {
       expect(nitroConfig.replace).toMatchObject(serverReplacements)
@@ -305,7 +315,7 @@ describe('nitro config', () => {
 
       const builtIn = ['/__nuxt_error', '/_nuxt/**', '/_nuxt/builds/**', '/_nuxt/builds/meta/**']
       const configured = ['/:/:/about', '/:/about']
-      const derived = ['/:/:/about/_payload.json', '/:/about/_payload.json']
+      const derived = ['/:/:/about/_payload.json', '/:/about/_payload.json', ...phase === 'updateConfig' ? [] : ['/added/_payload.json']]
       const expected = [...builtIn, ...configured, ...derived, '/added']
       expect(Object.keys(runtimeRouteRules).map(key => key.replace(/:[$\w]+/g, ':')).sort()).toEqual(expected.sort())
       expect(new Set(Object.keys(runtimeRouteRules).filter(key => key.endsWith('/about')).map(key => key.split('/')[1]))).toEqual(new Set([':slug']))

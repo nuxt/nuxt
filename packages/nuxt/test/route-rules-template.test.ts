@@ -158,6 +158,11 @@ describe('wildcard route rule redirects', () => {
     expect(matcher('/old/sub/A/b').redirect).toBe('/sub/A/b')
     expect(matcher('/caf%C3%A9/A/b').redirect).toBe('/new/A/b')
     expect(matcher('/exact').redirect).toBe('/new/exact')
+    for (const path of ['//old/A/b', '/old//A/b', '/%2Fold/A/b', '/old%2FA/b']) {
+      expect(matcher(path).redirect, path).toBe('/new/A/b')
+    }
+    expect(matcher('/old%2F%2FA%2Fb').redirect).toBe('/new/A%2Fb')
+    expect(matcher('//old/sub/A').redirect).toBe('/sub/A')
   })
 
   it('moves the tail of the path onto the target from a lone catch-all rule', async () => {

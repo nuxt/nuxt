@@ -3,6 +3,7 @@ import type { AppRouteRules, RequestEvent } from 'nuxt/schema'
 import { withBaseURL } from './base.ts'
 
 const ENCODED_SLASH_RE = /%2f/gi
+const REPEATED_SLASH_RE = /\/{2,}/g
 
 /**
  * The route rules nitro matched for the request. Nitro resolves them per method and
@@ -20,13 +21,13 @@ export function matchRouteRules (path: string, method = 'GET'): AppRouteRules {
 }
 
 /**
- * `ssr` is off for a path when it is off for the path read with `%2F` as `/`, since a page
- * route param spanning several segments decodes to the same value either way. h3 does not
- * apply a `false` rule matched through that reading.
+ * `ssr` is off for a path when it is off for the path read with `%2F` as `/` and each run of
+ * slashes collapsed to one, since a page route param spanning several segments decodes to the
+ * same value either way. h3 does not apply a `false` rule matched through that reading.
  */
 function withSeparatedSlashes (rules: AppRouteRules, path: string, method: string): AppRouteRules {
-  if (!rules.ssr || !path.includes('%')) { return rules }
-  const separated = path.replace(ENCODED_SLASH_RE, '/')
+  if (!rules.ssr) { return rules }
+  const separated = path.replace(ENCODED_SLASH_RE, '/').replace(REPEATED_SLASH_RE, '/')
   if (separated === path || getNitroRouteRules(method, withBaseURL(separated)).routeRules?.ssr) { return rules }
   return { ...rules, ssr: false }
 }

@@ -101,6 +101,20 @@ describe('request route rules', () => {
     expect(resolveRequestRouteRules(event('/admin%252Fx'))).toEqual({ headers: { 'x-a': 'all' } })
   })
 
+  it('resolves rules for a request path with repeated slashes', async () => {
+    const { resolveRequestRouteRules } = await load({
+      routeRules: {
+        '/**': { headers: { 'x-a': 'all' } },
+        '/admin/**': { redirect: { to: '/login', statusCode: 307 } },
+        '/content/admin/secret': { headers: { 'x-a': 'secret' } },
+      },
+    })
+    for (const path of ['//admin/x', '///admin/x', '/%2Fadmin/x', '//Admin%2Fx']) {
+      expect(resolveRequestRouteRules(event(path)), path).toEqual({ headers: { 'x-a': 'all' }, redirect: { to: '/login', statusCode: 307 } })
+    }
+    expect(resolveRequestRouteRules(event('/content//admin/secret'))).toEqual({ headers: { 'x-a': 'secret' } })
+  })
+
   it('takes the strip base of wildcard redirect and proxy rules from the request path', async () => {
     const routeRules = {
       '/old/**': { redirect: { to: '/new/**', statusCode: 307, _redirectStripBase: '/old' } },
@@ -112,6 +126,9 @@ describe('request route rules', () => {
     expect(resolveRequestRouteRules(event('/Api/Users')).proxy).toEqual({ to: 'https://example.com/**', _proxyStripBase: '/Api' })
     expect(resolveRequestRouteRules(event('/old/a')).redirect).toEqual({ to: '/new/**', statusCode: 307, _redirectStripBase: '/old' })
     expect(resolveRequestRouteRules(event('/x/../OLD/a')).redirect).toEqual({ to: '/new/**', statusCode: 307, _redirectStripBase: '/old' })
+    expect(resolveRequestRouteRules(event('//old/a')).redirect).toEqual({ to: '/new/**', statusCode: 307, _redirectStripBase: '//old' })
+    expect(resolveRequestRouteRules(event('/%2FOLD/a')).redirect).toEqual({ to: '/new/**', statusCode: 307, _redirectStripBase: '/%2FOLD' })
+    expect(resolveRequestRouteRules(event('//Api/users')).proxy).toEqual({ to: 'https://example.com/**', _proxyStripBase: '//Api' })
     expect(resolveRequestRouteRules(event('/Other')).redirect).toEqual({ to: '/fallback/**', statusCode: 307, _redirectStripBase: '' })
     expect(routeRules['/old/**'].redirect._redirectStripBase).toBe('/old')
 

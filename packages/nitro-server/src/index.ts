@@ -270,7 +270,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     // islands depend on the resolved app, which only the app build knows
     prelude: `import { componentIslands as _componentIslands, componentIslandsActive as _componentIslandsActive } from '#internal/nuxt.config.mjs'`,
     overrides: async () => {
-      const hasCachedRoutes = Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
+      const runtimePayloadExtraction = !!nuxt.options.experimental.payloadExtraction && Object.values(nitro.options.routeRules).some(r => r.isr || r.cache)
       // `href_matches` patterns (URLPattern syntax) for routes served under a
       // `noScripts` route rule, so scripted documents can speculatively
       // prefetch/prerender the full-page navigation the client router forces
@@ -302,7 +302,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         NUXT_EARLY_404: String(early404Patterns.length > 0),
         NUXT_PAGE_MATCHER: compilePageMatcher(early404Patterns),
         NUXT_SPA_PAGE_MATCHER: compilePageMatcher(spaPageSources, !nuxt.options.router.options.sensitive),
-        NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(hasCachedRoutes),
+        NUXT_RUNTIME_PAYLOAD_EXTRACTION: String(runtimePayloadExtraction),
         spaTemplate: JSON.stringify(await resolveSpaLoadingTemplate(nuxt)),
         componentIslands: '_componentIslands',
         componentIslandsActive: '_componentIslandsActive',
