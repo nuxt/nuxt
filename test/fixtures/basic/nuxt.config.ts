@@ -226,6 +226,10 @@ export default withMatrix({
       '/swr': { swr: 60 },
       '/swr-dynamic/:slug/about': { swr: 60 },
       '/swr-dynamic/:locale/:slug/about': { swr: 60 },
+      '/payload-rules/**': { swr: 60 },
+      '/payload-rules/redirect': { redirect: '/' },
+      '/payload-rules/proxy': { proxy: '/api/tail/proxied' },
+      '/payload-rules/headers': { headers: { 'x-payload-rules': 'applied' } },
     },
     prerender: {
       routes: [
