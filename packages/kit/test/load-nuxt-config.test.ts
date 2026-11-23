@@ -97,7 +97,41 @@ describe('loadNuxtConfig', () => {
     })
   }))
 
-  it.fails('should support cyclic references in build-time config', () => withTempDir({
+  it('should keep configured plugins as they are, in a copy of their array', () => withTempDir({
+    'nuxt.config.ts': `export default defineNuxtConfig({
+      vite: { plugins: [{ name: 'marked-plugin', [Symbol.for('marker')]: true }, [{ name: 'nested-plugin' }]] },
+    })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    const plugins = config.vite.plugins as unknown[]
+    const layerPlugins = config._layers[0]!.config.vite!.plugins as unknown[]
+
+    expect(plugins).not.toBe(layerPlugins)
+    expect(plugins[0]).toBe(layerPlugins[0])
+    expect((plugins[0] as Record<symbol, unknown>)[Symbol.for('marker')]).toBe(true)
+    expect(plugins[1]).not.toBe(layerPlugins[1])
+    expect((plugins[1] as unknown[])[0]).toBe((layerPlugins[1] as unknown[])[0])
+  }))
+
+  it('should keep configured plugins as they are when their array is also used elsewhere', () => withTempDir({
+    'nuxt.config.ts': `const plugins = [{ name: 'shared-plugin' }]
+    export default defineNuxtConfig({ vite: { custom: plugins, plugins } })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    expect(config.vite.plugins![0]).toBe(config._layers[0]!.config.vite!.plugins![0])
+  }))
+
+  it('should copy the Nuxt plugins it is configured with', () => withTempDir({
+    'nuxt.config.ts': `export default defineNuxtConfig({ plugins: [{ src: '~/plugins/test.ts', mode: 'client' }] })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    const layerPlugin = config._layers[0]!.config.plugins![0]
+
+    expect(config.plugins[0]).not.toBe(layerPlugin)
+    expect(config.plugins[0]).toEqual(layerPlugin)
+  }))
+
+  it('should support cyclic references in build-time config', () => withTempDir({
     'nuxt.config.ts': `const api: Record<string, unknown> = {}
     const plugin = { name: 'cyclic-plugin', api }
     api.plugin = plugin
@@ -109,6 +143,19 @@ describe('loadNuxtConfig', () => {
     const config = await loadNuxtConfig({ cwd: dir })
     const plugin = config.vite.plugins?.[0] as unknown as { api: { plugin: unknown } }
     expect(plugin.api.plugin).toBe(plugin)
+  }))
+
+  it('should support cyclic references outside plugins in build-time config', () => withTempDir({
+    'nuxt.config.ts': `const options: Record<string, unknown> = {}
+    options.self = options
+
+    export default defineNuxtConfig({
+      vite: { custom: options },
+    })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    const options = (config.vite as { custom: { self: unknown } }).custom
+    expect(options.self).toBe(options)
   }))
 
   // jiti gives JSON imports a non-enumerable, self-referential `default` interop property
