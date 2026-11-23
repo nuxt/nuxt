@@ -38,8 +38,9 @@ const colors = {
   dim: ansi(2, 22),
 }
 
-// Dev reporter forwards to the Vite dev server; dev-only so it strips from prod.
-const devReporters = import.meta.dev && !import.meta.test ? [/* #__PURE__ */ (createDevReporter())] as const : [] as const
+// The dev reporter forwards browser diagnostics to the Vite dev server, so it needs a
+// client hot channel; dev-only so it strips from prod.
+const devReporters = import.meta.dev && !import.meta.server && import.meta.hot && !import.meta.test ? [/* #__PURE__ */ (createDevReporter())] as const : [] as const
 
 export const reporters = [
   /* #__PURE__ */ (createConsoleReporter(import.meta.client || import.meta.test ? undefined : { formatter: ansiFormatter(colors) })),
