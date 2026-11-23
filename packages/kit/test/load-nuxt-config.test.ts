@@ -127,6 +127,19 @@ describe('loadNuxtConfig', () => {
     expect(plugin.api.plugin).toBe(plugin)
   }))
 
+  it('should support cyclic references outside plugins in build-time config', () => withTempDir({
+    'nuxt.config.ts': `const options: Record<string, unknown> = {}
+    options.self = options
+
+    export default defineNuxtConfig({
+      vite: { custom: options },
+    })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    const options = (config.vite as { custom: { self: unknown } }).custom
+    expect(options.self).toBe(options)
+  }))
+
   // jiti gives JSON imports a non-enumerable, self-referential `default` interop property
   it('should support jiti-imported JSON modules in build-time config', () => withTempDir({
     'tsconfig.base.json': { compilerOptions: { strict: true } },

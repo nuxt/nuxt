@@ -651,20 +651,33 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
  * into the configs of its layers. Other values, and the entries of `plugins` arrays, are kept
  * by reference, as bundler plugins can depend on their identity and on symbol-keyed properties.
  */
-function cloneConfig<T> (value: T, keepEntries = false): T {
-  if (Array.isArray(value)) {
-    return value.map(entry => keepEntries && !Array.isArray(entry) ? entry : cloneConfig(entry, keepEntries)) as T
-  }
-  if (!isPlainObject(value)) {
-    return value
-  }
-  const copy = Object.create(Object.getPrototypeOf(value))
-  for (const key of Reflect.ownKeys(value)) {
-    if (Object.prototype.propertyIsEnumerable.call(value, key)) {
-      Object.defineProperty(copy, key, { value: cloneConfig(value[key], key === 'plugins'), enumerable: true, writable: true, configurable: true })
+function cloneConfig<T> (config: T): T {
+  const copies = new WeakMap<object, unknown>()
+  const clone = (value: unknown, keepEntries: boolean): unknown => {
+    if (!Array.isArray(value) && !isPlainObject(value)) {
+      return value
     }
+    if (copies.has(value)) {
+      return copies.get(value)
+    }
+    if (Array.isArray(value)) {
+      const copy: unknown[] = []
+      copies.set(value, copy)
+      for (const entry of value) {
+        copy.push(keepEntries && !Array.isArray(entry) ? entry : clone(entry, keepEntries))
+      }
+      return copy
+    }
+    const copy = Object.create(Object.getPrototypeOf(value))
+    copies.set(value, copy)
+    for (const key of Reflect.ownKeys(value)) {
+      if (Object.prototype.propertyIsEnumerable.call(value, key)) {
+        Object.defineProperty(copy, key, { value: clone(value[key], key === 'plugins'), enumerable: true, writable: true, configurable: true })
+      }
+    }
+    return copy
   }
-  return copy
+  return clone(config, false) as T
 }
 
 function isPlainObject (value: unknown): value is Record<PropertyKey, unknown> {
