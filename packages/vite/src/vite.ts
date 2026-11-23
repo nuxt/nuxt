@@ -493,8 +493,7 @@ function escapeGlob (path: string) {
 }
 
 async function resolveDefaultFsDeny (root: string) {
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
-  const resolved = await resolveConfig({ root, configFile: false, envFile: false, logLevel: 'silent' }, 'serve')
+  const resolved = await resolveConfig({ root, configFile: false, envDir: false, logLevel: 'silent' }, 'serve')
   return resolved.server.fs.deny
 }
 
