@@ -86,7 +86,9 @@ test('updates a warning in place when a line is added above it', async ({ page, 
         return setTimeout(attach, 20)
       }
       const record = () => {
-        const count = root.querySelector('button')?.hidden ? 'hidden' : root.querySelector('.mb-badge-count')?.textContent ?? ''
+        const count = root.querySelector<HTMLElement>('.mb-dock')?.hidden !== false
+          ? 'hidden'
+          : [...root.querySelectorAll('.mb-slot[data-on]')].map(slot => `${slot.querySelector('.mb-count-num > :not([aria-hidden])')?.textContent ?? ''}${slot.querySelector('.mb-count-word')?.textContent ?? ''}`).join(', ')
         if (log.counts.at(-1) !== count) {
           log.counts.push(count)
         }

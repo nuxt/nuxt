@@ -219,7 +219,7 @@ jobs:
           persist-credentials: false
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/init@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           config: |
             paths:
@@ -233,7 +233,7 @@ jobs:
           languages: ${{ matrix.language }}
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        uses: github/codeql-action/analyze@1bd86f2fdb4b86187fa4059f16f31a3202acc9ea # v4.39.4
         with:
           category: '/language:${{ matrix.language }}'
 
@@ -469,7 +469,7 @@ jobs:
         run: node test/bench/setup-renderer.ts
 
       - name: Run benchmarks
-        uses: CodSpeedHQ/action@af75f77f17a054769abefaa42fe8dc2975469b5f # v5.6.3
+        uses: CodSpeedHQ/action@b1f28b5eccf7cb5bfe6a2a89cb3053eb67f1150c # v5.8.0
         env:
           NUXT_BENCH_PREBUILT: 'true'
         with:
@@ -725,7 +725,7 @@ jobs:
 
       - name: Pack nightly
         id: pack
-        uses: danielroe/uppt/pack@427b736befa839b403dd145f2a7c16dbf3fd4482 # v0.6.13
+        uses: danielroe/uppt/pack@2c9a289359311b9661cc99886a71121209b89d17 # v0.6.14
         with:
           checkout: false
           install: false
@@ -750,7 +750,7 @@ jobs:
       id-token: write
     environment: nightly
     steps:
-      - uses: danielroe/uppt/publish@427b736befa839b403dd145f2a7c16dbf3fd4482 # v0.6.13
+      - uses: danielroe/uppt/publish@2c9a289359311b9661cc99886a71121209b89d17 # v0.6.14
         with:
           nightly: true
           files: ${{ needs.pack-nightly.outputs.files }}
