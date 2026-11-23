@@ -222,6 +222,7 @@ describe('app component head extraction', () => {
       description: 'Welcome to %siteName',
       ogTitle: '%s',
       ogImage: { url: '/og.png', width: 1200 },
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       twitterCard: 'summary_large_image',
       robots: { index: true, follow: false },
       themeColor: [{ content: '#fff', media: '(prefers-color-scheme: light)' }],

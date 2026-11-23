@@ -64,6 +64,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     {
       name: 'nuxt:components:imports-wrapper',
       enforce: 'post',
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       transformInclude,
       transform: {
         filter: {
@@ -124,6 +125,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     {
       name: 'nuxt:components:imports-alias',
       enforce: 'post',
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       transformInclude,
       transform: {
         filter: {

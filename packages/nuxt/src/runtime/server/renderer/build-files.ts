@@ -66,6 +66,7 @@ export function createBuildFiles (options: NuxtRendererOptions): BuildFiles {
     // (a structural superset) which Nuxt populates before invoking the renderer.
     const renderer = createRenderer(createSSRApp as Parameters<typeof createRenderer<App>>[0], {
       precomputed,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       manifest: import.meta.dev ? await getClientManifest() : undefined,
       renderToString,
       buildAssetsURL,
@@ -101,6 +102,7 @@ export function createBuildFiles (options: NuxtRendererOptions): BuildFiles {
     // Create SPA renderer and cache the result for all requests
     const renderer = createRenderer(() => () => {}, {
       precomputed,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       manifest: import.meta.dev ? await getClientManifest() : undefined,
       renderToString: () => template,
       buildAssetsURL,
