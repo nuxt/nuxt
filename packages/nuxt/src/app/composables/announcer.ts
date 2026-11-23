@@ -32,6 +32,24 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
   let pendingMessage: string | undefined
   const scope = separateRegions ? effectScope(true) : undefined
 
+  function updateRegion (urgency: AnnouncerPoliteness, value: string) {
+    clearTimeout(regionTimers[urgency])
+    const region = regions[urgency]
+    // Clear and restore a repeated message so the live region changes again.
+    if (import.meta.client && value && (region.value === value || pendingRegions[urgency] === value)) {
+      pendingRegions[urgency] = value
+      region.value = ''
+      regionTimers[urgency] = setTimeout(() => {
+        delete pendingRegions[urgency]
+        delete regionTimers[urgency]
+        region.value = value
+      }, 100)
+    } else {
+      delete pendingRegions[urgency]
+      region.value = value
+    }
+  }
+
   if (scope) {
     // A direct ref update replaces pending repetitions, just like set().
     scope.run(() => watch(message, (value) => {
@@ -42,9 +60,7 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
       // Wait for synchronous ref writes so the final politeness selects the region.
       queueMicrotask(() => {
         if (version !== directUpdateVersion) { return }
-        clearTimeout(regionTimers[politeness.value])
-        delete pendingRegions[politeness.value]
-        regions[politeness.value].value = value
+        updateRegion(politeness.value, value)
       })
     }, { flush: 'sync' }))
   }
@@ -52,21 +68,8 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
   function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
     directUpdateVersion++
     if (separateRegions) {
-      // Repeat messages independently so one urgency cannot cancel the other.
-      clearTimeout(regionTimers[politenessSetting])
-      const region = regions[politenessSetting]
-      if (import.meta.client && messageValue && (region.value === messageValue || pendingRegions[politenessSetting] === messageValue)) {
-        pendingRegions[politenessSetting] = messageValue
-        region.value = ''
-        regionTimers[politenessSetting] = setTimeout(() => {
-          delete pendingRegions[politenessSetting]
-          delete regionTimers[politenessSetting]
-          region.value = messageValue
-        }, 100)
-      } else {
-        delete pendingRegions[politenessSetting]
-        region.value = messageValue
-      }
+      // Each urgency has its own timer, so one announcement cannot cancel another.
+      updateRegion(politenessSetting, messageValue)
     }
     clearTimeout(restore)
     updating = true

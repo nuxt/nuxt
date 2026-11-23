@@ -277,6 +277,67 @@ describe('NuxtRouteAnnouncer', () => {
     el.unmount()
   })
 
+  it('re-announces a direct update matching the target region', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    announcer.politeness.value = 'polite'
+    announcer.message.value = 'Saved'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('')
+    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Saved'))
+    expect(el.get('[role="alert"]').text()).toBe('Failed')
+    el.unmount()
+  })
+
+  it('cancels a repeated direct update when a newer message arrives', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    announcer.politeness.value = 'polite'
+    announcer.message.value = 'Saved'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('')
+    announcer.message.value = 'Updated'
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Updated')
+    el.unmount()
+  })
+
+  it('cancels a repeated direct update on unmount', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    announcer.politeness.value = 'polite'
+    announcer.message.value = 'Saved'
+    await flushPromises()
+    el.unmount()
+    await new Promise(resolve => setTimeout(resolve, 150))
+    expect(announcer._regions.polite.value).toBe('')
+  })
+
   it('keeps another region pending when the public refs are changed', async () => {
     let announcer!: ReturnType<typeof useAnnouncer>
     const el = await mountSuspended({
