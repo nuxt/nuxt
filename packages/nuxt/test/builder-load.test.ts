@@ -10,9 +10,15 @@ type BuilderError = Error & { why: string, fix: string }
 
 const roots: string[] = []
 
-async function projectWithBuilder (builder: string, source?: string) {
+async function tempProject () {
   const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-builder-'))
   roots.push(rootDir)
+  vi.spyOn(console, 'error').mockImplementation(() => {})
+  return rootDir
+}
+
+async function projectWithBuilder (builder: string, source?: string) {
+  const rootDir = await tempProject()
 
   if (source) {
     const dir = join(rootDir, 'node_modules', builder)
@@ -21,7 +27,6 @@ async function projectWithBuilder (builder: string, source?: string) {
     await writeFile(join(dir, 'index.js'), source)
   }
 
-  vi.spyOn(console, 'error').mockImplementation(() => {})
   return rootDir
 }
 
@@ -50,6 +55,18 @@ describe('client builder loading', () => {
     expect(error.fix).not.toContain('to install it')
   })
 
+  it('reports the error raised while importing an installed builder given as a path', async () => {
+    const rootDir = await tempProject()
+    const builder = join(rootDir, 'custom-builder')
+    await writeFile(`${builder}.mjs`, 'throw new Error(\'boom\')')
+    const nuxt = { options: { rootDir } }
+    const error = await loadFailure(() => loadBuilder(nuxt as any, builder))
+
+    expect(error.name).toBe('NUXT_B1017')
+    expect(error.why).toContain('boom')
+    expect(error.fix).toContain('is installed')
+  })
+
   it('asks to install a builder that is not in the project', async () => {
     const rootDir = await projectWithBuilder('missing-builder')
     const nuxt = { options: { rootDir } }
@@ -73,6 +90,18 @@ describe('server builder loading', () => {
     expect(error.fix).toContain('`broken-builder` is installed')
     expect(error.fix).not.toContain('to install it')
     expect((error.cause as Error).message).toContain('builtinDriverDependencies')
+  })
+
+  it('reports the error raised while importing an installed builder given as a path', async () => {
+    const rootDir = await tempProject()
+    const builder = join(rootDir, 'custom-builder')
+    await writeFile(`${builder}.mjs`, 'throw new Error(\'boom\')')
+    const nuxt = { options: { rootDir, server: { builder } }, callHook: async () => {} }
+    const error = await loadFailure(() => bundleServer(nuxt as any))
+
+    expect(error.name).toBe('NUXT_B1018')
+    expect(error.why).toContain('boom')
+    expect(error.fix).toContain('is installed')
   })
 
   it('asks to install a builder that is not in the project', async () => {

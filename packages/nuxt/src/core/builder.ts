@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import type { EventType } from '@parcel/watcher'
 import type { FSWatcher } from 'chokidar'
 import { createIsIgnored, directoryToURL, getAddDependencyCommand, getLayerDirectories, importModule, isIgnored, recoverThrottledChanges, useNuxt, writeTypes } from '@nuxt/kit'
-import { buildDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
+import { DEFAULT_JS_FILE_EXTENSIONS, buildDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
 import { debounce } from 'perfect-debounce'
 import { dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
@@ -374,8 +374,8 @@ async function resolveBuilder (nuxt: Nuxt): Promise<NuxtBuilder> {
 }
 
 export async function loadBuilder (nuxt: Nuxt, builder: string): Promise<NuxtBuilder> {
-  const installed = !!resolveModulePath(builder, { from: import.meta.url, try: true })
-    || !!resolveModulePath(builder, { from: directoryToURL(nuxt.options.rootDir), try: true })
+  // importModule below resolves with these extensions, so the probe has to as well
+  const installed = !!resolveModulePath(builder, { from: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)], extensions: DEFAULT_JS_FILE_EXTENSIONS, try: true })
   try {
     // prefer our own dependency tree before walking up from rootDir
     if (builder === '@nuxt/vite-builder') {

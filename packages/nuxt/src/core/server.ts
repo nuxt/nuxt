@@ -1,7 +1,7 @@
 import { pathToFileURL } from 'node:url'
 import { directoryToURL, getAddDependencyCommand, importModule } from '@nuxt/kit'
 import { resolveModulePath } from 'exsolve'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { DEFAULT_JS_FILE_EXTENSIONS, buildDiagnostics } from '@nuxt/kit/internal'
 
 import type { Nuxt, NuxtBuilder } from 'nuxt/schema'
 
@@ -26,7 +26,8 @@ export async function bundleServer (nuxt: Nuxt) {
 async function loadServerBuilder (nuxt: Nuxt, builder = '@nuxt/nitro-server'): Promise<NuxtBuilder> {
   // prefer our own dependency tree before walking up from rootDir
   const resolved = resolveModulePath(builder, { from: import.meta.url, try: true })
-  const installed = !!resolved || !!resolveModulePath(builder, { from: directoryToURL(nuxt.options.rootDir), try: true })
+  // importModule below resolves with these extensions, so the probe has to as well
+  const installed = !!resolved || !!resolveModulePath(builder, { from: [new URL(import.meta.url), directoryToURL(nuxt.options.rootDir)], extensions: DEFAULT_JS_FILE_EXTENSIONS, try: true })
   try {
     if (resolved) {
       return await import(pathToFileURL(resolved).href)
