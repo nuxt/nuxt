@@ -203,5 +203,15 @@ export const bundlerDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Set `experimental.parallelBuild: false` in your `nuxt.config`, and please report this at https://github.com/nuxt/nuxt/issues.',
       docs: false,
     },
+    NUXT_B7040: {
+      why: (p: { deps: string, skipped: boolean }) => `Type checking is enabled, but the packages it requires are missing: ${p.deps}.${p.skipped ? ' Type checking has been skipped.' : ''}`,
+      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to enable type checking.`,
+      docs: false,
+    },
+    NUXT_B7041: {
+      why: (p: { rootDir: string, tsconfigPath: string, skipped: boolean }) => `Type checking is enabled, but no \`tsconfig.json\` was found in \`${p.rootDir}\` or its parent directories, and \`${p.tsconfigPath}\` does not exist.${p.skipped ? ' Type checking has been skipped.' : ''}`,
+      fix: 'Add a root `tsconfig.json` that references the generated Nuxt tsconfigs, or run `nuxt prepare` to generate them.',
+      docs: false,
+    },
   },
 })
