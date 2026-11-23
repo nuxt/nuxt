@@ -27,6 +27,7 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
   const regionTimers: Partial<Record<AnnouncerPoliteness, ReturnType<typeof setTimeout>>> = {}
   const pendingRegions: Partial<Record<AnnouncerPoliteness, string>> = {}
   let updating = false
+  let directUpdateVersion = 0
   let restore: ReturnType<typeof setTimeout> | undefined
   let pendingMessage: string | undefined
   const scope = separateRegions ? effectScope(true) : undefined
@@ -37,13 +38,19 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
       if (updating) { return }
       clearTimeout(restore)
       pendingMessage = undefined
-      clearTimeout(regionTimers[politeness.value])
-      delete pendingRegions[politeness.value]
-      regions[politeness.value].value = value
+      const version = ++directUpdateVersion
+      // Wait for synchronous ref writes so the final politeness selects the region.
+      queueMicrotask(() => {
+        if (version !== directUpdateVersion) { return }
+        clearTimeout(regionTimers[politeness.value])
+        delete pendingRegions[politeness.value]
+        regions[politeness.value].value = value
+      })
     }, { flush: 'sync' }))
   }
 
   function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
+    directUpdateVersion++
     if (separateRegions) {
       // Repeat messages independently so one urgency cannot cancel the other.
       clearTimeout(regionTimers[politenessSetting])
@@ -91,6 +98,7 @@ export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions =
     polite: msg => set(msg, 'polite'),
     assertive: msg => set(msg, 'assertive'),
     _cleanup () {
+      directUpdateVersion++
       scope?.stop()
       for (const urgency of ['polite', 'assertive', 'off'] as const) {
         clearTimeout(regionTimers[urgency])
