@@ -83,3 +83,15 @@ describe.skipIf(!runsOncePerEnvInMatrix)('payload cache cross-user / unauthentic
     })
   })
 })
+
+describe.skipIf(!runsOncePerEnvInMatrix)('cache: false below a wildcard swr rule', () => {
+  it.each(['/shared/account', '/shared/Account'])('does not cache %s for the next visitor', async (page) => {
+    const warm = await get(page, cookie(USER_A))
+    expect(warm.status).toBe(200)
+    expect(warm.text).toContain(MARKER_A)
+
+    const res = await get(page)
+    expect(res.status).toBe(200)
+    expect(res.text).not.toContain(MARKER_A)
+  })
+})
