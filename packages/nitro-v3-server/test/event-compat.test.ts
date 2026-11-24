@@ -2,11 +2,12 @@
 import { IncomingMessage, ServerResponse } from 'node:http'
 import { Socket } from 'node:net'
 import { describe, expect, it, vi } from 'vitest'
-import { H3Event, mockEvent } from 'nitro/h3'
+import { H3, H3Event, mockEvent } from 'nitro/h3'
 
 import plugin from '../src/runtime/compat/event-plugin.ts'
 import { decorateLegacyEvent } from '../src/runtime/compat/decorate.ts'
 import { fromLegacyBody, prepareLegacyEvent } from '../src/runtime/compat/event.ts'
+import { defineEventHandler as defineLegacyEventHandler } from '../src/runtime/compat/h3-v1.ts'
 import { sendStream } from '../src/runtime/compat/h3-v1-app.ts'
 import { wrapLegacyHandler } from '../src/runtime/compat/wrapper.ts'
 import { getRouteRules } from '../src/runtime/utils/route-rules.ts'
@@ -365,6 +366,24 @@ describe('v2 event bridge', () => {
     prepareLegacyEvent(event)
 
     expect((event.context as any)._nitro.routeRules).toEqual({ own: true })
+  })
+
+  it('exposes the matched route pattern at `event.context.matchedRoute.path`', async () => {
+    const shared = new Set<Record<string, unknown>>()
+    const app = new H3({ onRequest: event => void prepareLegacyEvent(event) })
+    app.use((event) => { shared.add((event.context as any).matchedRoute) })
+    app.get('/api/proxy/**:path', defineLegacyEventHandler((event) => {
+      const route = (event.context as any).matchedRoute
+      return `${route.path} ${{ ...route }.path}`
+    }))
+    app.get('/api/native', event => String((event.context as any).matchedRoute.path))
+
+    expect(await (await app.request('/api/proxy/a/b')).text()).toBe('/api/proxy/**:path /api/proxy/**:path')
+    expect(await (await app.request('/api/proxy/c')).text()).toBe('/api/proxy/**:path /api/proxy/**:path')
+    expect(await (await app.request('/api/native')).text()).toBe('undefined')
+    for (const data of shared) {
+      expect(data.path).toBeUndefined()
+    }
   })
 })
 
