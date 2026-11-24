@@ -3,7 +3,7 @@ import { H3Event, HTTPResponse } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
 
-import { takeEndedResponse } from './ended-response.ts'
+import { endResponse, takeEndedResponse } from './ended-response.ts'
 
 export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
@@ -74,17 +74,20 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
     context.matchedRoute = legacy
   }
 
+  // each v1 handler prepares the event again, and must see the response a request hook wrapped
+  if (Object.hasOwn(event, 'node')) {
+    return event
+  }
+
   const node = event.req.runtime?.node
   if (node) {
-    if (!Object.hasOwn(event, 'node')) {
-      // a websocket upgrade carries a node request without a response
-      const res = node.res as ServerResponse | undefined
-      let bridge: { req: unknown, res: unknown } | undefined
-      Object.defineProperty(event, 'node', {
-        configurable: true,
-        get: () => (bridge ||= { ...node, res: res ? bridgeNodeResponse(event, res) : createNodeResponseBridge(event) }),
-      })
-    }
+    // a websocket upgrade carries a node request without a response
+    const res = node.res as ServerResponse | undefined
+    let bridge: { req: unknown, res: unknown } | undefined
+    Object.defineProperty(event, 'node', {
+      configurable: true,
+      get: () => (bridge ||= { ...node, res: res ? bridgeNodeResponse(event, res) : createNodeResponseBridge(event) }),
+    })
   } else {
     const originalUrl = event.url.pathname + event.url.search
     let bridge: { req: unknown, res: unknown } | undefined
@@ -268,7 +271,40 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
 }
 
 function createNodeResponseBridge (event: H3EventType) {
+  const chunks: Buffer[] = []
+  let ended = false
+
+  function push (chunk: unknown, encoding: unknown): void {
+    if (typeof chunk === 'string') {
+      chunks.push(Buffer.from(chunk, encoding as BufferEncoding))
+    } else if (chunk instanceof Uint8Array) {
+      chunks.push(Buffer.from(chunk))
+    }
+  }
+
   return {
+    write (chunk: unknown, encoding?: unknown, callback?: unknown) {
+      if (!ended) {
+        push(chunk, encoding)
+      }
+      const done = typeof encoding === 'function' ? encoding : callback
+      if (typeof done === 'function') {
+        queueMicrotask(done as () => void)
+      }
+      return true
+    },
+    end (chunk?: unknown, encoding?: unknown, callback?: unknown) {
+      if (!ended) {
+        push(chunk, encoding)
+        ended = true
+        endResponse(event, Buffer.concat(chunks))
+      }
+      const done = [chunk, encoding, callback].find(arg => typeof arg === 'function')
+      if (done) {
+        queueMicrotask(done as () => void)
+      }
+      return this
+    },
     get statusCode () {
       return event.res.status
     },

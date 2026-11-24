@@ -354,6 +354,52 @@ describe('v2 event bridge', () => {
     expect(secure.socket.encrypted).toBe(true)
   })
 
+  it('sends what a handler writes to the response of an in-process request', async () => {
+    const app = new H3()
+    app.get('/api/written', defineLegacyEventHandler((event) => {
+      const res = event.node!.res as any
+      res.writeHead(201, { 'x-legacy': 'yes' })
+      res.write('a')
+      res.write(new TextEncoder().encode('b'))
+      res.end('c')
+    }))
+
+    const response = await app.request('/api/written')
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get('x-legacy')).toBe('yes')
+    expect(response.headers.has('content-type')).toBe(false)
+    expect(await response.text()).toBe('abc')
+  })
+
+  it('lets a request hook wrap `write` and `end` on the response of an in-process request', async () => {
+    let bytes = 0
+    const app = new H3({
+      onRequest (event) {
+        const res = prepareLegacyEvent(event).node!.res as any
+        const write = res.write.bind(res)
+        const end = res.end.bind(res)
+        res.write = (chunk: string, ...args: unknown[]) => {
+          bytes += chunk.length
+          return write(chunk, ...args)
+        }
+        res.end = (chunk?: string, ...args: unknown[]) => {
+          bytes += chunk?.length ?? 0
+          return end(chunk, ...args)
+        }
+      },
+    })
+    app.get('/api/counted', defineLegacyEventHandler((event) => {
+      event.node!.res.write('ab')
+      event.node!.res.end('c')
+    }))
+
+    const response = await app.request('/api/counted')
+
+    expect(await response.text()).toBe('abc')
+    expect(bytes).toBe(3)
+  })
+
   it('keeps the socket of a node request', () => {
     const { event, req } = nodeEvent()
 
