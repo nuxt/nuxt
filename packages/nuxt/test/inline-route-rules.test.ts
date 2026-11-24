@@ -86,4 +86,26 @@ describe('inline route rules', () => {
       await nuxt.close()
     }
   })
+
+  it('adds payload route rules from inline rules with the nitro v3 builder', async () => {
+    const nuxt = await loadNuxt({
+      cwd: fixtureDir,
+      ready: true,
+      overrides: {
+        dev: false,
+        _nitroMajor: 3,
+        routeRules: { '/**': { swr: 60 } },
+      },
+    })
+    try {
+      const nitro = (nuxt as any)._nitro
+      await nuxt.callHook('app:templates', {} as NuxtApp)
+      await nitro.hooks.callHook('build:before', nitro)
+
+      expect(nitro.options.routeRules['/_payload.json']).toMatchObject({ ssr: true, headers: { 'x-from-page': 'index' } })
+      expect(nitro.options.routeRules['/uncached/_payload.json']).toMatchObject({ ssr: true, cache: false })
+    } finally {
+      await nuxt.close()
+    }
+  })
 })

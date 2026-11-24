@@ -56,6 +56,7 @@ export function createInlineRouteRulesUpdater (nuxt: Nuxt) {
       applyInlineRules(routeRules, normalizedInlineRules)
       normalizeAppMiddlewareRules(routeRules)
       await nitro.updateConfig({ routeRules })
+      nitro.routing?.sync()
       inlineRulesCache = inlineRules
     }
   })
