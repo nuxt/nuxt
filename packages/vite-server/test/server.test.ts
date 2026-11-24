@@ -19,7 +19,7 @@ describe('`nuxt/server` on the vite server', () => {
   })
 
   it('matches route rules for the request', () => {
-    expect(helpers().getRouteRules({ url: new URL('https://nuxt.com/base/about') })).toEqual({ headers: { 'x-about': '1' } })
+    expect(helpers().getRouteRules({ url: new URL('https://nuxt.com/about') })).toEqual({ headers: { 'x-about': '1' } })
   })
 
   it('fetches a route of the app through its handler', async () => {

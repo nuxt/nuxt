@@ -4,14 +4,17 @@ import { join, relative, sep } from 'node:path'
 import { serve } from 'srvx/node'
 import { staticMiddleware } from 'srvx/static'
 
+import { withoutBaseURL } from './base.ts'
+
 /**
- * Serve the build's static assets, and hand everything else to the renderer.
+ * Serve the build's static assets under `baseURL`, and hand everything else to the renderer.
  *
  * The static handler comes first so a request for a hashed asset never reaches a render.
  */
 export function createNodeServer (options: {
   fetch: (request: Request) => Promise<Response>
   publicDir: string | URL
+  baseURL?: string
 }): { fetch: (request: Request) => Response | Promise<Response> } {
   const dir = typeof options.publicDir === 'string' ? options.publicDir : fileURLToPath(options.publicDir)
   const serveStatic = staticMiddleware({ dir })
@@ -19,9 +22,14 @@ export function createNodeServer (options: {
 
   return {
     fetch: async (request: Request) => {
+      const url = withoutBaseURL(new URL(request.url), options.baseURL || '/')
+      if (!url) {
+        return options.fetch(request)
+      }
       const files = await publicFiles
-      if (!files || mayBeStaticFile(files, request)) {
-        return serveStatic(request as never, () => options.fetch(request))
+      if (!files || mayBeStaticFile(files, url)) {
+        const staticRequest = url.href === request.url ? request : new Request(url, { method: request.method, headers: request.headers, signal: request.signal })
+        return serveStatic(staticRequest as never, () => options.fetch(request))
       }
       return options.fetch(request)
     },
@@ -44,10 +52,10 @@ async function listFiles (dir: string): Promise<Set<string> | undefined> {
 }
 
 /** Whether the request path, or one of the variants the static handler tries, is a public file. */
-function mayBeStaticFile (files: Set<string>, request: Request): boolean {
+function mayBeStaticFile (files: Set<string>, url: URL): boolean {
   let path: string
   try {
-    path = decodeURIComponent(new URL(request.url).pathname)
+    path = decodeURIComponent(url.pathname)
   } catch {
     return true
   }

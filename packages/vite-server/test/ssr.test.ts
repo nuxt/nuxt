@@ -15,6 +15,7 @@ function createNuxt (dev: boolean): Nuxt {
       srcDir: '/app/app',
       buildDir: '/app/.nuxt',
       appDir: '/app/node_modules/nuxt/dist/app',
+      app: { baseURL: '/' },
       vite: {},
       nitro: {},
       features: {},

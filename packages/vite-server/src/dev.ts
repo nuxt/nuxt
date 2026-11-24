@@ -9,6 +9,7 @@ import type { Connect, ViteDevServer } from 'vite'
 
 import { errorChannelAccess, listenForRemoteDevErrors, reportFileAccess, serveErrorChannel, withDevBadge } from './dev-errors.ts'
 import type { DevErrorContext } from './runtime/dev-error.ts'
+import { withoutBaseURL } from './runtime/base.ts'
 import { resolveDocument } from './document.ts'
 import { publicDirs } from './output.ts'
 
@@ -93,9 +94,14 @@ export function setupDevServer (nuxt: Nuxt, serverEntry?: string): void {
   }
 
   const serveStatic = (request: Request): Promise<Response | undefined> => {
+    const url = withoutBaseURL(new URL(request.url), nuxt.options.app.baseURL)
+    if (!url) {
+      return Promise.resolve(undefined)
+    }
+    const staticRequest = url.href === request.url ? request : new Request(url, { method: request.method, headers: request.headers, signal: request.signal })
     const next = (index: number): Promise<Response | undefined> => {
       const middleware = staticMiddleware[index]
-      return Promise.resolve(middleware?.(request, () => next(index + 1) as Promise<Response>))
+      return Promise.resolve(middleware?.(staticRequest, () => next(index + 1) as Promise<Response>))
     }
     return next(0)
   }

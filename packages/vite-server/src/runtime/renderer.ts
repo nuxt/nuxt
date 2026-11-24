@@ -7,6 +7,7 @@ import { claimServerHooks } from 'nuxt/internal/server-default'
 import type { NuxtRendererOptions } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
+import { withBaseURL, withoutBaseURL } from './base.ts'
 import { createRequestEvent } from './event.ts'
 
 /** The renderer, as `createNuxtRenderer()` returns it. */
@@ -47,9 +48,9 @@ export class NuxtServerError extends Error {
  * and in a web-standard worker.
  *
  * Route rules come from the matcher the build compiled, so a route is server-rendered
- * unless a rule says otherwise.
+ * unless a rule says otherwise. The renderer reads request paths relative to `baseURL`.
  */
-export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig'], matchRouteRules: MatchRouteRules, prerender?: NuxtRendererOptions['prerender']): NuxtRendererOptions {
+export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig'], matchRouteRules: MatchRouteRules, baseURL = '/', prerender?: NuxtRendererOptions['prerender']): NuxtRendererOptions {
   // loaded up front, as a runtime may drop a request's pending work once it has responded
   const devErrors = import.meta.dev ? import('./dev-error.ts') : undefined
 
@@ -59,7 +60,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     runtimeConfig,
     buildAssetsURL,
     publicAssetsURL,
-    getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname) }),
+    getRouteRules: event => ({ ssr: true, ...matchRouteRules(withBaseURL(event.url.pathname, baseURL)) }),
     hooks: () => hooks,
     createResponse: (body, init) => new Response(body, init),
     createDocumentResponse: (chunks, init) => new Response(encodeDocument(chunks), init),
@@ -67,7 +68,7 @@ export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runti
     prerender,
     onRenderSuccess: devErrors
       ? (event) => {
-          devErrors.then(({ clearErrorReport }) => clearErrorReport(event.url)).catch(() => {})
+          devErrors.then(({ clearErrorReport }) => clearErrorReport(new URL(event.req.url))).catch(() => {})
         }
       : undefined,
     captureError: (error) => {
@@ -95,9 +96,10 @@ const PRERENDER_HINTS_HEADER = 'x-nuxt-prerender'
  * A web-standard handler over the renderer: it renders the request, and renders the app's
  * error page for a request the render refused. In development it also serves the live
  * error channel and publishes what it failed on to it. `context` seeds the context of the
- * request event.
+ * request event, whose URL the renderer reads relative to `baseURL`. A request outside
+ * `baseURL` is redirected under it.
  */
-export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: MatchRouteRules): (request: Request, context?: Record<string, unknown>) => Promise<Response> {
+export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: MatchRouteRules, baseURL = '/'): (request: Request, context?: Record<string, unknown>) => Promise<Response> {
   return async function fetch (request: Request, context?: Record<string, unknown>): Promise<Response> {
     if (import.meta.dev) {
       const devErrors = await import('./dev-error.ts')
@@ -108,10 +110,15 @@ export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: Mat
     }
     request.signal.throwIfAborted()
     const event = createRequestEvent(request, context)
+    const url = withoutBaseURL(event.url, baseURL)
+    if (!url) {
+      return new Response(null, { status: 302, headers: { location: withBaseURL(event.url.pathname, baseURL) + event.url.search } })
+    }
     const rules = matchRouteRules(event.url.pathname)
     if (rules.redirect) {
       return redirectResponse(event, rules.redirect, rules.headers)
     }
+    event.url = url
     try {
       const response = await renderer.fetch(event)
       applyHeaders(response, rules.headers)
