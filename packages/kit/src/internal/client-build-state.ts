@@ -42,6 +42,28 @@ export async function waitForClientBuild (nuxt: Nuxt = useNuxt(), environment?: 
   await nuxt._clientBuild
 }
 
+/**
+ * Build the client and server environments concurrently, with the client build exposed to
+ * {@link waitForClientBuild} until both have settled. Rejects with the first error once
+ * both have settled.
+ *
+ * @internal
+ */
+export async function buildClientAndServer<E> (builder: { build: (environment: E) => Promise<unknown> }, client: E, server: E, nuxt: Nuxt = useNuxt()): Promise<void> {
+  const clientBuild = builder.build(client)
+  const clientBuilt = clientBuild.then(() => {})
+  clientBuilt.catch(() => {})
+  nuxt._clientBuild = clientBuilt
+  try {
+    const results = await Promise.allSettled([clientBuild, builder.build(server)])
+    for (const result of results) {
+      if (result.status === 'rejected') { throw result.reason }
+    }
+  } finally {
+    nuxt._clientBuild = undefined
+  }
+}
+
 /** @internal */
 export function saveClientBuildState (nuxt: Nuxt = useNuxt()): Record<string, unknown> {
   const saved: Record<string, unknown> = {}

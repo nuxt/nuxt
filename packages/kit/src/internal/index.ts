@@ -57,7 +57,7 @@ export { createServerBuild, resolveNitroDeployCommand, setServerBuild, useServer
 export { reportNitroPrerender, startBuildEnvironment } from './build-report.ts'
 export type { BuildEnvironmentReport } from './build-report.ts'
 
-export { addClientBuildState, restoreClientBuildState, saveClientBuildState, waitForClientBuild } from './client-build-state.ts'
+export { addClientBuildState, buildClientAndServer, restoreClientBuildState, saveClientBuildState, waitForClientBuild } from './client-build-state.ts'
 export type { ClientBuildState } from './client-build-state.ts'
 
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
