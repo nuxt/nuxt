@@ -442,7 +442,7 @@ describe('addon extension objects', () => {
   })
 })
 
-describe('addon promise-method wrappers when `Promise.resolve` on a subclass returns a native promise as-is (Safari 26)', () => {
+describe('addon promise-method wrappers on Safari 26', () => {
   function emulateSafari26 () {
     const original = Promise.resolve
     const spy = vi.spyOn(Promise, 'resolve').mockImplementation(function (this: PromiseConstructor, value?: unknown) {
@@ -482,13 +482,13 @@ describe('addon promise-method wrappers when `Promise.resolve` on a subclass ret
 
   it('resolves `await` with data through a delegating `then` wrapper', async () => {
     emulateSafari26()
-    const addon = defineUseAsyncDataAddon({
-      setup: () => () => ({ then: (next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args) }),
-    })
+    const then = vi.fn((next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args))
+    const addon = defineUseAsyncDataAddon({ setup: () => () => ({ then }) })
 
     const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
     const { data } = await useWrappedAsyncData('addons:safari26-await-then', () => Promise.resolve('data'))
 
+    expect(then).toHaveBeenCalled()
     expect(data.value).toBe('data')
   })
 
