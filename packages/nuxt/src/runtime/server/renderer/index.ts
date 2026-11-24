@@ -33,7 +33,7 @@ export type { NuxtRendererInstance } from './instance'
 export type { CachedResponse, NuxtRendererOptions, NuxtRequestState, PayloadCache, RenderedResponse, RendererEvent, RendererHooks, RendererRouteRules } from './runtime'
 export { appEvent } from './runtime'
 
-const PAYLOAD_URL_RE = NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload.json(?:\?.*)?$/ : /^[^?]*\/_payload.js(?:\?.*)?$/
+const PAYLOAD_URL_RE = NUXT_JSON_PAYLOADS ? /^[^?]*\/_payload\.json(?:\?.*)?$/ : /^[^?]*\/_payload\.js(?:\?.*)?$/
 const PAYLOAD_FILENAME = NUXT_JSON_PAYLOADS ? '_payload.json' : '_payload.js'
 
 // Bot detection regex for SSR streaming.
