@@ -282,7 +282,7 @@ test.describe('SSR Streaming', () => {
     if (!isDev) {
       const iifeScriptMatch = html.match(/<script[^>]*src="[^"]*streaming-iife[^"]*\.js"[^>]*>/)
       expect(iifeScriptMatch).toBeTruthy()
-      expect(iifeScriptMatch![0]).toContain('nonce="nonce-by-hook"')
+      expect(iifeScriptMatch![0]).toContain('nonce="test-csp-nonce"')
       expect(html).toMatch(/<style nonce="test-csp-nonce">[^<]*\.nonce-probe/)
       // Every style tag must contain exactly one nonce attribute
       const styleTags = html.match(/<style\b[^>]*>/g) || []
@@ -293,7 +293,7 @@ test.describe('SSR Streaming', () => {
     }
   })
 
-  test('a render:html nonce is threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
+  test('a render:html and render:html:close nonce are threaded onto streamed inline scripts', async ({ fetch, isDev }) => {
     const res = await fetch('/nonce-by-hook')
     const html = await res.text()
 

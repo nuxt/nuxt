@@ -21,7 +21,7 @@ export function renderPayloadResponse (ssrContext: NuxtSSRContext, event: Render
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string, cspNonce?: string }): Script[] {
-  const contents = opts.data ? encodeForwardSlashes(stringify(opts.data, opts.ssrContext['~payloadReducers'])) : ''
+  const contents = opts.data ? encodeForwardSlashes(stringify(sortContainers(omitEmptyContainers(opts.data)), opts.ssrContext['~payloadReducers'])) : ''
   if (import.meta.dev) {
     warnOnLargePayload(opts.ssrContext, opts.data, contents.length)
   }
