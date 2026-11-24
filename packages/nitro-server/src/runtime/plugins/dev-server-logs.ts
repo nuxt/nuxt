@@ -6,7 +6,6 @@ import { withTrailingSlash } from 'ufo'
 import { toRequest } from 'nitro/h3'
 import { definePlugin } from 'nitro'
 import { useNitroHooks } from 'nitro/app'
-import { getContext } from 'unctx'
 import type { ServerRequest } from 'srvx'
 import { captureRawStackTrace, parseRawStackTrace } from 'errx'
 import type { ParsedTrace } from 'errx'
@@ -37,7 +36,7 @@ function appendLogs (ctx: NuxtDevAsyncContext, bodyAppend: string[]) {
   }
 }
 
-const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
+const asyncContext = new AsyncLocalStorage<NuxtDevAsyncContext>()
 
 const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   // TODO: Use nitro asyncContext
@@ -45,11 +44,11 @@ const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   nitroApp.fetch = (input: ServerRequest | URL | string, init?: RequestInit, context?: any) => {
     const req = toRequest(input, init)
     req.context = { ...req.context, ...context }
-    return asyncContext.callAsync({ logs: [], request: req }, () => originalFetch(req))
+    return asyncContext.run({ logs: [], request: req }, () => originalFetch(req))
   }
 
   onConsoleLog((_log) => {
-    const ctx = asyncContext.tryUse()
+    const ctx = asyncContext.getStore()
     if (!ctx) { return }
 
     const rawStack = captureRawStackTrace()
@@ -83,7 +82,7 @@ const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   const nitroHooks = useNitroHooks()
 
   nitroHooks.hook('response', () => {
-    const ctx = asyncContext.tryUse()
+    const ctx = asyncContext.getStore()
     if (!ctx) { return }
     const url = new URL(ctx.request.url)
     const path = url.pathname + url.search + url.hash
@@ -95,13 +94,13 @@ const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   nitroHooks.hook('render:html', (htmlContext, { streaming }) => {
     if (streaming) { return }
 
-    const ctx = asyncContext.tryUse()
+    const ctx = asyncContext.getStore()
     if (!ctx) { return }
     appendLogs(ctx, htmlContext.bodyAppend)
   })
 
   nitroHooks.hook('render:html:close', (closeContext) => {
-    const ctx = asyncContext.tryUse()
+    const ctx = asyncContext.getStore()
     if (!ctx) { return }
     appendLogs(ctx, closeContext.bodyAppend)
   })

@@ -50,6 +50,9 @@ test('basic HMR functionality', async ({ page, goto }) => {
   await expect(h1).toHaveCSS('color', 'rgb(255, 0, 0)')
 
   expect(page).toHaveNoErrorsOrWarnings()
+
+  fixture.restore()
+  await expect(page).toHaveTitle('HMR fixture')
 })
 
 test('HMR for static head of the app component', async ({ page, goto, fetch }) => {
@@ -75,6 +78,9 @@ test('detecting new routes', async ({ fetch }) => {
   fixture.write('app/pages/some-404.vue', fixture.read('app/pages/index.vue'))
 
   await poll(() => fetch('/some-404').then(r => r.status)).toBe(200)
+
+  fixture.restore()
+  await poll(() => fetch('/some-404').then(r => r.status)).toBe(404)
 })
 
 test('hot reloading route rules', async ({ fetch }) => {
@@ -84,6 +90,9 @@ test('hot reloading route rules', async ({ fetch }) => {
   fixture.replace('app/pages/route-rules.vue', 'added in routeRules', 'edited in dev')
 
   await poll(header, 20_000).toBe('edited in dev')
+
+  fixture.restore()
+  await poll(header, 20_000).toBe('added in routeRules')
 })
 
 test('SSR picks up a noScripts route rule added in dev', async ({ fetch }) => {
@@ -93,6 +102,9 @@ test('SSR picks up a noScripts route rule added in dev', async ({ fetch }) => {
   fixture.replace('app/pages/route-rules.vue', 'headers: {', 'noScripts: true,\n  headers: {')
 
   await poll(speculatesRouteRules, 20_000).toBe(true)
+
+  fixture.restore()
+  await poll(speculatesRouteRules, 20_000).toBe(false)
 })
 
 test('SSR fetches pick up an edited server route', async ({ fetch }) => {
