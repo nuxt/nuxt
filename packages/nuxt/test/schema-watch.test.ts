@@ -48,4 +48,110 @@ describe('nuxt.schema watching', { concurrent: false }, async () => {
       expect(await readFile(types, 'utf8').catch(() => '')).toMatch(/edited\d+\?: number/)
     }, { timeout: 5000, interval: 250 })
   })
+
+  it('waits for an in-flight schema write to settle before nuxt closes', async () => {
+    await writeSchema(rootDir, 'initial')
+
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        dev: true,
+        experimental: { watcher: 'chokidar' },
+      },
+    })
+
+    let writeStarted!: () => void
+    const started = new Promise<void>((resolve) => { writeStarted = resolve })
+    let releaseWrite!: () => void
+    const gate = new Promise<void>((resolve) => { releaseWrite = resolve })
+    onTestFinished(async () => {
+      releaseWrite()
+      await nuxt.close()
+    })
+
+    nuxt.hook('schema:beforeWrite', async () => {
+      writeStarted()
+      await gate
+    })
+
+    const types = join(nuxt.options.buildDir, 'schema/nuxt.schema.d.ts')
+    let edits = 0
+    const writer = setInterval(() => {
+      writeSchema(rootDir, `edited${edits++}`).catch(() => {})
+    }, 100)
+    try {
+      await Promise.race([
+        started,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timed out waiting for schema:beforeWrite')), 5000)),
+      ])
+    } finally {
+      clearInterval(writer)
+    }
+
+    let closed = false
+    const closing = nuxt.close().then(() => { closed = true })
+
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(closed).toBe(false)
+
+    releaseWrite()
+    await closing
+
+    expect(closed).toBe(true)
+    expect(await readFile(types, 'utf8')).toMatch(/edited\d+\?: number/)
+  })
+
+  it('does not start a schema write when closed during resolution', async () => {
+    await writeSchema(rootDir, 'initial')
+
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        dev: true,
+        experimental: { watcher: 'chokidar' },
+      },
+    })
+
+    let resolveStarted!: () => void
+    const started = new Promise<void>((resolve) => { resolveStarted = resolve })
+    let releaseResolve!: () => void
+    const gate = new Promise<void>((resolve) => { releaseResolve = resolve })
+    onTestFinished(async () => {
+      releaseResolve()
+      await nuxt.close()
+    })
+
+    nuxt.hook('schema:resolved', async () => {
+      resolveStarted()
+      await gate
+    })
+
+    let edits = 0
+    const writer = setInterval(() => {
+      writeSchema(rootDir, `edited${edits++}`).catch(() => {})
+    }, 100)
+    try {
+      await Promise.race([
+        started,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timed out waiting for schema:resolved')), 5000)),
+      ])
+    } finally {
+      clearInterval(writer)
+    }
+
+    let closed = false
+    const closing = nuxt.close().then(() => { closed = true })
+
+    await new Promise(resolve => setTimeout(resolve, 50))
+    expect(closed).toBe(false)
+
+    releaseResolve()
+    await closing
+
+    expect(closed).toBe(true)
+    const types = join(nuxt.options.buildDir, 'schema/nuxt.schema.d.ts')
+    await expect(readFile(types, 'utf8')).rejects.toMatchObject({ code: 'ENOENT' })
+  })
 })

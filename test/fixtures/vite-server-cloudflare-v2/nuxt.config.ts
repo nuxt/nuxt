@@ -15,7 +15,7 @@ export default defineNuxtConfig({
   sourcemap: false,
   compatibilityDate: 'latest',
   vite: {
-    plugins: [cloudflare()],
+    plugins: [cloudflare({ inspectorPort: false })],
   },
   // the overlay is skipped when `test` is set
   test: false,

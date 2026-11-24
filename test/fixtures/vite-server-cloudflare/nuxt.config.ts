@@ -16,7 +16,7 @@ export default defineNuxtConfig({
   sourcemap: false,
   compatibilityDate: 'latest',
   vite: {
-    plugins: [cloudflare({ configPath: fileURLToPath(new URL('wrangler.jsonc', import.meta.url)) })],
+    plugins: [cloudflare({ configPath: fileURLToPath(new URL('wrangler.jsonc', import.meta.url)), inspectorPort: false })],
   },
   // the overlay is skipped when `test` is set
   test: false,

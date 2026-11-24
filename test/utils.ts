@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url'
-import { expect, vi } from 'vitest'
+import { expect } from 'vitest'
 import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
@@ -118,17 +118,56 @@ function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, text: stri
   expect(consoleLogWarnings).toEqual([])
 }
 
-const BASE_TIMEOUT = isCI ? 6_000 : 3_000
+const BASE_TIMEOUT = isCI ? (isWindows ? 15_000 : 6_000) : 3_000
 export async function gotoPath (page: Page, path: string, retries = 2, onRetry?: () => void) {
-  await vi.waitFor(async () => {
-    try {
-      return await page.goto(url(path), { timeout: BASE_TIMEOUT })
-    } catch (error) {
-      onRetry?.()
-      throw error
+  const attempts = Math.max(1, retries)
+  if (!isDev) {
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        await page.goto(url(path), { timeout: BASE_TIMEOUT })
+        break
+      } catch (error) {
+        if (attempt >= attempts) {
+          throw error
+        }
+        onRetry?.()
+      }
     }
-  }, { timeout: BASE_TIMEOUT * retries || BASE_TIMEOUT })
-  await page.waitForFunction(path => window.useNuxtApp?.()?._route?.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
+    await page.waitForFunction(path => window.useNuxtApp?.()?._route?.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
+    return
+  }
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let outdatedOptimizeDep = false
+    const onResponse = (res: { status: () => number }) => {
+      if (res.status() === 504) {
+        outdatedOptimizeDep = true
+      }
+    }
+    page.on('response', onResponse)
+    try {
+      await page.goto(url(path), { timeout: BASE_TIMEOUT })
+      if (outdatedOptimizeDep) {
+        throw new Error('Vite returned 504 Outdated Optimize Dep')
+      }
+      await page.waitForFunction(
+        path => window.useNuxtApp?.()?._route?.fullPath === path && !window.useNuxtApp?.().isHydrating,
+        path,
+        { timeout: attempt < attempts ? BASE_TIMEOUT : 30_000 },
+      )
+      if (outdatedOptimizeDep) {
+        throw new Error('Vite returned 504 Outdated Optimize Dep')
+      }
+      return
+    } catch (error) {
+      if (attempt >= attempts) {
+        throw error
+      }
+      onRetry?.()
+    } finally {
+      page.off('response', onResponse)
+    }
+  }
 }
 
 const revivers = {
