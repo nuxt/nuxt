@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import type { Nuxt } from '@nuxt/schema'
 import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, resolveAlias } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, isInsideNodeModules } from '@nuxt/kit/internal'
 import escapeRegExp from 'escape-string-regexp'
 import { resolveModulePath } from 'exsolve'
 import { dirname, join, normalize } from 'pathe'
@@ -92,7 +92,7 @@ export function shouldTypeCheck (nuxt: Nuxt): boolean {
 
 /** The nearest `tsconfig.json` above `dir`, ignoring those of installed packages. */
 function findProjectTsConfig (dir: string): string | undefined {
-  while (!/(?:^|[\\/])node_modules(?:[\\/]|$)/.test(dir)) {
+  while (!isInsideNodeModules(dir)) {
     const tsconfigPath = join(dir, 'tsconfig.json')
     if (existsSync(tsconfigPath)) {
       return tsconfigPath

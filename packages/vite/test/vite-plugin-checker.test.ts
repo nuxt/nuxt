@@ -104,6 +104,17 @@ describe('vite-plugin-checker', () => {
     expect(checkerOptions).toStrictEqual({ vueTsc: { tsconfigPath: join(buildDir, 'tsconfig.app.json'), buildMode: false } })
   })
 
+  it('should ignore the tsconfig of a package the project is nested in', async () => {
+    const rootDir = join(await mkdtemp(join(tmpdir(), 'nuxt-typecheck-')), 'node_modules/dep')
+    const buildDir = join(rootDir, '.nuxt')
+    await mkdir(buildDir, { recursive: true })
+    await writeFile(join(rootDir, 'tsconfig.json'), '{}')
+    await writeFile(join(buildDir, 'tsconfig.app.json'), '{}')
+
+    expect(await VitePluginCheckerPlugin(mockNuxt({ rootDir, buildDir }))).toBeDefined()
+    expect(checkerOptions).toStrictEqual({ vueTsc: { tsconfigPath: join(buildDir, 'tsconfig.app.json'), buildMode: false } })
+  })
+
   it('should skip type checking when no tsconfig can be found', async () => {
     const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-typecheck-'))
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
