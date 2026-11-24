@@ -1417,7 +1417,10 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
 /** Nitro v3 requires a `route`; a v2 handler without one was a global middleware. */
 function normalizeLegacyHandlerRoute (handler: { route?: string, middleware?: boolean, handler: string }, unrouted: string[]) {
   if (!handler.route) {
-    unrouted.push(typeof handler.handler === 'string' ? handler.handler : (handler.handler as unknown as () => unknown).name || 'an anonymous dev server handler')
+    // `middleware: true` already says it runs for every request, so it is not reported
+    if (!handler.middleware) {
+      unrouted.push(typeof handler.handler === 'string' ? handler.handler : (handler.handler as unknown as () => unknown).name || 'an anonymous dev server handler')
+    }
     handler.route = '/**'
     handler.middleware = true
   }

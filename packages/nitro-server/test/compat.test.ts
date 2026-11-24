@@ -207,6 +207,18 @@ describe('setupNitroCompat', () => {
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 2, handlers: '`modules/a.ts`\n  - `b/dist/runtime/b.js`' })
   })
 
+  it('does not report a route-less v2 handler that already declares middleware', async () => {
+    const report = silence('NUXT_B9002')
+    const nitroConfig: NitroConfig = {
+      handlers: [declared({ handler: '/project/modules/middleware.ts', middleware: true }, 'nitro2')],
+    }
+
+    await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
+
+    expect(nitroConfig.handlers![0]).toMatchObject({ route: '/**', middleware: true })
+    expect(report).not.toHaveBeenCalled()
+  })
+
   it('maps h3 v1 and nitro v2 specifiers for a declared v2 entry', async () => {
     const nitroConfig: NitroConfig = {
       handlers: [declared({ route: '/v2', handler: '/modules/handler.ts' }, 'nitro2')],
@@ -1403,15 +1415,20 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-late-middleware-'))
     const late = join(dir, 'guard.ts')
     writeFileSync(late, `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => {})`)
+    const plain = join(dir, 'plain.ts')
+    writeFileSync(plain, `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => {})`)
 
     const nitroConfig: NitroConfig = { handlers: [] }
     const registerLateScope = await setupNitroCompat(createNuxt(), nitroConfig, legacyOff, [])
 
-    const options = { handlers: [{ middleware: true, handler: late }], plugins: [] }
+    const options = { handlers: [{ middleware: true, handler: late }, { handler: plain }], plugins: [] }
     registerLateScope({ options, hooks: createHooks() } as any)
 
     expect(options.handlers[0]).toMatchObject({ route: '/**', middleware: true })
+    expect(options.handlers[1]).toMatchObject({ route: '/**', middleware: true })
+    // only the handler that does not declare middleware is reported
     expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, handlers: expect.stringContaining('plain.ts') })
   })
 
   it('scopes userland server directories when `nitroLegacy` is enabled', async () => {
