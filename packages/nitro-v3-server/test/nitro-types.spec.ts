@@ -17,6 +17,7 @@ import type { ResponseBodyOf } from '../src/request-types.ts'
 
 declare const cacheV2: typeof defineCachedEventHandler
 declare const cacheV3: typeof defineCachedHandler
+declare const eventHandlerV1: typeof defineEventHandler
 
 describe('contributed nitro instance types', () => {
   it('resolves `NitroInstance` to the instance this builder constructs', () => {
@@ -146,6 +147,16 @@ describe('response types Nuxt generates for routes', () => {
     expectTypeOf<ResponseBodyOf<EventHandler<any, Promise<Response>>>>().toEqualTypeOf<Response>()
     expectTypeOf<ResponseBodyOf<EventHandlerWithFetch<any, Response>>>().toEqualTypeOf<Response>()
     expectTypeOf<ResponseBodyOf<EventHandler>>().toEqualTypeOf<unknown>()
+  })
+
+  it('reads the response of a v1 `defineEventHandler` from what its handler returns', () => {
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof defineEventHandler<{ id: number }>>>>().toEqualTypeOf<{ id: number }>()
+    const fromFunction = () => eventHandlerV1(() => Promise.resolve({ id: 1 as const }))
+    expectTypeOf(fromFunction).returns.toExtend<EventHandler>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof fromFunction>>>().toEqualTypeOf<{ id: 1 }>()
+    const fromObject = () => eventHandlerV1({ handler: () => ({ id: 1 as const }), onRequest: () => {} })
+    expectTypeOf(fromObject).returns.toExtend<EventHandler>()
+    expectTypeOf<ResponseBodyOf<ReturnType<typeof fromObject>>>().toEqualTypeOf<{ id: 1 }>()
   })
 
   it('reads the response of a handler cached with `defineCachedHandler` from what the handler it caches returns', () => {
