@@ -31,7 +31,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
 
   const entry = resolve(nuxt.options.appDir, nuxt.options.experimental.asyncEntry ? 'entry.async' : 'entry')
   const assetPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
-  const [postcssPlugins, preprocessorPlugins, typeCheckPlugin, rsdoctorPlugin] = await Promise.all([
+  const [postcssPlugins, preprocessorPlugins, typeCheck, rsdoctorPlugin] = await Promise.all([
     resolvePostcssPlugins<PostCSSPlugin>(nuxt),
     resolvePreprocessorPlugins(nuxt),
     resolveTypeCheckPlugin(nuxt),
@@ -72,6 +72,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
     plugins,
     source: {
       decorators: nuxt.options.experimental.decorators ? { version: '2023-11' } : undefined,
+      tsconfigPath: typeCheck?.tsconfigPath,
     },
     resolve: {
       alias: {
@@ -147,13 +148,13 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
       client: {
         ...clientEnvironment(nuxt, { entry, assetPrefix }),
         // type checking runs once, in the server build when SSR is enabled
-        plugins: [!nuxt.options.ssr && typeCheckPlugin],
+        plugins: [!nuxt.options.ssr && typeCheck?.plugin],
       },
       ...nuxt.options.ssr
         ? {
             ssr: {
               ...serverEnvironment(nuxt, { entry, assetPrefix }),
-              plugins: [typeCheckPlugin],
+              plugins: [typeCheck?.plugin],
             },
           }
         : {},
