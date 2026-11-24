@@ -81,7 +81,7 @@
     "@babel/plugin-syntax-typescript": "^7.25.0 || ^8.0.0",
     "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:^",
-    "vue": "^3.5.45"
+    "vue": "^3.5.46"
   },
   "peerDependenciesMeta": {
     "@babel/plugin-proposal-decorators": {
