@@ -7,7 +7,7 @@
  * `promisifyNodeListener`, `callNodeListener`, `createAppEventHandler`.
  */
 import { defineHandler, defineWebSocketHandler } from 'nitro/h3'
-import type { H3Event, defineWebSocket } from 'nitro/h3'
+import type { EventHandlerRequest, EventHandlerResponse, EventHandlerWithFetch, H3Event, defineWebSocket } from 'nitro/h3'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { $Fetch } from 'ofetch'
 
@@ -28,8 +28,8 @@ export type LegacyH3Event = H3Event & {
   $fetch: $Fetch
 }
 
-type LegacyHandlerObject = {
-  handler: (event: LegacyH3Event) => any
+type LegacyHandlerObject<ResponseT = EventHandlerResponse> = {
+  handler: (event: LegacyH3Event) => ResponseT
   onRequest?: ((event: LegacyH3Event) => any) | Array<(event: LegacyH3Event) => any>
   onBeforeResponse?: ((event: LegacyH3Event, response: { body?: any }) => any) | Array<(event: LegacyH3Event, response: { body?: any }) => any>
   websocket?: ReturnType<typeof defineWebSocket>
@@ -46,9 +46,9 @@ function toArray<T> (input: T | T[] | undefined): T[] {
  * handler prepares the v1 event shape and normalises thrown errors, so it needs no
  * entry-level wrapper. A WebSocket upgrade request gets the `websocket` hooks.
  */
-export function defineEventHandler (input: ((event: LegacyH3Event) => any) | LegacyHandlerObject): any {
+export function defineEventHandler<ResponseT = EventHandlerResponse> (input: ((event: LegacyH3Event) => ResponseT) | LegacyHandlerObject<ResponseT>): EventHandlerWithFetch<EventHandlerRequest, ResponseT> {
   const handler = typeof input === 'function' ? input : input.handler
-  const rest: Partial<LegacyHandlerObject> = typeof input === 'function' ? {} : { ...input }
+  const rest: Partial<LegacyHandlerObject<ResponseT>> = typeof input === 'function' ? {} : { ...input }
   delete rest.handler
   const onRequestHooks = toArray(typeof input === 'function' ? undefined : input.onRequest)
   const onBeforeResponseHooks = toArray(typeof input === 'function' ? undefined : input.onBeforeResponse)
@@ -83,7 +83,7 @@ export function defineEventHandler (input: ((event: LegacyH3Event) => any) | Leg
         throw toLegacyError(error)
       }
     },
-  })
+  }) as EventHandlerWithFetch<EventHandlerRequest, ResponseT>
 }
 
 export const eventHandler = defineEventHandler
