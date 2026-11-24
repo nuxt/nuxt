@@ -288,17 +288,19 @@ function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
  */
 export function ServerRuntimeModulesPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): Plugin {
   const prefix = '\0nuxt-server-runtime:'
-  const loadedTemplates = new Map<string, string>()
+  /** The contents each environment loaded for each server template, by environment name. */
+  const loadedTemplates = new Map<string, Map<string, string>>()
   let server: ViteDevServer | undefined
 
   if (nuxt.options.dev) {
     nuxt.hook('app:templatesGenerated', async () => {
-      if (!server) { return }
-      for (const [specifier, loaded] of loadedTemplates) {
-        const code = await serverRuntime.modules[specifier]!.code()
-        if (code === loaded) { continue }
-        loadedTemplates.set(specifier, code)
-        for (const environment of Object.values(server.environments)) {
+      for (const [name, templates] of loadedTemplates) {
+        const environment = server?.environments[name]
+        if (!environment) { continue }
+        for (const [specifier, loaded] of templates) {
+          const code = await serverRuntime.modules[specifier]!.code()
+          if (code === loaded) { continue }
+          templates.set(specifier, code)
           const module = environment.moduleGraph.getModuleById(prefix + specifier)
           if (module) {
             await environment.reloadModule(module)
@@ -327,7 +329,9 @@ export function ServerRuntimeModulesPlugin (nuxt: Nuxt, serverRuntime: NuxtServe
         if (!module) { return }
         const code = await module.code()
         if (nuxt.options.dev && Object.hasOwn(nuxt.options._serverTemplates, specifier)) {
-          loadedTemplates.set(specifier, code)
+          const { name } = this.environment
+          const templates = loadedTemplates.get(name) ?? new Map<string, string>()
+          loadedTemplates.set(name, templates.set(specifier, code))
         }
         return { code, map: null }
       },

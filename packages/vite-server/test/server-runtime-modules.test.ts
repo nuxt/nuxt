@@ -19,51 +19,68 @@ function setup ({ dev = true } = {}) {
 
   const plugin = ServerRuntimeModulesPlugin(nuxt, serverRuntime)
   const resolveId = (plugin.resolveId as { handler: (id: string) => string | undefined }).handler
-  const loadHandler = (plugin.load as { handler: (id: string) => Promise<{ code: string } | undefined> }).handler
-  const load = async (specifier: string) => (await loadHandler(resolveId(specifier)!))?.code
+  const loadHandler = (plugin.load as { handler: (this: { environment: { name: string } }, id: string) => Promise<{ code: string } | undefined> }).handler
+  const load = async (specifier: string, environment = 'ssr') => (await loadHandler.call({ environment: { name: environment } }, resolveId(specifier)!))?.code
 
-  const reloadModule = vi.fn()
-  const ssr = { moduleGraph: { getModuleById: (id: string) => ({ id }) }, reloadModule }
-  const client = { moduleGraph: { getModuleById: () => undefined }, reloadModule }
-  ;(plugin.configureServer as (server: ViteDevServer) => void)({ environments: { client, ssr } } as unknown as ViteDevServer)
+  const withModule = () => ({ moduleGraph: { getModuleById: (id: string) => ({ id }) }, reloadModule: vi.fn() })
+  const environments = {
+    client: { moduleGraph: { getModuleById: () => undefined }, reloadModule: vi.fn() },
+    ssr: withModule(),
+    worker: withModule(),
+  }
+  ;(plugin.configureServer as (server: ViteDevServer) => void)({ environments } as unknown as ViteDevServer)
 
   const regenerate = () => hooks.callHook('app:templatesGenerated', {} as never, [], undefined)
 
-  return { contents, load, resolveId, regenerate, reloadModule }
+  return { contents, load, resolveId, regenerate, environments }
 }
 
 describe('ServerRuntimeModulesPlugin', () => {
   it('should reload a loaded server template once its contents have changed', async () => {
-    const { contents, load, resolveId, regenerate, reloadModule } = setup()
+    const { contents, load, resolveId, regenerate, environments } = setup()
     expect(await load('#template')).toBe('export const a = 1')
 
     await regenerate()
-    expect(reloadModule).not.toHaveBeenCalled()
+    expect(environments.ssr.reloadModule).not.toHaveBeenCalled()
 
     contents['#template'] = 'export const a = 2'
     await regenerate()
-    expect(reloadModule).toHaveBeenCalledExactlyOnceWith({ id: resolveId('#template') })
+    expect(environments.ssr.reloadModule).toHaveBeenCalledExactlyOnceWith({ id: resolveId('#template') })
 
     await regenerate()
-    expect(reloadModule).toHaveBeenCalledTimes(1)
+    expect(environments.ssr.reloadModule).toHaveBeenCalledTimes(1)
+    expect(environments.worker.reloadModule).not.toHaveBeenCalled()
+    expect(environments.client.reloadModule).not.toHaveBeenCalled()
+  })
+
+  it('should reload each environment against the contents it loaded', async () => {
+    const { contents, load, regenerate, environments } = setup()
+    await load('#template', 'ssr')
+
+    contents['#template'] = 'export const a = 2'
+    await load('#template', 'worker')
+    await regenerate()
+
+    expect(environments.ssr.reloadModule).toHaveBeenCalledTimes(1)
+    expect(environments.worker.reloadModule).not.toHaveBeenCalled()
   })
 
   it('should not reload a server template that has not been loaded, or any other module', async () => {
-    const { contents, load, regenerate, reloadModule } = setup()
+    const { contents, load, regenerate, environments } = setup()
     await load('nuxt/internal/renderer-config')
 
     contents['#template'] = 'export const a = 2'
     contents['nuxt/internal/renderer-config'] = 'export const b = 2'
     await regenerate()
-    expect(reloadModule).not.toHaveBeenCalled()
+    expect(environments.ssr.reloadModule).not.toHaveBeenCalled()
   })
 
   it('should not reload modules outside development', async () => {
-    const { contents, load, regenerate, reloadModule } = setup({ dev: false })
+    const { contents, load, regenerate, environments } = setup({ dev: false })
     await load('#template')
 
     contents['#template'] = 'export const a = 2'
     await regenerate()
-    expect(reloadModule).not.toHaveBeenCalled()
+    expect(environments.ssr.reloadModule).not.toHaveBeenCalled()
   })
 })
