@@ -5,6 +5,8 @@ export default withMatrix({
   routeRules: {
     '/protected/cache-cookie': { cache: { maxAge: 60, varies: ['cookie'] } },
     '/protected/isr-appmw': { isr: 60, appMiddleware: 'require-session-app' },
+    '/shared/**': { swr: 60 },
+    '/shared/account/**': { cache: false },
   },
   experimental: {
     // `server/api/me.ts` relies on auto-imported `h3` utilities; Nuxt 5 defaults this off.
