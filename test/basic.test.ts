@@ -304,7 +304,7 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should apply route rules to a catch-all page when the path has encoded slashes', async () => {
-    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout']) {
+    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout', '/catchall//route-rules/layout', '/catchall/%2Froute-rules/layout']) {
       const res = await fetch(path)
       expect(res.headers.get('x-catchall-route-rules'), path).toEqual('applied')
       expect(await res.text(), path).toContain('Custom Layout')
@@ -312,7 +312,7 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should not server-render a catch-all page with `ssr: false` when the path has encoded slashes', async () => {
-    for (const path of ['/catchall/client-only/page', '/catchall/client-only%2Fpage', '/catchall/client-only%2fpage']) {
+    for (const path of ['/catchall/client-only/page', '/catchall/client-only%2Fpage', '/catchall/client-only%2fpage', '/catchall//client-only/page', '/catchall/%2Fclient-only/page']) {
       const { script } = parseData(await $fetch<string>(path))
       expect(script.serverRendered, path).toEqual(false)
     }
@@ -2597,6 +2597,23 @@ describe.skipIf(isWindows)('payload rendering', () => {
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-in-spa-data']).toEqual({ ok: true })
+  })
+
+  it.skipIf(!once)('should apply the redirect, proxy and headers rules of a page to its payload url', async () => {
+    for (const path of ['/payload-rules/redirect', '/payload-rules/redirect/_payload.json']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.status, path).toBe(307)
+      expect(res.headers.get('location'), path).toBe('/')
+    }
+    for (const path of ['/payload-rules/proxy', '/payload-rules/proxy/_payload.json']) {
+      expect(await $fetch<string>(path), path).toBe('Hello API')
+    }
+    for (const path of ['/payload-rules/headers', '/payload-rules/headers/_payload.json']) {
+      const res = await fetch(path)
+      expect(res.status, path).toBe(200)
+      expect(res.headers.get('x-payload-rules'), path).toBe('applied')
+      expect(await res.text(), path).toContain('payload-rules-headers')
+    }
   })
 })
 

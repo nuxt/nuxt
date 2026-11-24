@@ -203,9 +203,32 @@ describe('findReservedRootIslandPropKey', () => {
     expect(findReservedRootIslandPropKey({ as: 'iframe' }, { inheritAttrs: false })).toBeUndefined()
   })
 
+  it('returns `as` for a `^`-prefixed key even when the unprefixed prop is declared', () => {
+    expect(findReservedRootIslandPropKey({ '^as': 'iframe' }, undeclared)).toBe('as')
+    expect(findReservedRootIslandPropKey({ '^as': 'iframe' }, { props: ['as'] })).toBe('as')
+    expect(findReservedRootIslandPropKey({ '^as': 'iframe' }, { inheritAttrs: false })).toBeUndefined()
+  })
+
   it('ignores `as` nested below the top level', () => {
     expect(findReservedRootIslandPropKey({ user: { as: 'iframe' } }, undeclared)).toBeUndefined()
     expect(findReservedRootIslandPropKey({ items: [{ as: 'iframe' }] }, undeclared)).toBeUndefined()
+  })
+
+  it('returns `hasOwnProperty` when the island does not declare it', () => {
+    expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, undeclared)).toBe('hasOwnProperty')
+    expect(findReservedRootIslandPropKey({ '^hasOwnProperty': 'x' }, undeclared)).toBe('hasOwnProperty')
+    expect(findReservedRootIslandPropKey({ title: 'ok', hasOwnProperty: 'x' }, { props: ['title'] })).toBe('hasOwnProperty')
+  })
+
+  it('returns `hasOwnProperty` when the island opts out of attribute inheritance', () => {
+    expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, { inheritAttrs: false })).toBe('hasOwnProperty')
+    expect(findReservedRootIslandPropKey({ '^hasOwnProperty': 'x' }, { inheritAttrs: false })).toBe('hasOwnProperty')
+    expect(findReservedRootIslandPropKey({ as: 'div', hasOwnProperty: 'x' }, { inheritAttrs: false })).toBe('hasOwnProperty')
+  })
+
+  it('allows `hasOwnProperty` when the island declares it', () => {
+    expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, { props: ['hasOwnProperty'] })).toBeUndefined()
+    expect(findReservedRootIslandPropKey({ hasOwnProperty: 'x' }, { props: { hasOwnProperty: String }, inheritAttrs: false })).toBeUndefined()
   })
 
   it('does not match keys that merely contain `as`', () => {

@@ -30,7 +30,7 @@ describe.each([false, true])('`ssr` route rules through encoded slashes (preMerg
   it('turns `ssr` off for every spelling of a path a rule turns it off for', async () => {
     await compile(preMerge)
 
-    for (const path of ['/catchall/route-rules/spa', '/catchall/route-rules%2Fspa', '/catchall/route-rules%2fspa']) {
+    for (const path of ['/catchall/route-rules/spa', '/catchall/route-rules%2Fspa', '/catchall/route-rules%2fspa', '/catchall//route-rules/spa', '//catchall/route-rules/spa', '/catchall/%2Froute-rules/spa', '/%2Fcatchall/route-rules/spa']) {
       expect(matchRouteRules(path), path).toMatchObject({ headers: { 'x-catchall-route-rules': 'applied' } })
       expect(matchRouteRules(path).ssr, path).toBeFalsy()
       expect(getRouteRules(mockEvent(`http://nuxt${path}`)).ssr, path).toBeFalsy()
@@ -51,7 +51,7 @@ describe.each([false, true])('`ssr` route rules through encoded slashes (preMerg
   it('leaves `ssr` on for an encoded slash no rule turns it off for', async () => {
     await compile(preMerge)
 
-    for (const path of ['/catchall/other%2Fpage', '/catchall/route-rules-other%2Fspa', '/plain']) {
+    for (const path of ['/catchall/other%2Fpage', '/catchall/route-rules-other%2Fspa', '/plain', '//catchall/other/page', '/catchall//route-rules-other/spa']) {
       expect(matchRouteRules(path).ssr, path).toBe(true)
     }
   })

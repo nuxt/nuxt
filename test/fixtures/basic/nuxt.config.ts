@@ -217,6 +217,10 @@ export default withMatrix({
       '/api/cached-error': { swr: 60, headers: { 'cache-control': 'public, max-age=60' } },
       '/error/not-found': { headers: { 'cache-control': 'public, max-age=60' } },
       '/api/returned-error': { headers: { 'cache-control': 'public, max-age=60' } },
+      '/payload-rules/**': { swr: 60 },
+      '/payload-rules/redirect': { redirect: '/' },
+      '/payload-rules/proxy': { proxy: '/api/hello' },
+      '/payload-rules/headers': { headers: { 'x-payload-rules': 'applied' } },
     },
     prerender: {
       routes: [

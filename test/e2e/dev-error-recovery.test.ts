@@ -164,8 +164,9 @@ test('reloads a page whose app never started once the file it failed on compiles
     await page.goto('/client-only')
     await expect(page.locator('body')).toContainText('static child', { timeout: 30_000 })
 
+    await page.goto('about:blank')
     writeFileSync(child, healthy.replace('<span>static child</span>', '<span\n    static child\n  </span>'))
-    await page.reload()
+    await page.goto('/client-only')
     await expect(overlayOf(page)).toHaveCount(1, { timeout: 30_000 })
     await expect(page.locator('body')).not.toContainText('client only healthy')
 
