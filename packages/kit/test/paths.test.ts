@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { isWithinDir } from '../src/internal/paths.ts'
+import { isInsideNodeModules, isWithinDir } from '../src/internal/paths.ts'
 
 describe('isWithinDir', () => {
   it.each(['/project/layer', '/project/layer/'])('matches the directory itself and files inside `%s`', (dir) => {
@@ -29,5 +29,26 @@ describe('isWithinDir', () => {
   it('matches windows drive paths', () => {
     expect(isWithinDir('C:/project/layer/index.ts', 'C:/project/layer')).toBe(true)
     expect(isWithinDir('C:/project/layer-utils/index.ts', 'C:/project/layer')).toBe(false)
+  })
+})
+
+describe('isInsideNodeModules', () => {
+  it.each([
+    '/project/node_modules',
+    '/project/node_modules/',
+    '/project/node_modules/layer',
+    '/project/node_modules/layer/tsconfig.json',
+    'C:/project/node_modules/layer/tsconfig.json',
+  ])('matches `%s`', (path) => {
+    expect(isInsideNodeModules(path)).toBe(true)
+  })
+
+  it.each([
+    '/project',
+    '/project/tsconfig.json',
+    '/project/app/index.ts',
+    '/project/node_modules-utils/index.ts',
+  ])('does not match `%s`', (path) => {
+    expect(isInsideNodeModules(path)).toBe(false)
   })
 })

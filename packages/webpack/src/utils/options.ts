@@ -1,8 +1,10 @@
+import { existsSync } from 'node:fs'
 import type { Nuxt } from '@nuxt/schema'
-import { directoryToURL, resolveAlias } from '@nuxt/kit'
+import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, resolveAlias } from '@nuxt/kit'
+import { bundlerDiagnostics, isInsideNodeModules } from '@nuxt/kit/internal'
 import escapeRegExp from 'escape-string-regexp'
 import { resolveModulePath } from 'exsolve'
-import { normalize } from 'pathe'
+import { dirname, join, normalize } from 'pathe'
 
 /**
  * Compile-time constants of the Nuxt app for the client or server bundle.
@@ -86,6 +88,60 @@ export function getDevtool<T extends DevtoolBase> (sourcemap: boolean | 'hidden'
 export function shouldTypeCheck (nuxt: Nuxt): boolean {
   const { typeCheck } = nuxt.options.typescript
   return !nuxt.options.test && (typeCheck === true || typeCheck === (nuxt.options.dev ? 'dev' : 'build'))
+}
+
+/** The nearest `tsconfig.json` above `dir`, ignoring those of installed packages. */
+function findProjectTsConfig (dir: string): string | undefined {
+  while (!isInsideNodeModules(dir)) {
+    const tsconfigPath = join(dir, 'tsconfig.json')
+    if (existsSync(tsconfigPath)) {
+      return tsconfigPath
+    }
+    const parent = dirname(dir)
+    if (parent === dir) {
+      return
+    }
+    dir = parent
+  }
+}
+
+/**
+ * The `tsconfig` to type check with: the project's own `tsconfig.json`, or the app configuration
+ * Nuxt generates when the project has none.
+ *
+ * Reports `NUXT_B7040`/`NUXT_B7041` and returns `undefined` when type checking cannot run, warning
+ * in development and throwing in a production build.
+ */
+export async function resolveTypeCheckTsConfig (nuxt: Nuxt): Promise<string | undefined> {
+  const missing = await ensureDependencyInstalled(['typescript'], {
+    rootDir: nuxt.options.rootDir,
+    searchPaths: nuxt.options.modulesDir,
+    from: import.meta.url,
+  })
+  if (missing !== true) {
+    const diagnostic = {
+      deps: missing.map(dep => `\`${dep}\``).join(' and '),
+      installCommand: await getAddDependencyCommand(missing, nuxt.options.rootDir, { dev: true }),
+      skipped: nuxt.options.dev,
+    }
+    if (!nuxt.options.dev) {
+      throw bundlerDiagnostics.NUXT_B7040(diagnostic, { method: 'error' })
+    }
+    bundlerDiagnostics.NUXT_B7040(diagnostic)
+    return
+  }
+
+  const tsconfigPath = findProjectTsConfig(nuxt.options.rootDir) ?? join(nuxt.options.typesDir || nuxt.options.buildDir, 'tsconfig.app.json')
+  if (!existsSync(tsconfigPath)) {
+    const diagnostic = { rootDir: nuxt.options.rootDir, tsconfigPath, skipped: nuxt.options.dev }
+    if (!nuxt.options.dev) {
+      throw bundlerDiagnostics.NUXT_B7041(diagnostic, { method: 'error' })
+    }
+    bundlerDiagnostics.NUXT_B7041(diagnostic)
+    return
+  }
+
+  return tsconfigPath
 }
 
 /**

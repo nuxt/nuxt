@@ -3,7 +3,7 @@ import { join } from 'pathe'
 import type { Plugin } from 'vite'
 import type { Nuxt } from '@nuxt/schema'
 import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, isInsideNodeModules } from '@nuxt/kit/internal'
 import { readTSConfig, resolveTSConfig } from 'pkg-types'
 
 export async function VitePluginCheckerPlugin (nuxt: Nuxt): Promise<Plugin[] | undefined> {
@@ -30,7 +30,8 @@ export async function VitePluginCheckerPlugin (nuxt: Nuxt): Promise<Plugin[] | u
     return
   }
 
-  const rootTsConfig = await resolveTSConfig(nuxt.options.rootDir).catch(() => undefined)
+  const resolvedTsConfig = await resolveTSConfig(nuxt.options.rootDir).catch(() => undefined)
+  const rootTsConfig = resolvedTsConfig && !isInsideNodeModules(resolvedTsConfig) ? resolvedTsConfig : undefined
   const tsconfigPath = rootTsConfig ?? join(nuxt.options.typesDir || nuxt.options.buildDir, 'tsconfig.app.json')
   if (!existsSync(tsconfigPath)) {
     const diagnostic = { rootDir: nuxt.options.rootDir, tsconfigPath, skipped: nuxt.options.dev }
