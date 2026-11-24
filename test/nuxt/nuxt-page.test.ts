@@ -1,10 +1,12 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { flushPromises } from '@vue/test-utils'
 import { mountSuspended } from '@nuxt/test-utils/runtime'
 import { NuxtLayout, NuxtPage } from '#components'
+import { createPageMetaError } from '../../packages/nuxt/src/pages/runtime/page-meta'
+import { clearError, useError } from '#app/composables/error'
 
 describe('NuxtPage with nested routes of different depths (#33766)', () => {
   let router: ReturnType<typeof useRouter>
@@ -1191,5 +1193,134 @@ describe('NuxtPage transitions on nested child routes (#12361)', () => {
     expect(hooks).toEqual(['enter', 'leave'])
 
     el.unmount()
+  })
+})
+
+describe('NuxtPage loading hooks', () => {
+  let router: ReturnType<typeof useRouter>
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let resolvePage: undefined | (() => void)
+  let el: Awaited<ReturnType<typeof mountSuspended>>
+  let unhooks: Array<() => void>
+  let events: string[]
+  const pending = ref(false)
+
+  beforeEach(async () => {
+    router = useRouter()
+    nuxtApp = useNuxtApp()
+    resolvePage = undefined
+    events = []
+    pending.value = false
+
+    const SlowPage = defineComponent({
+      async setup () {
+        await new Promise<void>((resolve) => { resolvePage = resolve })
+        return () => h('div', 'slow')
+      },
+    })
+    router.addRoute({ name: 'slow-loading', path: '/slow-loading', component: SlowPage })
+    router.addRoute({
+      name: 'loading-parent',
+      path: '/loading-parent',
+      component: defineComponent({ setup: () => () => h('div', [h(NuxtPage)]) }),
+      children: [{ name: 'loading-child', path: 'child', component: SlowPage }],
+    })
+
+    el = await mountSuspended({ setup: () => () => h(NuxtPage, { 'data-pending': pending.value }) })
+    unhooks = [
+      nuxtApp.hook('page:finish', () => { events.push('page:finish') }),
+      nuxtApp.hook('page:loading:end', () => { events.push('page:loading:end') }),
+    ]
+  })
+
+  afterEach(async () => {
+    for (const unhook of unhooks) { unhook() }
+    el.unmount()
+    await navigateTo('/')
+    router.removeRoute('slow-loading')
+    router.removeRoute('loading-parent')
+  })
+
+  it('does not call `page:loading:end` early when NuxtPage re-renders during navigation', async () => {
+    unhooks.push(nuxtApp.hook('page:start', () => { pending.value = true }))
+
+    await navigateTo('/slow-loading')
+    await flushPromises()
+    expect(events).toEqual([])
+
+    resolvePage!()
+    await flushPromises()
+    expect(events).toEqual(['page:finish', 'page:loading:end'])
+  })
+
+  it('does not call `page:loading:end` early when NuxtPage re-renders before the route changes', async () => {
+    unhooks.push(router.beforeResolve(async () => {
+      pending.value = true
+      await nextTick()
+      await nextTick()
+    }))
+
+    await navigateTo('/slow-loading')
+    await flushPromises()
+    expect(events).toEqual([])
+
+    resolvePage!()
+    await flushPromises()
+    expect(events).toEqual(['page:finish', 'page:loading:end'])
+  })
+
+  it('does not call `page:loading:end` early on a same-key navigation while the page is pending', async () => {
+    await navigateTo('/slow-loading')
+    await flushPromises()
+    await navigateTo('/slow-loading?foo=bar')
+    await flushPromises()
+    expect(events).toEqual([])
+
+    resolvePage!()
+    await flushPromises()
+    expect(events).toEqual(['page:finish', 'page:loading:end'])
+  })
+
+  it('does not call `page:loading:end` early when returning to a child route', async () => {
+    await navigateTo('/loading-parent/child')
+    await flushPromises()
+    resolvePage!()
+    await flushPromises()
+    await navigateTo('/loading-parent')
+    await flushPromises()
+    events = []
+
+    await navigateTo('/loading-parent/child')
+    await flushPromises()
+    expect(events).toEqual([])
+
+    resolvePage!()
+    await flushPromises()
+    expect(events).toEqual(['page:finish', 'page:loading:end'])
+  })
+})
+
+describe('createPageMetaError', () => {
+  afterEach(async () => {
+    vi.restoreAllMocks()
+    await clearError()
+    await navigateTo('/')
+  })
+
+  it('should fail navigation to the page with a fatal error', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {})
+    const router = useRouter()
+    router.addRoute({
+      name: 'page-meta-error',
+      path: '/page-meta-error',
+      component: defineComponent({ template: '<div />' }),
+      meta: createPageMetaError(new Error('setup value')),
+    })
+
+    await expect(navigateTo('/page-meta-error')).rejects.toMatchObject({ status: 500, fatal: true })
+
+    expect(useRoute().path).not.toBe('/page-meta-error')
+    expect(useError().value).toMatchObject({ status: 500, statusText: 'NUXT_E2013', fatal: true })
+    router.removeRoute('page-meta-error')
   })
 })

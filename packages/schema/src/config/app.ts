@@ -1,7 +1,7 @@
 import process from 'node:process'
 import { defu } from 'defu'
 import { resolve } from 'pathe'
-import { defineResolvers } from '../utils/definition.ts'
+import { booleanOr, defineResolvers } from '../utils/definition.ts'
 import { schemaDiagnostics } from '../diagnostics.ts'
 import type { AppHeadMetaObject } from '../types/head.ts'
 import type { NuxtAppConfig, ViewTransitionOptions } from '../types/config.ts'
@@ -16,14 +16,8 @@ export default defineResolvers({
       use: ['xlink:href', 'href'],
     },
     compilerOptions: {},
-    runtimeCompiler: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
-    optionsApi: {
-      $resolve: val => typeof val === 'boolean' ? val : false,
-    },
+    runtimeCompiler: booleanOr(false),
+    optionsApi: booleanOr(false),
 
     /**
      * Enable experimental support for Vue Vapor Mode (requires Vue 3.6+).
@@ -33,11 +27,7 @@ export default defineResolvers({
      * VDOM components.
      * @see [Vue Vapor Mode release notes](https://github.com/vuejs/core/releases/tag/v3.6.0-rc.1)
      */
-    vapor: {
-      $resolve: (val) => {
-        return typeof val === 'boolean' ? val : false
-      },
-    },
+    vapor: booleanOr(false),
     propsDestructure: true,
 
     config: {},

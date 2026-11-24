@@ -25,14 +25,11 @@
   },
   "dependencies": {
     "@nuxt/kit": "workspace:*",
-    "clickable-path": "catalog:build",
     "defu": "catalog:build",
     "exsolve": "catalog:build",
-    "hookable": "catalog:app-runtime",
     "mocked-exports": "catalog:build",
     "my-bad": "catalog:nitro-runtime",
     "pathe": "catalog:build",
-    "rou3": "catalog:build",
     "srvx": "catalog:nitro-runtime",
     "ufo": "catalog:build",
     "ultrahtml": "catalog:build"
@@ -49,7 +46,7 @@
     "vite": "catalog:vite"
   },
   "engines": {
-    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.22.0 || ^24.15.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {

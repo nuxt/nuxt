@@ -6,20 +6,16 @@ import { directoryToURL } from './internal/esm.ts'
 import { useNuxt } from './context.ts'
 import { kitDiagnostics } from './diagnostics/kit-api.ts'
 
-const SEMANTIC_VERSION_RE = /-\d+\.[0-9a-f]+/
+const SEMANTIC_VERSION_RE = /-\d+[.-][0-9a-f]+/
 export function normalizeSemanticVersion (version: string): string {
   return version.replace(SEMANTIC_VERSION_RE, '') // Remove edge prefix
 }
 
 const builderMap = {
+  '@nuxt/rsbuild-builder': 'rsbuild',
   '@nuxt/rspack-builder': 'rspack',
   '@nuxt/vite-builder': 'vite',
   '@nuxt/webpack-builder': 'webpack',
-}
-
-function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
-  const nuxtVersion = getNuxtVersion(nuxt)
-  return satisfies(normalizeSemanticVersion(nuxtVersion), version, { includePrerelease: true })
 }
 
 /**
@@ -28,10 +24,9 @@ function checkNuxtVersion (version: string, nuxt: Nuxt = useNuxt()): boolean {
 export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<NuxtCompatibilityIssues> {
   const issues: NuxtCompatibilityIssues = []
 
-  // Nuxt version check
   if (constraints.nuxt) {
     const nuxtVersion = getNuxtVersion(nuxt)
-    if (!checkNuxtVersion(constraints.nuxt, nuxt)) {
+    if (!satisfies(normalizeSemanticVersion(nuxtVersion), constraints.nuxt, { includePrerelease: true })) {
       issues.push({
         name: 'nuxt',
         message: `Nuxt version \`${constraints.nuxt}\` is required but currently using \`${nuxtVersion}\``,
@@ -39,7 +34,6 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Builder compatibility check
   if (constraints.builder && typeof nuxt.options.builder === 'string') {
     const currentBuilder = builderMap[nuxt.options.builder] || nuxt.options.builder
     if (currentBuilder in constraints.builder) {
@@ -66,7 +60,6 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Nitro version check
   if (constraints.nitro) {
     const nitroVersion = getNitroFullVersion(nuxt)
     if (nitroVersion && !satisfies(normalizeSemanticVersion(nitroVersion), constraints.nitro, { includePrerelease: true })) {
@@ -77,10 +70,8 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
     }
   }
 
-  // Allow extending compatibility checks
   await nuxt.callHook('kit:compatibility', constraints, issues)
 
-  // Issues formatter
   issues.toString = () =>
     issues.map(issue => ` - [${issue.name}] ${issue.message}`).join('\n')
 
@@ -93,7 +84,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
 export async function assertNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<true> {
   const issues = await checkNuxtCompatibility(constraints, nuxt)
   if (issues.length) {
-    throw kitDiagnostics.NUXT_B8004({ issues: issues.toString() })
+    throw kitDiagnostics.NUXT_B8004({ issues: issues.toString() }, { method: 'error' })
   }
   return true
 }
@@ -106,7 +97,7 @@ export async function hasNuxtCompatibility (constraints: NuxtCompatibility, nuxt
   return !issues.length
 }
 
-export type NuxtMajorVersion = 2 | 3 | 4
+export type NuxtMajorVersion = 2 | 3 | 4 | 5
 
 /**
  * Check if current Nuxt instance is of specified major version
@@ -149,19 +140,15 @@ function getNitroFullVersion (nuxt: Nuxt): string | undefined {
       import.meta.url,
     ]
     // a nuxt <5 host always builds with nitropack, so prefer it there.
-    let nuxtMajor: number | undefined
-    try {
-      nuxtMajor = Number.parseInt(getNuxtVersion(nuxt), 10)
-    } catch {
-      // no nuxt version available; keep the default order
-    }
+    const nuxtVersion = readNuxtVersion(nuxt)
+    const nuxtMajor = nuxtVersion ? Number.parseInt(nuxtVersion, 10) : undefined
     const packages = nuxtMajor !== undefined && nuxtMajor < 5 ? ['nitropack', 'nitro'] : ['nitro', 'nitropack']
     for (const pkg of packages) {
       const path = resolvePackageJSON(pkg, { from, try: true })
       if (path) {
         try {
           const parsed = JSON.parse(readFileSync(path, 'utf8')) as { name?: string, version?: string }
-          if (parsed.name === pkg && parsed.version) {
+          if ((parsed.name === pkg || parsed.name === `${pkg}-nightly`) && parsed.version) {
             version = parsed.version
             break
           }
@@ -212,9 +199,14 @@ const NUXT_VERSION_RE = /^v/g
  * Get nuxt version
  */
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
-  const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
-  if (typeof rawVersion !== 'string') {
-    throw kitDiagnostics.NUXT_B8005()
+  const version = readNuxtVersion(nuxt)
+  if (version === undefined) {
+    throw kitDiagnostics.NUXT_B8005({}, { method: 'error' })
   }
-  return rawVersion.replace(NUXT_VERSION_RE, '')
+  return version
+}
+
+function readNuxtVersion (nuxt: Nuxt | any): string | undefined {
+  const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
+  return typeof rawVersion === 'string' ? rawVersion.replace(NUXT_VERSION_RE, '') : undefined
 }

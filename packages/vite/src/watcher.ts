@@ -2,6 +2,7 @@ import { existsSync, statSync } from 'node:fs'
 import type { Nuxt, NuxtBuilder } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories } from '@nuxt/kit'
 import { normalize, resolve } from 'pathe'
+import { isWithinDir } from '@nuxt/kit/internal'
 
 /**
  * chokidar registers paths passed to `add()` asynchronously and, because vite
@@ -23,16 +24,17 @@ export const setupWatcher: NonNullable<NuxtBuilder['setupWatcher']> = (nuxt: Nux
   const extraPaths = new Set<string>()
   for (const layer of getLayerDirectories(nuxt)) {
     extraPaths.add(layer.app)
-    if (!layer.server.startsWith(layer.app.replace(/\/?$/, '/'))) {
-      extraPaths.add(layer.server)
+    for (const dir of [layer.server, layer.shared]) {
+      if (!isWithinDir(dir, layer.app)) {
+        extraPaths.add(dir)
+      }
     }
   }
 
-  const srcDir = nuxt.options.srcDir.replace(/\/?$/, '/')
   for (const pattern of nuxt.options.watch) {
     if (typeof pattern !== 'string') { continue }
     const path = resolve(nuxt.options.srcDir, pattern)
-    if (!path.startsWith(srcDir)) {
+    if (!isWithinDir(path, nuxt.options.srcDir)) {
       extraPaths.add(path)
     }
   }

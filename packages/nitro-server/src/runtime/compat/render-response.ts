@@ -1,14 +1,11 @@
 import type { H3Event } from 'nitro/h3'
+import { encodeDocument } from 'nuxt/internal/renderer/encode'
 
 interface LegacyHooks {
   callHook: (name: any, ...args: any[]) => unknown
 }
 
-/**
- * The payload nitro v2 passed to `render:response`. Typed here rather than declared on
- * `NitroRuntimeHooks`: the hook exists for nitro v2 module code, which types it against
- * nitropack v2, and Nuxt does not offer it to code written for this server.
- */
+/** The payload nitro v2 passed to `render:response`. */
 interface LegacyRenderResponse {
   body: string | undefined
   statusCode?: number
@@ -23,13 +20,14 @@ interface LegacyRenderResponse {
  * (`nuxt-security` sets `content-security-policy` with the nonce it injected during
  * `render:html`), so dropping it silently leaves markup claiming a nonce no header allows.
  *
- * Returns the body to send, which the hook may replace on non-streamed responses.
+ * Returns the replacement body a listener set, if any; streamed responses ignore replacements.
  */
-export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHooks, body: string | undefined): Promise<string | undefined> {
-  const snapshot: Record<string, string> = Object.fromEntries(event.res.headers.entries())
-  const headers: Record<string, string> = { ...snapshot }
+export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHooks, body: Pick<RenderBody, 'html'> | undefined): Promise<string | undefined> {
+  const headers = createHeaderRecord(event.res.headers)
+  let replacement: string | undefined
   const response: LegacyRenderResponse = {
-    body,
+    get body () { return replacement ?? body?.html },
+    set body (value: string | undefined) { replacement = value },
     statusCode: event.res.status,
     statusMessage: event.res.statusText,
     headers,
@@ -37,18 +35,9 @@ export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHo
 
   await hooks.callHook('render:response', response, { event })
 
-  for (const header in response.headers) {
-    const value = response.headers[header]
-    if (value === undefined) {
-      event.res.headers.delete(header)
-    } else if (value !== snapshot[header] || !event.res.headers.has(header)) {
-      event.res.headers.set(header, value)
-    }
-  }
-
-  for (const header in snapshot) {
-    if (!(header in response.headers)) {
-      event.res.headers.delete(header)
+  if (response.headers && response.headers !== headers) {
+    for (const [name, value] of Object.entries(response.headers)) {
+      setHeader(event.res.headers, name, value)
     }
   }
 
@@ -64,7 +53,66 @@ export async function applyLegacyRenderResponse (event: H3Event, hooks: LegacyHo
     return undefined
   }
 
-  return typeof response.body === 'string' ? response.body : body
+  return typeof replacement === 'string' ? replacement : undefined
+}
+
+/**
+ * A live view of `event.res.headers` as the record nitro v2 passed to `render:response`,
+ * without `set-cookie`, which has no single-string form. The target is a snapshot for
+ * `util.inspect`, which bypasses the traps.
+ */
+function createHeaderRecord (headers: Headers): Record<string, string> {
+  const read = (name: string | symbol): string | undefined => {
+    if (typeof name !== 'string' || name.toLowerCase() === 'set-cookie') { return }
+    try {
+      return headers.get(name) ?? undefined
+    } catch {
+      // not a valid header name
+    }
+  }
+
+  const snapshot: Record<string, string> = {}
+  const write = (name: string | symbol, value: unknown) => {
+    if (typeof name !== 'string') { return }
+    setHeader(headers, name, value)
+    const current = read(name)
+    if (current === undefined) {
+      delete snapshot[name.toLowerCase()]
+    } else {
+      snapshot[name.toLowerCase()] = current
+    }
+  }
+  for (const [name, value] of headers) {
+    if (name !== 'set-cookie') {
+      snapshot[name] = value
+    }
+  }
+
+  return new Proxy(snapshot, {
+    get: (_, name) => read(name),
+    has: (_, name) => read(name) !== undefined,
+    set (_, name, value) {
+      write(name, value)
+      return true
+    },
+    deleteProperty (_, name) {
+      write(name, undefined)
+      return true
+    },
+    ownKeys: () => [...new Set(headers.keys())].filter(name => name !== 'set-cookie'),
+    getOwnPropertyDescriptor (_, name) {
+      const value = read(name)
+      return value === undefined ? undefined : { value, writable: true, enumerable: true, configurable: true }
+    },
+  })
+}
+
+function setHeader (headers: Headers, name: string, value: unknown): void {
+  if (value === undefined || value === null) {
+    headers.delete(name)
+  } else {
+    headers.set(name, String(value))
+  }
 }
 
 const streamedResponses = new WeakSet<Response>()
@@ -83,46 +131,70 @@ export function isStreamedResponse (response: Response): boolean {
   return streamedResponses.has(response)
 }
 
-const renderBodies = new WeakMap<object, string>()
+/** A rendered document: the bytes that are sent, and the HTML they were encoded from. */
+export interface RenderBody {
+  bytes: Uint8Array<ArrayBuffer>
+  readonly html: string
+}
 
-/**
- * Remember the HTML a response was built from, keyed by the `ResponseInit` it was built
- * with, so that the body can be offered to a `render:response` listener without reading it
- * back out of the `Response`.
- */
-export function rememberRenderBody (init: object | undefined, body: unknown): void {
-  if (init && typeof body === 'string') {
-    renderBodies.set(init, body)
+/** Encode a rendered document once; `html` stays available for `render:response` listeners. */
+export function toRenderBody (html: string | string[]): RenderBody {
+  if (typeof html === 'string') {
+    return {
+      bytes: encodeDocument([html]),
+      html,
+    }
+  }
+  const chunks = html
+  let joined: string | undefined
+  return {
+    bytes: encodeDocument(chunks),
+    get html () { return joined ??= chunks.join('') },
   }
 }
 
+const renderBodies = new WeakMap<Response, RenderBody>()
+
 /**
- * Emit `render:response` for a response the Nuxt renderer produced, rebuilding it if the
- * hook changed anything: the `Response` copied status and headers from `event.res` when it
- * was constructed, so mutations made through the hook are not otherwise visible on it.
+ * Remember the document a response was built from, so that the body can be offered to a
+ * `render:response` listener without reading it back out of the `Response`.
+ */
+export function rememberRenderBody (response: Response, body: RenderBody): void {
+  renderBodies.set(response, body)
+}
+
+/**
+ * Emit `render:response` for a response the Nuxt renderer produced and rebuild it from
+ * `event.res`, which is first given the status and headers of the response. The body is
+ * offered only when the response was built from a rendered document.
  */
 export async function applyLegacyRenderResponseTo (event: H3Event, hooks: LegacyHooks, response: Response, createResponse: (body: BodyInit | null, init?: ResponseInit) => Response): Promise<Response> {
-  const body = renderBodies.get(event.res)
-  renderBodies.delete(event.res)
+  const body = renderBodies.get(response)
 
-  if (body !== undefined) {
-    const replaced = await applyLegacyRenderResponse(event, hooks, body)
-    return createResponse(replaced ?? body, event.res)
+  event.res.status = response.status
+  event.res.statusText = response.statusText || undefined
+  replaceHeaders(event.res.headers, response.headers)
+
+  const replaced = await applyLegacyRenderResponse(event, hooks, body)
+  const rebuilt = createResponse(replaced ?? body?.bytes ?? response.body, event.res)
+  if (isStreamedResponse(response)) {
+    markStreamedResponse(rebuilt)
   }
+  return rebuilt
+}
 
-  // a streamed body, or a response not built from `event.res` (a redirect): the status is
-  // committed, so only header changes carry over
-  await applyLegacyRenderResponse(event, hooks, undefined)
-  const cookies = new Set(response.headers.getSetCookie())
-  for (const [name, value] of event.res.headers) {
-    if (name !== 'set-cookie') {
-      response.headers.set(name, value)
+function replaceHeaders (target: Headers, source: Headers): void {
+  for (const name of [...target.keys()]) {
+    if (!source.has(name)) {
+      target.delete(name)
     }
   }
-  for (const cookie of event.res.headers.getSetCookie()) {
-    if (!cookies.has(cookie)) {
-      response.headers.append('set-cookie', cookie)
+  target.delete('set-cookie')
+  for (const [name, value] of source) {
+    if (name === 'set-cookie') {
+      target.append(name, value)
+    } else {
+      target.set(name, value)
     }
   }
-  return response
 }

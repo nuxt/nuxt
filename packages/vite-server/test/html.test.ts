@@ -30,6 +30,7 @@ function createNuxt (overrides: Record<string, unknown> = {}) {
         app: { baseURL: '/', buildAssetsDir: '/_nuxt/' },
         public: { greeting: 'hello' },
       },
+      experimental: { spaLoadingTemplateLocation: 'body' },
       ...overrides,
     },
   } as unknown as Nuxt
@@ -70,5 +71,18 @@ describe('renderIndexHtml', () => {
     const html = renderIndexHtml(createNuxt(), './entry.js', '<p>loading</p>')
 
     expect(html).toContain('<div id="__nuxt-loader"><p>loading</p></div>')
+  })
+
+  it('renders the loading template inside the app root with `spaLoadingTemplateLocation: within`', () => {
+    const html = renderIndexHtml(createNuxt({ experimental: { spaLoadingTemplateLocation: 'within' } }), './entry.js', '<p>loading</p>')
+
+    expect(html).toContain('<div id="__nuxt"><p>loading</p></div>')
+    expect(html).not.toContain('__nuxt-loader')
+  })
+
+  it('keeps the ssr outlet in the app root with `spaLoadingTemplateLocation: within`', () => {
+    const html = renderIndexHtml(createNuxt({ ssr: true, experimental: { spaLoadingTemplateLocation: 'within' } }), './entry.js', '<p>loading</p>')
+
+    expect(html).toContain('<div id="__nuxt"><!--ssr-outlet--></div>')
   })
 })

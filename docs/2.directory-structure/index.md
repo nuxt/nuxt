@@ -26,6 +26,7 @@ This directory also includes specific files:
 - [`app.config.ts`](/docs/directory-structure/app/app-config): a reactive configuration within your application
 - [`app.vue`](/docs/directory-structure/app/app): the root component of your Nuxt application
 - [`error.vue`](/docs/directory-structure/app/error): the error page of your Nuxt application
+- [`spa-loading-template.html`](/docs/directory-structure/app/spa-loading-template): the loading screen shown while a client-side rendered (`ssr: false`) page initializes
 
 ## Public Directory
 

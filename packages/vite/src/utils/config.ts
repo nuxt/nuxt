@@ -8,7 +8,7 @@ import { bundlerDiagnostics } from '@nuxt/kit/internal'
  */
 export function resolveClientManifestFile (manifest: string | boolean | undefined) {
   if (!manifest) {
-    throw bundlerDiagnostics.NUXT_B7020()
+    throw bundlerDiagnostics.NUXT_B7020({}, { method: 'error' })
   }
   return manifest === true ? '.vite/manifest.json' : manifest
 }
@@ -24,7 +24,7 @@ export function resolveClientEntry (config: ResolvedConfig) {
     }
   }
 
-  throw bundlerDiagnostics.NUXT_B7005({ input: JSON.stringify(input) })
+  throw bundlerDiagnostics.NUXT_B7005({ input: JSON.stringify(input) }, { method: 'error' })
 }
 
 export function resolveServerEntry (config: ResolvedConfig) {
@@ -38,5 +38,5 @@ export function resolveServerEntry (config: ResolvedConfig) {
     }
   }
 
-  throw bundlerDiagnostics.NUXT_B7006({ input: JSON.stringify(input) })
+  throw bundlerDiagnostics.NUXT_B7006({ input: JSON.stringify(input) }, { method: 'error' })
 }

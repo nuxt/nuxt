@@ -1,5 +1,6 @@
 import { joinURL } from 'ufo'
 import type { Plugin } from 'vite'
+import { isWithinDir } from '@nuxt/kit/internal'
 import { isCSS } from '../utils/index.ts'
 
 interface DevStyleSSRPluginOptions {
@@ -19,12 +20,16 @@ export function DevStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
       }
 
       let moduleId = id
-      if (moduleId.startsWith(options.srcDir)) {
+      if (isWithinDir(moduleId, options.srcDir)) {
         moduleId = moduleId.slice(options.srcDir.length)
       }
 
       // When dev `<style>` is injected, remove the `<link>` styles from manifest
-      const selectors = [joinURL(options.buildAssetsURL, moduleId), joinURL(options.buildAssetsURL, '@fs', moduleId)]
+      const selectors = [
+        joinURL(options.buildAssetsURL, moduleId),
+        joinURL(options.buildAssetsURL, '@fs', id),
+        joinURL(options.buildAssetsURL, '@id', id.replace('\0', '__x00__')),
+      ]
       return code + selectors.map(selector => `\ndocument.querySelectorAll(\`link[href="${selector}"]\`).forEach(i=>i.remove())`).join('')
     },
   }

@@ -3,7 +3,8 @@ import { tryUseNitro } from '@nuxt/kit'
 import { joinURL, withLeadingSlash, withTrailingSlash } from 'ufo'
 import { dirname, relative } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
-import { isCSSRequest } from 'vite'
+import jsTokens from 'js-tokens'
+import type { Token } from 'js-tokens'
 import type { Plugin } from 'vite'
 
 import { isInlineStyleId } from '../utils/inline-styles.ts'
@@ -12,19 +13,18 @@ const PREFIX = '\0virtual:public?'
 const PREFIX_RE = /^\0virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
-const QUOTE_RE = /['"`]/
+const CSS_REQUEST_RE = /\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:$|\?)/
 
-/**
- * Find the quote character of the string literal containing the given index, so that
- * merged chunks with differently-quoted literals are each handled correctly.
- */
-function enclosingQuote (code: string, index: number) {
-  for (let i = index - 1; i >= 0; i--) {
-    if (QUOTE_RE.test(code[i]!) && code[i - 1] !== '\\') {
-      return code[i]!
-    }
+function stringDelimiter (token: Token) {
+  switch (token.type) {
+    case 'StringLiteral':
+      return token.value[0]!
+    case 'NoSubstitutionTemplate':
+    case 'TemplateHead':
+    case 'TemplateMiddle':
+    case 'TemplateTail':
+      return '`'
   }
-  return '"'
 }
 
 interface VitePublicDirsPluginOptions {
@@ -41,18 +41,19 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
       apply () {
         return !!options.dev && !!options.baseURL && options.baseURL !== '/'
       },
-      transform (code, id, meta?: unknown) {
-        if (!isCSSRequest(id) || !CSS_URL_SINGLE_RE.test(code)) { return }
-
-        const s = rolldownString(code, id, meta)
-        for (const match of code.matchAll(CSS_URL_RE)) {
-          const [full, url] = match
-          if (url && resolveFromPublicAssets(url)) {
-            s.update(match.index, match.index + full.length, `url(${joinURL(options.baseURL!, url)})`)
+      transform: {
+        filter: { id: CSS_REQUEST_RE, code: CSS_URL_SINGLE_RE },
+        handler (code, id, meta?: unknown) {
+          const s = rolldownString(code, id, meta)
+          for (const match of code.matchAll(CSS_URL_RE)) {
+            const [full, url] = match
+            if (url && resolveFromPublicAssets(url)) {
+              s.update(match.index, match.index + full.length, `url(${joinURL(options.baseURL!, url)})`)
+            }
           }
-        }
 
-        return generateTransform(s, id)
+          return generateTransform(s, id)
+        },
       },
     },
     {
@@ -79,23 +80,33 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
           }
         },
       },
-      renderChunk (code, chunk) {
-        if (!isInlineStyleId(chunk.facadeModuleId)) { return }
+      renderChunk: {
+        // only chunks with a root-relative `url()` can reference a public asset
+        filter: { code: CSS_URL_SINGLE_RE },
+        handler (code, chunk) {
+          if (!isInlineStyleId(chunk.facadeModuleId)) { return }
 
-        const s = rolldownString(code, chunk.fileName)
-        for (const match of code.matchAll(CSS_URL_RE)) {
-          const [full, url] = match
-          if (url && resolveFromPublicAssets(url)) {
-            const q = enclosingQuote(code, match.index)
-            // update by index to cover every `url()` in a chunk
-            s.update(match.index, match.index + full.length, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
+          const s = rolldownString(code, chunk.fileName)
+          let offset = 0
+          for (const token of jsTokens(code)) {
+            const start = offset
+            offset += token.value.length
+            const q = stringDelimiter(token)
+            if (!q) { continue }
+            for (const match of token.value.matchAll(CSS_URL_RE)) {
+              const [full, url] = match
+              if (url && resolveFromPublicAssets(url)) {
+                const index = start + match.index
+                s.update(index, index + full.length, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
+              }
+            }
           }
-        }
 
-        if (s.hasChanged()) {
-          s.prepend(`import { publicAssetsURL } from '#internal/nuxt/paths';`)
-        }
-        return generateTransform(s, chunk.fileName)
+          if (s.hasChanged()) {
+            s.prepend(`import { publicAssetsURL } from '#internal/nuxt/paths';`)
+          }
+          return generateTransform(s, chunk.fileName)
+        },
       },
       generateBundle (_outputOptions, bundle) {
         for (const [file, chunk] of Object.entries(bundle)) {

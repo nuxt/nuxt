@@ -7,7 +7,9 @@ import { componentDiagnostics } from '@nuxt/kit/internal'
 import { parse, walk } from 'ultrahtml'
 import { ScopeTracker, parseAndWalk } from 'oxc-walker'
 import { VUE_ID_FILTER } from '../../core/utils/index.ts'
+import { findSFCScriptBlocks } from '../../core/utils/parse-utils.ts'
 import { linkToAlias, offsetToPosition } from '../../utils.ts'
+import { HYDRATION_PROPS } from '../utils.ts'
 import type { Component, ComponentsOptions } from 'nuxt/schema'
 
 interface LoaderOptions {
@@ -15,17 +17,7 @@ interface LoaderOptions {
   transform?: ComponentsOptions['transform']
 }
 
-const SCRIPT_RE = /(?<=<script[^>]*>)[\s\S]*?(?=<\/script>)/gi
 const TEMPLATE_RE = /<template>([\s\S]*)<\/template>/
-const hydrationStrategyMap = {
-  hydrateOnIdle: 'Idle',
-  hydrateOnVisible: 'Visible',
-  hydrateOnInteraction: 'Interaction',
-  hydrateOnMediaQuery: 'MediaQuery',
-  hydrateAfter: 'Time',
-  hydrateWhen: 'If',
-  hydrateNever: 'Never',
-}
 
 const TEMPLATE_WITH_LAZY_HYDRATION_RE = /<template>[\s\S]*\b(?:hydrate-on-idle|hydrateOnIdle|hydrate-on-visible|hydrateOnVisible|hydrate-on-interaction|hydrateOnInteraction|hydrate-on-media-query|hydrateOnMediaQuery|hydrate-after|hydrateAfter|hydrate-when|hydrateWhen|hydrate-never|hydrateNever)\b[\s\S]*<\/template>/
 
@@ -47,7 +39,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
       },
 
       async handler (code, id, meta?: unknown) {
-        // change <LazyMyComponent hydrate-on-idle /> to <LazyIdleMyComponent hydrate-on-idle />
+        // change <LazyMyComponent hydrate-on-idle /> to <LazyIdle_MyComponent hydrate-on-idle />
         const { 0: template, index: offset = 0 } = code.match(TEMPLATE_RE) || {}
         if (!template) {
           return
@@ -56,7 +48,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
           const ast = parse(template)
 
           const scopeTracker = new ScopeTracker({ preserveExitedScopes: true })
-          for (const { 0: script } of code.matchAll(SCRIPT_RE)) {
+          for (const { content: script } of findSFCScriptBlocks(code)) {
             if (!script) { continue }
             try {
               parseAndWalk(script, id, { scopeTracker })
@@ -86,11 +78,11 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             for (const attr in node.attributes) {
               const isDynamic = attr.startsWith(':')
               const prop = camelCase(isDynamic ? attr.slice(1) : attr)
-              if (prop in hydrationStrategyMap) {
+              if (prop in HYDRATION_PROPS) {
                 if (strategy) {
                   componentDiagnostics.NUXT_B3005({ component: node.name, file: linkToAlias(id, nuxt, offsetToPosition(code, node.loc[0].start + offset)) })
                 } else {
-                  strategy = hydrationStrategyMap[prop as keyof typeof hydrationStrategyMap]
+                  strategy = HYDRATION_PROPS[prop]
                 }
               }
             }
@@ -104,7 +96,7 @@ export const LazyHydrationTransformPlugin = (options: LoaderOptions) => createUn
             }
 
             if (strategy) {
-              const newName = 'Lazy' + strategy + pascalName
+              const newName = 'Lazy' + strategy + '_' + pascalName
               const chunk = template.slice(node.loc[0].start, node.loc.at(-1)!.end)
               const chunkOffset = node.loc[0].start + offset
               const { 0: startingChunk, index: startingPoint = 0 } = chunk.match(new RegExp(`<${node.name}[^>]*>`)) || {}

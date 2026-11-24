@@ -1,10 +1,12 @@
-import { existsSync, promises as fsp } from 'node:fs'
-import { join, resolve } from 'pathe'
+import { join } from 'pathe'
 import { build, copyPublicAssets, createDevServer, prepare, prerender } from 'nitro/builder'
 import type { Nitro } from 'nitro/types'
 import type { Nuxt } from '@nuxt/schema'
 import { logger } from '@nuxt/kit'
+import { startBuildEnvironment } from '@nuxt/kit/internal'
 import { defineEventHandler, dynamicEventHandler, handleCors } from 'nitro/h3'
+
+import { linkStaticDist } from './utils.ts'
 
 export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: Nitro): void {
   const devMiddlewareHandler = dynamicEventHandler()
@@ -12,7 +14,7 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
 
   // Copy public assets after prerender so app manifest can be present
   if (!nuxt.options.dev) {
-    nitro.hooks.hook('rollup:before', async (nitro) => {
+    nitro.hooks.hook('build:config', async (nitro) => {
       await copyPublicAssets(nitro)
       await nuxt.callHook('nitro:build:public-assets', nitro)
     })
@@ -27,11 +29,21 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
           nitro.options.virtual['nuxt/internal/entry'] = () => (compiler.outputFileSystem as typeof import('node:fs')).readFileSync(join(nuxt.options.buildDir, 'dist/server/server.mjs'), 'utf-8')
         }
       })
+    }
+    for (const builder of ['webpack', 'rspack', 'rsbuild'] as const) {
       nuxt.hook(`${builder}:compiled`, () => {
-        if (nitroBuilt) { nitro.hooks.callHook('rollup:reload') }
+        if (nitroBuilt) { nitro.hooks.callHook('build:reload') }
       })
     }
-    nuxt.hook('vite:compiled', () => { nuxt.server.reload() })
+    nuxt.hook('vite:compiled', () => {
+      if (nitroBuilt) { nuxt.server.reload() }
+    })
+    // the renderer config re-exports the head entries hoisted from the app component
+    nuxt.hook('app:templatesGenerated', async (_app, templates) => {
+      if (nitroBuilt && templates.some(template => template.filename === 'unhead.config.mjs')) {
+        await nitro.hooks.callHook('build:reload')
+      }
+    })
 
     nuxt.hook('server:devHandler', (h, options) => {
       devMiddlewareHandler.set(defineEventHandler((event) => {
@@ -67,14 +79,18 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
       await prerender(nitro)
 
       logger.restoreAll()
-      await build(nitro)
-      logger.wrapAll()
+      try {
+        const report = nitro.options.static
+          ? undefined
+          : await startBuildEnvironment({ name: 'nitro', consumer: 'server', builder: nitro.options.builder || 'nitro' }, nuxt)
+        await build(nitro)
+        await report?.done(nitro.options.output.serverDir)
+      } finally {
+        logger.wrapAll()
+      }
 
       if (nitro.options.static) {
-        const dist = resolve(nuxt.options.rootDir, 'dist')
-        if (!existsSync(dist)) {
-          await fsp.symlink(nitro.options.output.publicDir, dist, 'junction').catch(() => {})
-        }
+        await linkStaticDist(nuxt.options.rootDir, nitro.options.output.publicDir)
       }
     } finally {
       nuxt._perf?.endPhase('nitro:build')

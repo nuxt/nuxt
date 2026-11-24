@@ -1,19 +1,15 @@
 import process from 'node:process'
 import { resolveAlias } from '@nuxt/kit'
+import { isWithinDir } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
-import { dirname, isAbsolute, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
+import { withTrailingSlash } from 'ufo'
 import { combineRE } from '../utils/plugins.ts'
+import { toVirtualId } from '../utils/virtual.ts'
 
-const PREFIX = 'virtual:nuxt:'
 const PREFIX_RE = /^\/?virtual:nuxt:/
-
-// encode the vfs key as a path relative to `rootDir` so that the same Nuxt
-// source produces byte-identical SSR output across machines
-export function toVirtualId (absolutePath: string, nuxt: Nuxt): string {
-  return PREFIX + encodeURIComponent(relative(nuxt.options.rootDir, absolutePath))
-}
 
 function fromVirtualId (id: string, nuxt: Nuxt): string {
   const search = id.match(QUERY_RE)?.[0] || ''
@@ -32,7 +28,7 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
   const alias = { ...nuxt.options.alias, ...options.alias }
 
   const resolveWithExt = (id: string) => {
-    for (const suffix of ['', '.' + options.mode]) {
+    for (const suffix of ['.' + options.mode, '']) {
       for (const ext of extensions) {
         const rId = id + suffix + ext
         if (rId in nuxt.vfs) {
@@ -57,13 +53,16 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
       id = resolve(id)
     }
 
-    const resolvedId = resolveWithExt(id)
-    if (resolvedId) {
-      return toVirtualId(resolvedId, nuxt) + search
+    if (!RELATIVE_ID_RE.test(id)) {
+      const resolvedId = resolveWithExt(id)
+      return resolvedId ? toVirtualId(resolvedId, nuxt) + search : undefined
     }
 
-    if (importer && RELATIVE_ID_RE.test(id)) {
+    if (importer) {
       const path = resolve(dirname(withoutQuery(fromVirtualId(importer, nuxt))), id)
+      if (!PREFIX_RE.test(importer) && !vfsLocationRE.test(path)) {
+        return
+      }
       // resolve relative paths to virtual files
       const resolved = resolveWithExt(path)
       if (resolved) {
@@ -82,18 +81,23 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
 
   const vfsEntries = new Set<string>()
   for (const key in nuxt.vfs) {
-    if (!key.startsWith('#build/') && !key.startsWith(nuxt.options.buildDir)) {
+    if (!key.startsWith('#build/') && !isWithinDir(key, nuxt.options.buildDir)) {
       vfsEntries.add(escapeDirectory(dirname(key)))
     }
   }
+
+  const vfsLocations = [
+    /^#build\//,
+    new RegExp('^(\\w:)?' + escapeDirectory(withTrailingSlash(nuxt.options.buildDir))),
+    ...Array.from(vfsEntries).map(id => new RegExp('^' + id)),
+  ]
+  const vfsLocationRE = combineRE(vfsLocations)
 
   const filter = {
     id: combineRE([
       PREFIX_RE,
       RELATIVE_ID_RE,
-      /^#build\//,
-      new RegExp('^(\\w:)?' + escapeDirectory(nuxt.options.buildDir)),
-      ...Array.from(vfsEntries).map(id => new RegExp('^' + id)),
+      ...vfsLocations,
       ...relevantAliases.size ? [new RegExp('^' + Array.from(relevantAliases).join('|') + '([\\\\/]|$)')] : [],
     ]),
   }

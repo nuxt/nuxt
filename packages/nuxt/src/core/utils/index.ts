@@ -1,5 +1,27 @@
+import { resolve } from 'pathe'
+import type { Nuxt } from '@nuxt/schema'
+
 export { getNameFromPath, hasSuffix, resolveComponentNameSegments } from './names.ts'
-export { JS_ID_RE, VUE_ID_FILTER, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, VUE_SCRIPT_TEMPLATE_ID_FILTER, VUE_TEMPLATE_ID_FILTER, getLoader, isJS, isVue, parseModuleId } from './plugins.ts'
+export { JS_ID_RE, VUE_FILE_RE, VUE_ID_FILTER, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, VUE_SCRIPT_TEMPLATE_ID_FILTER, VUE_TEMPLATE_ID_FILTER, getLoader, isJS, isVue, parseModuleId, vitestCacheKey } from './plugins.ts'
+
+/**
+ * Create a reporter that runs `report` once per `key` and `source`, so a diagnostic about a module
+ * prints once however many bundles transform it, and again if the module changes. In development,
+ * a change to the file on disk clears what was reported for it.
+ */
+export function createReportOnce (nuxt?: Nuxt) {
+  const reported = new Map<string, string>()
+  if (nuxt?.options.dev) {
+    nuxt.hook('builder:watch', (_event, path) => {
+      reported.delete(resolve(nuxt.options.srcDir, path))
+    })
+  }
+  return (key: string, source: string, report: () => void) => {
+    if (reported.get(key) === source) { return }
+    reported.set(key, source)
+    report()
+  }
+}
 
 export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
   if (arr.length < 2) {
@@ -18,21 +40,3 @@ export function uniqueBy<T, K extends keyof T> (arr: T[], key: K) {
 export const QUOTE_RE = /["']/g
 export const EXTENSION_RE = /\b\.\w+$/g
 export const SX_RE = /\.[tj]sx$/
-
-/**
- * Decode a route path for route-rule matching, returning it unchanged if it is not
- * percent-encoded or cannot be decoded. Reserved characters (`%2F`, `%3F`, …) are
- * left encoded, so decoding cannot introduce additional path segments. Only the path
- * portion is decoded; a query string, if present, is left untouched to avoid
- * double-decoding it.
- */
-export function decodeRoutePath (path: string) {
-  if (!path.includes('%')) { return path }
-  const queryIndex = path.indexOf('?')
-  const pathname = queryIndex === -1 ? path : path.slice(0, queryIndex)
-  try {
-    return queryIndex === -1 ? decodeURI(pathname) : decodeURI(pathname) + path.slice(queryIndex)
-  } catch {
-    return path
-  }
-}

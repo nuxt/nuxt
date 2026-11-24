@@ -339,13 +339,12 @@ export const Title: DefineSetupFnComponent<{}, {}, SlotWithDefault> = defineComp
       update()
     })
     return () => {
-      if (import.meta.dev && vapor && isVaporSlot(slots.default)) {
-        unheadDiagnostics.NUXT_E6004({ component: 'Title' })
-      }
       const defaultSlot = slots.default?.()
       input.title = defaultSlot?.[0]?.children ? String(defaultSlot?.[0]?.children) : undefined
       if (import.meta.dev) {
-        if (defaultSlot && (defaultSlot.length > 1 || (defaultSlot[0] && typeof defaultSlot[0].children !== 'string'))) {
+        if (vapor && isVaporSlot(slots.default)) {
+          unheadDiagnostics.NUXT_E6004({ component: 'Title' })
+        } else if (defaultSlot && (defaultSlot.length > 1 || (defaultSlot[0] && typeof defaultSlot[0].children !== 'string'))) {
           unheadDiagnostics.NUXT_E6002()
         }
       }

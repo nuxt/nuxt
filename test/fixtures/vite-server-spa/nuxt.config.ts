@@ -14,6 +14,20 @@ export default defineNuxtConfig({
   },
   sourcemap: false,
   compatibilityDate: 'latest',
+  vite: {
+    plugins: [{
+      name: 'respond-to-every-request',
+      apply: 'serve',
+      configureServer: server => () => {
+        server.middlewares.use((_req, res) => {
+          res.statusCode = 404
+          res.end()
+        })
+      },
+    }],
+  },
+  // the badge is skipped when `test` is set
+  test: false,
   server: {
     builder: 'vite',
   },

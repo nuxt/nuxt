@@ -1,12 +1,14 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { defineAsyncComponent, defineComponent, h } from 'vue'
 import { useNuxtApp } from '#app/nuxt'
 import { loadPayload } from '#app/composables/payload'
 import { preloadRouteComponents } from '#app/composables/preload'
 import { useRouter } from '#app/composables/router'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import type { PrefetchScheduler } from '#app/internal/prefetch'
+import layouts from '#build/layouts.mjs'
 
 // the test environment builds with `ssr: false`, which disables payload extraction
 vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
@@ -96,6 +98,35 @@ describe('prefetch scheduler navigation state', () => {
   })
 })
 
+describe('prefetch scheduler connection state', () => {
+  it('should only read the connection once work is scheduled, and resume when it changes', async () => {
+    const connection = Object.assign(new EventTarget(), { saveData: true })
+    const read = vi.fn(() => connection)
+    Object.defineProperty(navigator, 'connection', { configurable: true, get: read })
+    try {
+      const nuxtApp = useNuxtApp()
+      delete nuxtApp._prefetch
+      const scheduler = usePrefetchScheduler(nuxtApp)
+      await useRouter().push('/index')
+      document.dispatchEvent(new Event('visibilitychange'))
+      expect(read).not.toHaveBeenCalled()
+
+      const started: string[] = []
+      scheduleProbe(scheduler, 'payload:/held-on-save-data', started)
+      await tick()
+      expect(started).toEqual([])
+
+      connection.saveData = false
+      connection.dispatchEvent(new Event('change'))
+      await tick()
+      expect(started).toEqual(['payload:/held-on-save-data'])
+    } finally {
+      delete (navigator as { connection?: unknown }).connection
+      await useRouter().push('/')
+    }
+  })
+})
+
 describe('payload prefetch deduplication', () => {
   const payloadResponse = () => new Response('[{"data":1},{}]')
 
@@ -169,6 +200,40 @@ describe('payload prefetch deduplication', () => {
       expect(fetchSpy).toHaveBeenCalledTimes(2)
     } finally {
       fetchSpy.mockRestore()
+    }
+  })
+})
+
+describe('layout loading on navigation', () => {
+  it('should wait for an async layout to load before completing navigation', async () => {
+    const router = useRouter()
+    let release: () => void
+    const loader = vi.fn(() => new Promise<ReturnType<typeof defineComponent>>((resolve) => {
+      release = () => resolve(defineComponent({ render: () => h('div') }))
+    }))
+    layouts['deferred-layout'] = defineAsyncComponent(loader)
+    const removeRoute = router.addRoute({
+      path: '/deferred-layout',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'deferred-layout' },
+      component: defineComponent({ render: () => h('div') }),
+    })
+
+    try {
+      let settled = false
+      const navigation = router.push('/deferred-layout').then(() => { settled = true })
+      await tick()
+
+      expect(loader).toHaveBeenCalledTimes(1)
+      expect(settled).toBe(false)
+
+      release!()
+      await navigation
+      expect(router.currentRoute.value.path).toBe('/deferred-layout')
+    } finally {
+      removeRoute()
+      delete layouts['deferred-layout']
+      await router.push('/')
     }
   })
 })

@@ -1,24 +1,15 @@
-import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
-import { isWindows } from 'std-env'
-import { $fetch, fetch, getBrowser, setup, startServer, url } from '@nuxt/test-utils/e2e'
+import { $fetch, fetch, getBrowser, startServer, url } from '@nuxt/test-utils/e2e'
 
 import { isWebpack, runsOncePerBuilderInMatrix } from './matrix'
+import { setupFixture } from './utils'
 
 // The axis that matters for base URL routing is the nitro pipeline (`nitroViteEnvironment`), which
 // decides whether the SSR renderer is the only route registered. Base URLs with webpack/rspack are
 // covered by `dynamic-paths`.
 const runs = runsOncePerBuilderInMatrix && !isWebpack
 
-if (runs) {
-  await setup({
-    rootDir: fileURLToPath(new URL('./fixtures/base-url', import.meta.url)),
-    dev: false,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
-  })
-}
+await setupFixture('base-url', runs, { browser: true })
 
 describe.skipIf(!runs)('base URL set at build time', () => {
   it('should server-render pages under the base URL', async () => {
@@ -45,6 +36,10 @@ describe.skipIf(!runs)('base URL set at build time', () => {
     }
   })
 
+  it('should serve files written in the `nitro:build:public-assets` hook', async () => {
+    expect(await $fetch<string>('/foo/hook-asset.txt')).toBe('written in nitro:build:public-assets')
+  })
+
   it('should apply route rules to paths relative to the base URL', async () => {
     expect(await $fetch<string>('/foo/no-ssr')).toContain('data-ssr="false"')
   })
@@ -60,6 +55,26 @@ describe.skipIf(!runs)('base URL set at build time', () => {
     expect(res.status).toBe(404)
     expect(res.headers.get('content-type')).toContain('text/html')
     expect(await res.text()).toContain('<div id="__nuxt">')
+  })
+
+  it('should fetch routes of the app relative to the base URL with `serverFetch`', async () => {
+    expect(await $fetch('/foo/api/server-fetch', { headers: { cookie: 'a=1' } })).toMatchObject({
+      status: 200,
+      echo: { cookie: 'a=1' },
+      rules: { headers: { 'x-echo': '1' } },
+    })
+  })
+
+  it('should fetch routes of the app with `serverFetch` while prerendering', async () => {
+    expect(JSON.parse(await $fetch<string>('/foo/api/prerendered-fetch', { responseType: 'text' }))).toMatchObject({
+      status: 200,
+      echo: { cookie: null },
+      rules: { headers: { 'x-echo': '1' } },
+    })
+  })
+
+  it('should call `render:html` handlers registered with `useServerHooks`', async () => {
+    expect(await $fetch<string>('/foo/')).toContain('<meta name="server-hooks" content="ok">')
   })
 
   it('should hydrate and navigate on the client under the base URL', async () => {

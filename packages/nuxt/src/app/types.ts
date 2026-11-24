@@ -9,6 +9,8 @@ import type { SSRContext, createRenderer } from 'vue-bundle-renderer/runtime'
 import type { NuxtHookRegistry, NuxtRequestEvent, RuntimeConfig } from '@nuxt/schema'
 
 export type { NuxtLinkOptions } from '@nuxt/schema'
+export type { Serialize } from './types/serialize.js'
+export type { AnyFetchPath, AnyHTTPMethod, DynamicParam, Endpoint, HTTPMethod, TypedFetchErrorBody, TypedFetchMethods, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, TypedFetchResponseHeaders, ValidFetchInput, WildcardParam } from 'fetchdts'
 
 type HookResult = Promise<void> | void
 
@@ -66,6 +68,8 @@ export interface NuxtServerApp {
   payload: NuxtPayload
   ssrContext?: NuxtSSRContext
   [key: string]: unknown
+  /** @internal */
+  _cookieWriters?: Set<() => void>
 }
 
 /**
@@ -137,6 +141,11 @@ export interface NuxtPayload {
    * @internal
    */
   prefetchLinks?: Array<Record<string, string | boolean>>
+  /**
+   * The build that rendered an extracted `_payload.json`.
+   * @internal
+   */
+  buildId?: string
   [key: string]: unknown
 }
 
@@ -157,7 +166,13 @@ export interface NuxtSSRContext extends SSRContext {
   /** @internal */
   ['~renderResponse']?: Response
   /** @internal */
+  ['~headersSent']?: boolean
+  /** The app markup as rendered chunks, wrapped in the app root tags. @internal */
+  ['~htmlChunks']?: string[]
+  /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
+  /** Report an error that is kept out of the response to the server runtime. @internal */
+  ['~captureError']?: (error: unknown) => void
   /** @internal */
   ['~sharedPrerenderCache']?: {
     get<T = unknown> (key: string): Promise<T> | undefined
@@ -210,6 +225,14 @@ export interface NuxtRenderHTMLContext {
   bodyPrepend: string[]
   body: string[]
   bodyAppend: string[]
+}
+
+/**
+ * Context passed to the `render:document` hook, fired once the `render:html` hooks have run
+ * for a document that is not streamed. Replace `html` to change the document.
+ */
+export interface NuxtRenderDocumentContext {
+  html: string
 }
 
 /**

@@ -12,7 +12,7 @@ describe('the h3-backed `nuxt/server` implementations', () => {
   it('exports every name the portable surface does', async () => {
     const [surface, delegate] = await Promise.all([
       resolveModuleExportNames('nuxt/server', { url: import.meta.url }),
-      resolveModuleExportNames(delegatePath, { url: import.meta.url }),
+      resolveModuleExportNames(delegatePath, { url: import.meta.url, extensions: ['.ts'] }),
     ])
 
     expect(surface.length).toBeGreaterThan(0)
@@ -119,6 +119,24 @@ describe('parity between the shipped implementations and h3', () => {
 
   it.for([
     ['no header', {}],
+    ['forwarded headers', { 'host': 'internal:3000', 'x-forwarded-host': ' nuxt.com:8443 , proxy', 'x-forwarded-proto': 'https, http' }],
+    ['an unsupported forwarded protocol', { 'x-forwarded-proto': 'ftp' }],
+    ['a forwarded IPv6 host', { 'x-forwarded-host': '[::1]:99999' }],
+  ] as const)('reads the host, protocol and URL from %s the same way', async ([, headers]) => {
+    for (const trust of [false, true]) {
+      const options = { xForwardedHost: trust, xForwardedProto: trust }
+      const { shipped: a, h3: b } = await compare(new Request('http://internal:3000/api?a=1', { headers }), (api, event) => [api.getRequestURL(event, options).href, api.getRequestHost(event, options), api.getRequestProtocol(event, options)])
+      expect(a).toEqual(b)
+    }
+  })
+
+  it('parses every cookie the same way', async () => {
+    const { shipped: a, h3: b } = await compare(new Request('https://nuxt.com/', { headers: { cookie: 'a=1; b=%20; a=2' } }), (api, event) => api.parseCookies(event))
+    expect(a).toEqual(b)
+  })
+
+  it.for([
+    ['no header', {}],
     ['a forwarded chain', { 'x-forwarded-for': ' 203.0.113.1 , 10.0.0.1' }],
     ['an empty forwarded header', { 'x-forwarded-for': ' ' }],
   ] as const)('reads the client IP from %s the same way', async ([, headers]) => {
@@ -183,17 +201,36 @@ describe('parity between the shipped implementations and h3', () => {
   })
 })
 
+describe('defineHandler given an h3 handler object', () => {
+  it('throws NUXT_E8016 pointing to `nitro/h3`', async () => {
+    const delegate = await import('../src/runtime/server')
+    const input = { middleware: [], handler: () => 'ok' }
+    const diagnostic = {
+      code: 'NUXT_E8016',
+      message: expect.stringContaining('received `object`'),
+      fix: expect.stringMatching(/import `defineHandler` from `nitro\/h3`.*`onRequest` or `onBeforeResponse`/),
+    }
+    expect(() => delegate.defineHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
+    expect(() => delegate.defineEventHandler(input as never)).toThrow(expect.objectContaining(diagnostic))
+  })
+})
+
 describe('session helpers given an h3 v1 event', () => {
   it('throws NUXT_E8012 naming the helper', async () => {
     const delegate = await import('../src/runtime/server')
     const e = { node: { req: {}, res: {} }, context: {} }
-    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineEventHandler` from `nuxt\/server`/is)
+    expect(() => delegate.useSession(e as never, { password: 'x'.repeat(32) })).toThrow(/NUXT_E8012.*useSession.*import `defineHandler` from `nuxt\/server`/is)
     expect(() => delegate.clearSession(e as never, { password: 'x'.repeat(32) })).toThrow(expect.objectContaining({ status: 500 }))
   })
 
-  it('passes a request event through', async () => {
+  it('round-trips a session over the event h3 hands a handler', async () => {
     const delegate = await import('../src/runtime/server')
-    const event = new H3Event(new Request('http://127.0.0.1/'))
-    await expect(delegate.getSession(event as never, { password: 'x'.repeat(32) })).resolves.toMatchObject({ data: {} })
+    const config = { password: 'x'.repeat(32) }
+    const first = new H3Event(new Request('http://127.0.0.1/'))
+    await delegate.updateSession(first, config, { visits: 1 })
+    const cookie = first.res.headers.getSetCookie()[0]!.split(';')[0]!
+
+    const second = new H3Event(new Request('http://127.0.0.1/', { headers: { cookie } }))
+    await expect(delegate.getSession(second, config)).resolves.toMatchObject({ data: { visits: 1 } })
   })
 })

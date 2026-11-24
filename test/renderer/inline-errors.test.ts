@@ -9,7 +9,7 @@ describe('inline error rendering', () => {
     expect(response.status).toBe(503)
     expect(response.statusText).toBe('Service Unavailable')
     expect(response.headers.get('content-type')).toBe('text/html;charset=utf-8')
-    expect(response.headers.get('vary')).toBe('accept, sec-fetch-mode')
+    expect(response.headers.has('vary')).toBe(false)
 
     expect(html).toContain('<div id="error-page">')
     expect(html).toContain('<h1>503</h1>')
@@ -17,12 +17,14 @@ describe('inline error rendering', () => {
     expect(html).toContain('http://localhost/throws')
   })
 
-  it('answers a bare throw from the app with a 500 carrying its message', async () => {
+  it('answers a bare throw from the app with a 500 hiding its message', async () => {
     const { response, html } = await render('/unhandled')
 
     expect(response.status).toBe(500)
+    expect(response.statusText).toBe('Internal Server Error')
     expect(html).toContain('<h1>500</h1>')
-    expect(html).toContain('<p id="error-message">an unhandled failure</p>')
+    expect(html).toContain('<p id="error-message">Internal Server Error</p>')
+    expect(html).not.toContain('an unhandled failure')
   })
 
   // an `ofetch` failure against an internal service, and the same error once h3 has wrapped it
@@ -148,6 +150,15 @@ describe('inline error rendering', () => {
     expect(captureError.mock.calls[0]![1].tags).toBeUndefined()
     expect(captureError.mock.calls[1]![0]).toMatchObject({ message: 'the error page render threw' })
     expect(captureError.mock.calls[1]![1].tags).toEqual(['error-page'])
+  })
+
+  it('renders the error page for a request that accepts JSON', async () => {
+    const event = createEvent('/throws', { headers: { 'accept': 'application/json', 'sec-fetch-mode': 'cors' } })
+
+    const { response, html } = await render('/throws', undefined, event)
+
+    expect(response.headers.get('content-type')).toBe('text/html;charset=utf-8')
+    expect(html).toContain('<div id="error-page">')
   })
 
   it('never answers a payload request with an error page', async () => {

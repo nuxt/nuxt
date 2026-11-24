@@ -186,6 +186,16 @@ describe('buildServerRoutes', () => {
     })
   })
 
+  it('describes responses with the type the builder declared', () => {
+    const [route] = buildServerRoutes([
+      { segments: [path('/api/a')], routes: [], handlers: { get: ['/project/server/one.ts', '/project/server/two.ts'] } },
+    ], typesDir, { module: '@builder/request-types', response: 'ResponseOf' })
+
+    expect(route!.metadata!.GET).toEqual({
+      responseType: 'Serialize<ResponseOf<typeof import("../../server/one").default>> | Serialize<ResponseOf<typeof import("../../server/two").default>>',
+    })
+  })
+
   it('omits request shapes when the builder declares none', () => {
     const [route] = routes([
       { segments: [path('/api/a')], routes: [], handlers: { post: ['/project/server/a.post.ts'] } },
@@ -281,28 +291,34 @@ describe('emitServerRoutesModule', () => {
     { route: '/api/hello', method: 'post', segments: [path('/api'), path('/hello')], handler: '/project/server/api/hello.post.ts' },
     { route: '/api/users/:id', segments: [path('/api'), path('/users'), dynamic], handler: '/project/server/api/users/[id].ts' },
     { route: '/files/**', method: 'get', segments: [path('/files'), wildcard], handler: '/project/server/routes/files/[...path].get.ts' },
-  ]), '/project/.nuxt', { module: '@nuxt/nitro-server/request-types', body: 'RequestBodyOf' })
+  ]), '/project/.nuxt', { module: '@nuxt/nitro-server/request-types', body: 'RequestBodyOf', response: 'ResponseBodyOf' })
 
   it('emits the module the app layer resolves requests through', () => {
     expect(emitServerRoutesModule({
       routes,
-      requestTypes: { module: '@nuxt/nitro-server/request-types', body: 'RequestBodyOf' },
+      requestTypes: { module: '@nuxt/nitro-server/request-types', body: 'RequestBodyOf', response: 'ResponseBodyOf' },
       strict: true,
     })).toMatchSnapshot()
   })
 
-  it('names its vocabulary through `nuxt/app`, which is what a user project can resolve', () => {
+  it('names its vocabulary through `#app/types`, which both the app and the server programs resolve', () => {
     const module = emitServerRoutesModule({ routes, strict: false })
 
     for (const specifier of module.match(/from '[^']+'/g) || []) {
       expect(specifier).not.toMatch(/'fetchdts/)
     }
-    expect(module).toContain('from \'nuxt/app\'')
+    expect(module).toContain('from \'#app/types\'')
   })
 
   it('emits the resolved answer for `strictRouteTypes` rather than a flag to branch on', () => {
     // the enabled answer is in the snapshot, along with the augmentation and the accessors
     expect(emitServerRoutesModule({ routes, strict: false })).toContain('export type StrictFetchPaths = false')
+  })
+
+  it('imports an extractor the builder names for several request shapes once', () => {
+    const module = emitServerRoutesModule({ routes, requestTypes: { module: '@builder/request-types', body: 'ShapeOf', response: 'ShapeOf' }, strict: true })
+
+    expect(module).toContain('import type { ShapeOf } from \'@builder/request-types\'')
   })
 
   it('describes pages as routes of their own where they are part of the set', () => {

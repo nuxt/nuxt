@@ -4,8 +4,28 @@ import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import type { Options } from '@vitejs/plugin-vue-jsx'
 
+type HookName = 'transform' | 'resolveId' | 'load'
+
+function handlerOf<K extends HookName> (plugin: Plugin | undefined, name: K) {
+  const hook = plugin?.[name] as Plugin[K]
+  return (typeof hook === 'function' ? hook : hook?.handler) as Extract<Plugin[K], (...args: any[]) => any> | undefined
+}
+
 const JSX_RE = /\.[jt]sx$/
 const VUE_JSX_VIRTUAL_RE = /^\/__vue-jsx/
+const DECORATOR_PARSER_PLUGINS = new Set(['decorators', 'decorators-legacy'])
+
+// Parses 2023-11 decorators so `DecoratorsPlugin` can lower them after this Babel pass.
+function decoratorsSyntaxPlugin () {
+  return {
+    name: 'nuxt:syntax-decorators',
+    manipulateOptions (_options: unknown, parserOpts: { plugins: Array<string | [string, unknown]> }) {
+      if (!parserOpts.plugins.some(plugin => DECORATOR_PARSER_PLUGINS.has(Array.isArray(plugin) ? plugin[0] : plugin))) {
+        parserOpts.plugins.push(['decorators', { allowCallParenthesized: false }], 'decoratorAutoAccessors')
+      }
+    },
+  }
+}
 
 /**
  * A lazy wrapper around `@vitejs/plugin-vue-jsx` that defers installation
@@ -47,7 +67,9 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
     }
 
     const { default: viteJsxPlugin } = await import('@vitejs/plugin-vue-jsx')
-    resolvedPlugin = viteJsxPlugin(options)
+    resolvedPlugin = viteJsxPlugin(nuxt.options.experimental.decorators
+      ? { ...options, babelPlugins: [...options?.babelPlugins ?? [], decoratorsSyntaxPlugin] }
+      : options)
 
     // Replay configResolved so the real plugin captures HMR/sourcemap state
     if (resolvedConfig && typeof resolvedPlugin.configResolved === 'function') {
@@ -70,17 +92,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
         },
       },
       async handler (code, id, transformOptions) {
-        const plugin = await loadPlugin()
-        if (!plugin) {
-          return
-        }
-
-        const transform = typeof plugin.transform === 'function'
-          ? plugin.transform
-          : plugin.transform?.handler
-        if (transform) {
-          return transform.call(this, code, id, transformOptions)
-        }
+        return handlerOf(await loadPlugin(), 'transform')?.call(this, code, id, transformOptions)
       },
     },
   }
@@ -94,16 +106,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
         },
       },
       async handler (id, importer, options) {
-        const plugin = await loadPlugin()
-        if (!plugin) {
-          return
-        }
-        const resolveId = typeof plugin.resolveId === 'function'
-          ? plugin.resolveId
-          : plugin.resolveId?.handler
-        if (resolveId) {
-          return resolveId.call(this, id, importer, options)
-        }
+        return handlerOf(await loadPlugin(), 'resolveId')?.call(this, id, importer, options)
       },
     },
     load: {
@@ -113,16 +116,7 @@ export function VueJsxPlugin (nuxt: Nuxt, options?: Options): Plugin[] {
         },
       },
       async handler (id) {
-        const plugin = await loadPlugin()
-        if (!plugin) {
-          return
-        }
-        const load = typeof plugin.load === 'function'
-          ? plugin.load
-          : plugin.load?.handler
-        if (load) {
-          return load.call(this, id)
-        }
+        return handlerOf(await loadPlugin(), 'load')?.call(this, id)
       },
     },
   }

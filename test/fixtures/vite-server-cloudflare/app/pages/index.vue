@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const config = useRuntimeConfig()
-// no server runtime, so a relative `$fetch` on the server has no origin to resolve against
+// `/api/hello` is a platform function, which a relative `$fetch` on the server does not reach
 const { data: hello } = await useAsyncData(() => $fetch('/api/hello'), { server: false })
 </script>
 

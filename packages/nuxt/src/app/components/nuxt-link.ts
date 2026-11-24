@@ -1,57 +1,43 @@
 import type {
   AnchorHTMLAttributes,
+  Component,
+  ComponentInternalInstance,
   ComputedRef,
   DefineSetupFnComponent,
   InjectionKey,
   MaybeRef,
   PropType,
   PublicProps,
+  Slot,
+  Slots,
   SlotsType,
   VNode,
 } from 'vue'
-import { computed, defineComponent, h, inject, onBeforeUnmount, onMounted, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
+import { computed, createBlock, createElementBlock, createVNode, defineComponent, h, inject, normalizeClass, normalizeStyle, onBeforeUnmount, onMounted, openBlock, provide, ref, resolveComponent, shallowRef, unref } from 'vue'
+import { camelize, escapeHtml } from '@vue/shared'
 import type { ComponentSlots } from 'vue-component-type-helpers'
-import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
-import { hasProtocol, isScriptProtocol, joinURL, parseQuery, withTrailingSlash, withoutTrailingSlash } from 'ufo'
+import type { RouteLocation, RouteLocationGeneric, RouteLocationRaw, RouteLocationResolved, RouteParamsGeneric, RouteRecordNormalized, Router, RouterLink, RouterLinkProps, useLink } from 'vue-router'
+import { hasProtocol, joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
+import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
+import { documentURL } from '../internal/location'
 import type { NuxtApp } from '../nuxt'
-import { cancelIdleCallback, requestIdleCallback } from '../compat/idle-callback'
 import { renderDiagnostics } from '../diagnostics/render'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 
 import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
+import { parseQuery } from '#build/pages'
+import { isPlainAbsolutePath, mayMatchCurrentRoute } from './route-match'
+import { PageRouteSymbol } from './injections'
 import type { NuxtLinkOptions } from '../types'
 
 const firstNonUndefined = <T> (...args: (T | undefined)[]) => args.find(arg => arg !== undefined)
-
-/**
- * Reject URL strings that would resolve to a script-capable protocol when used as the
- * `href` of an anchor element. Returns the value unchanged when safe, or `null`.
- *
- * The denylist is delegated to `ufo`'s `isScriptProtocol` so it stays in sync with the
- * check used by `navigateTo` (currently `javascript:`, `data:`, `vbscript:`, `blob:`).
- * ASCII whitespace and control characters are stripped first because browser URL
- * parsers tolerate them before the scheme, and `view-source:` is peeled recursively
- * because Chromium resolves it transparently to the inner URL.
- */
-function sanitizeExternalHref (value: string): string | null {
-  // eslint-disable-next-line no-control-regex
-  let candidate = value.replace(/[\u0000-\u001F\s]+/g, '')
-  while (candidate.toLowerCase().startsWith('view-source:')) {
-    candidate = candidate.slice('view-source:'.length)
-  }
-  const colon = candidate.indexOf(':')
-  if (colon > 0 && isScriptProtocol(candidate.slice(0, colon + 1))) {
-    return null
-  }
-  return value
-}
 
 const NuxtLinkDevKeySymbol: InjectionKey<boolean> = Symbol('nuxt-link-dev-key')
 
@@ -59,7 +45,7 @@ export type { NuxtLinkOptions } from '../types'
 
 /**
  * `<NuxtLink>` is a drop-in replacement for both Vue Router's `<RouterLink>` component and HTML's `<a>` tag.
- * @see https://nuxt.com/docs/4.x/api/components/nuxt-link
+ * @see https://nuxt.com/docs/5.x/api/components/nuxt-link
  */
 export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<RouterLinkProps, 'to'> {
   custom?: CustomProp
@@ -116,7 +102,7 @@ export interface NuxtLinkProps<CustomProp extends boolean = false> extends Omit<
 type RouterLinkSlot = NonNullable<ComponentSlots<typeof RouterLink>['default']>
 type RouterLinkSlotProps = Parameters<RouterLinkSlot>[0]
 
-type NuxtLinkSlotProps<CustomProp extends boolean = false> = CustomProp extends true
+export type NuxtLinkSlotProps<CustomProp extends boolean = false> = CustomProp extends true
   ? Omit<RouterLinkSlotProps, 'href' | 'route'> & {
     href: RouterLinkSlotProps['href'] | null
     route: RouterLinkSlotProps['route'] | undefined
@@ -196,17 +182,22 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
    * does not resolve the `<RouterLink>` link state backing `route`/`isActive`/`isExactActive`,
    * which it never reads.
    */
-  function useLinkTarget (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }) {
+  function useLinkTarget (props: { [K in keyof NuxtLinkProps]: MaybeRef<NuxtLinkProps[K]> }, attrs?: Record<string, unknown>) {
     const router = useRouter()
     const config = useRuntimeConfig()
+    // the history base accounts for the app base and for hash mode
+    const rootedHref = router.options?.history?.createHref ?? ((path: string) => joinURL(config.app.baseURL, path))
 
     const hasTarget = computed(() => !!unref(props.target) && unref(props.target) !== '_self')
 
     // Lazily check whether to.value has a protocol
     const isAbsoluteUrl = computed(() => {
       const path = unref(props.to) || unref(props.href) || ''
-      return typeof path === 'string' && hasProtocol(path, { acceptRelative: true })
+      return typeof path === 'string' && isAbsoluteHref(path)
     })
+
+    // Kept out of `isExternal` so an internal `to` still resolves against the app base
+    const download = computed(() => attrs?.download !== undefined)
 
     // Resolving link type
     const isExternal = computed<boolean>(() => {
@@ -238,14 +229,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       const effectiveTrailingSlash = unref(props.trailingSlash) ?? options.trailingSlash
       if (!to.value || isAbsoluteUrl.value || isHashLinkWithoutHashMode(to.value)) {
         const raw = to.value as string
-        return typeof raw === 'string' ? sanitizeExternalHref(raw) : raw
+        return typeof raw === 'string' ? sanitizeAnchorHref(raw) : raw
       }
 
       if (isExternal.value) {
         const path = typeof to.value === 'object' && 'path' in to.value ? resolveRouteObject(to.value) : to.value
         // separately resolve route objects with a 'name' property and without 'path'
         const href = typeof path === 'object' ? router.resolve(path).href : path
-        const safe = typeof href === 'string' ? sanitizeExternalHref(href) : href
+        const safe = typeof href === 'string' ? sanitizeAnchorHref(href) : href
         return safe === null ? null : applyTrailingSlashBehavior(safe, effectiveTrailingSlash)
       }
 
@@ -253,7 +244,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         return router.resolve(to.value)?.href ?? null
       }
 
-      return applyTrailingSlashBehavior(joinURL(config.app.baseURL, to.value), effectiveTrailingSlash)
+      // A rooted download URL must not carry the router's hash prefix
+      if (download.value && isRootedPath(to.value)) {
+        return joinURL(config.app.baseURL, to.value)
+      }
+
+      // only a relative path needs resolving against the current route
+      const href = isRootedPath(to.value) ? rootedHref(to.value) : router.resolve(to.value).href
+      return applyTrailingSlashBehavior(href, effectiveTrailingSlash)
     })
 
     return {
@@ -261,6 +259,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       hasTarget,
       isAbsoluteUrl,
       isExternal,
+      download,
       //
       href,
       async navigate (_e?: MouseEvent) {
@@ -306,50 +305,135 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
   }
 
   /**
-   * Render an internal link as a plain anchor, matching the markup `<RouterLink>` produces
-   * for the same location.
+   * Resolve the link state `<RouterLink>` exposes for an internal location.
    */
-  function renderStaticInternalLink (props: NuxtLinkProps, slots: { default?: (props?: any) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+  function resolveStaticLink (props: NuxtLinkProps, router: Router, rawTo: RouteLocationRaw, currentRoute: RouteLocationGeneric = router.currentRoute.value) {
     if (import.meta.dev) {
       checkPropConflicts(props, 'to', 'href')
       checkPropConflicts(props, 'noRel', 'rel')
     }
 
-    const route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
-    const currentRoute = router.currentRoute.value
-    const index = activeRecordIndex(route, currentRoute)
-    const isActive = index > -1 && includesParams(currentRoute.params, route.params)
-    const isExactActive = index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params)
+    let route: RouteLocationResolved | undefined
+    let href: string
+    let isActive = false
+    let isExactActive = false
+    // the router used without pages has no `history`
+    if (typeof rawTo === 'string' && router.options.history && isPlainAbsolutePath(rawTo) && !hashMode && !props.trailingSlash && !options.trailingSlash && !mayMatchCurrentRoute(currentRoute, rawTo)) {
+      href = router.options.history.base + rawTo
+    } else {
+      route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
+      href = route.href
+      const index = activeRecordIndex(route, currentRoute)
+      isActive = index > -1 && includesParams(currentRoute.params, route.params)
+      isExactActive = index > -1 && index === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.params)
+    }
+    return new StaticLink(router, rawTo, route, href, isActive, isExactActive, props.replace)
+  }
 
+  /**
+   * Render an internal link as a plain anchor, matching the markup `<RouterLink>` produces
+   * for the same location.
+   */
+  function renderStaticInternalLink (props: NuxtLinkProps, slots: { default?: (props?: any) => VNode[] }, router: Router, rawTo: RouteLocationRaw, nuxtApp: NuxtApp | undefined) {
+    const link = resolveStaticLink(props, router, rawTo)
+    return h('a', staticInternalLinkAttrs(props, router, link, nuxtApp), slots.default?.(link))
+  }
+
+  function staticInternalLinkClasses (props: NuxtLinkProps, router: Router): [active: string, exactActive: string] {
+    return [
+      getLinkClass(props.activeClass || options.activeClass, router.options.linkActiveClass, 'router-link-active'),
+      getLinkClass(props.exactActiveClass || options.exactActiveClass, router.options.linkExactActiveClass, 'router-link-exact-active'),
+    ]
+  }
+
+  function staticInternalLinkDataInternal (props: NuxtLinkProps, nuxtApp: NuxtApp | undefined): string | undefined {
     let dataInternal: string | undefined
-    if (componentIslands && useNuxtApp().ssrContext?.islandContext) {
+    if (componentIslands && nuxtApp?.ssrContext?.islandContext) {
       const flags: string[] = []
       if (props.replace) { flags.push('replace') }
       const prefetchOnVisibility = typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : (props.prefetchOn?.visibility ?? options.prefetchOn?.visibility)
       if (prefetchOnVisibility && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true) { flags.push('prefetch') }
       dataInternal = flags.join(' ')
     }
-
-    const routerOptions = router.options
-    return h('a', {
-      'aria-current': isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
-      'href': route.href,
-      'class': {
-        [getLinkClass(props.activeClass || options.activeClass, routerOptions.linkActiveClass, 'router-link-active')]: isActive,
-        [getLinkClass(props.exactActiveClass || options.exactActiveClass, routerOptions.linkExactActiveClass, 'router-link-exact-active')]: isExactActive,
-      },
-      'rel': props.rel || undefined,
-      'data-internal': dataInternal,
-    }, slots.default?.({
-      route,
-      href: route.href,
-      isActive,
-      isExactActive,
-      navigate: () => navigateTo(route.href, { replace: props.replace }),
-    }))
+    return dataInternal
   }
 
-  return defineComponent({
+  function staticInternalLinkAttrs (props: NuxtLinkProps, router: Router, link: ReturnType<typeof resolveStaticLink>, nuxtApp: NuxtApp | undefined): Record<string, unknown> {
+    const linkClass = staticInternalLinkClass(props, router, link)
+    return {
+      'aria-current': link.isExactActive ? (props.ariaCurrentValue ?? 'page') : null,
+      'href': link.href,
+      ...linkClass && { class: linkClass },
+      'rel': props.rel || undefined,
+      'data-internal': staticInternalLinkDataInternal(props, nuxtApp),
+    }
+  }
+
+  function staticInternalLinkClass (props: NuxtLinkProps, router: Router, link: ReturnType<typeof resolveStaticLink>): string {
+    if (!link.isActive && !link.isExactActive) { return '' }
+    const [activeClass, exactActiveClass] = staticInternalLinkClasses(props, router)
+    return link.isExactActive
+      ? (activeClass === exactActiveClass ? activeClass : `${activeClass} ${exactActiveClass}`)
+      : (activeClass !== exactActiveClass ? activeClass : '')
+  }
+
+  function staticInternalLinkOpenTag (props: NuxtLinkProps, router: Router, link: ReturnType<typeof resolveStaticLink>, nuxtApp: NuxtApp | undefined): string {
+    const dataInternal = staticInternalLinkDataInternal(props, nuxtApp)
+    let tag = '<a'
+    if (link.isExactActive) { tag += ` aria-current="${escapeHtml(props.ariaCurrentValue ?? 'page')}"` }
+    tag += ` href="${escapeHtml(link.href)}"`
+    const linkClass = staticInternalLinkClass(props, router, link)
+    if (linkClass) { tag += ` class="${escapeHtml(linkClass)}"` }
+    if (props.rel) { tag += ` rel="${escapeHtml(props.rel)}"` }
+    if (dataInternal !== undefined) { tag += ` data-internal="${escapeHtml(dataInternal)}"` }
+    return tag
+  }
+
+  function isStaticInternalLink (props: NuxtLinkProps, rawTo: RouteLocationRaw, download = false): boolean {
+    const isExternalLink = props.external || download || (typeof rawTo === 'string' && (rawTo === '' || isAbsoluteHref(rawTo)))
+    return !isExternalLink && !isHashLinkWithoutHashMode(rawTo) && (!props.target || props.target === '_self')
+  }
+
+  /** Resolves the anchor of a template `<NuxtLink>` that can be rendered without a component instance. */
+  function resolveSsrLink (rawProps: Record<string, unknown>, parent: ComponentInternalInstance): NuxtLinkSsrState | undefined {
+    const props = directRenderProps(rawProps)
+    const rawTo = props?.to
+    if (!props || !rawTo || !isStaticInternalLink(props, rawTo, props.attrs?.download !== undefined)) { return }
+    const nuxtApp = (parent.appContext.app as { $nuxt?: NuxtApp }).$nuxt
+    const router = (nuxtApp?.$router ?? useRouter()) as Router
+    const link = resolveStaticLink(props, router, rawTo)
+    return {
+      link,
+      openTag: props.class || props.style || props.attrs ? undefined : staticInternalLinkOpenTag(props, router, link, nuxtApp),
+      attrs: () => {
+        const attrs = staticInternalLinkAttrs(props, router, link, nuxtApp)
+        if (props.attrs) { Object.assign(attrs, props.attrs) }
+        if (props.class) { attrs.class = [attrs.class, props.class] }
+        if (props.style) { attrs.style = props.style }
+        return attrs
+      },
+    }
+  }
+
+  /**
+   * Render the slot of an internal `custom` link with the props `<RouterLink custom>` passes to it.
+   */
+  function renderStaticCustomLink (props: NuxtLinkProps, slots: { default?: (props: NuxtLinkSlotProps<true>) => VNode[] }, router: Router, rawTo: RouteLocationRaw) {
+    const link = resolveStaticLink(props, router, rawTo)
+    const vnodes = slots.default?.({
+      ...link,
+      route: link.route,
+      rel: firstNonUndefined<string | null>(props.noRel ? '' : props.rel, options.externalRelAttribute, '') || null,
+      target: props.target || null,
+      isExternal: false,
+      prefetch: async () => {},
+      prefetched: false,
+      shouldPrefetch: () => false,
+    })
+    return vnodes?.length === 1 ? vnodes[0] : vnodes
+  }
+
+  const component = defineComponent({
     name: componentName,
     props: {
       // Routing
@@ -438,26 +522,29 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       },
     },
     useLink: useNuxtLink,
-    setup (props, { slots }) {
+    setup (props, { slots, attrs }) {
       const router = useRouter()
+      const nuxtApp = import.meta.server && componentIslands ? useNuxtApp() : undefined
 
-      // On the server an internal link resolves to a static anchor, so it is rendered directly:
+      // On the server an internal link resolves to static markup, so it is rendered directly:
       // no `<RouterLink>` instance, no reactive link state and none of the client-only
       // prefetching setup below.
-      if (import.meta.server && !props.custom) {
+      if (import.meta.server) {
         const rawTo = props.to || props.href || ''
-        const isExternalLink = props.external || (typeof rawTo === 'string' && (rawTo === '' || hasProtocol(rawTo, { acceptRelative: true })))
-        if (!isExternalLink && !isHashLinkWithoutHashMode(rawTo) && (!props.target || props.target === '_self')) {
+        if (isStaticInternalLink(props, rawTo, attrs.download !== undefined)) {
+          if (props.custom) {
+            return () => renderStaticCustomLink(props, slots, router, rawTo)
+          }
           if (import.meta.dev) {
             checkNuxtLinkNesting()
           }
-          return () => renderStaticInternalLink(props, slots, router, rawTo)
+          return () => renderStaticInternalLink(props, slots, router, rawTo, nuxtApp)
         }
       }
 
       const routerLinkComponent = resolveComponent('RouterLink')
 
-      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl } = useLinkTarget(props)
+      const { to, href, navigate, isExternal, hasTarget, isAbsoluteUrl, download } = useLinkTarget(props, attrs)
 
       // Prefetching
       const prefetched = shallowRef(false)
@@ -481,7 +568,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         const path = typeof to.value === 'string'
           ? to.value
           : isExternal.value ? resolveRouteObject(to.value) : router.resolve(to.value).fullPath
-        return isExternal.value ? new URL(path, window.location.href).href : path
+        return isExternal.value ? new URL(path, documentURL()).href : path
       }
 
       function escalate () {
@@ -497,7 +584,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       async function prefetch (nuxtApp = useNuxtApp()) {
         if (import.meta.server) { return }
 
-        if (prefetched.value) { return }
+        if (download.value || prefetched.value) { return }
 
         if (href.value === null) { return }
 
@@ -514,24 +601,17 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         checkPropConflicts(props, 'noPrefetch', 'prefetch')
         if (shouldPrefetch('visibility')) {
           const nuxtApp = useNuxtApp()
-          let idleId: number
           let unobserve: (() => void) | null = null
           onMounted(() => {
-            const observer = useObserver()
-            onNuxtReady(() => {
-              idleId = requestIdleCallback(() => {
-                if (el?.value?.tagName) {
-                  unobserve = observer!.observe(el.value as HTMLElement, async () => {
-                    unobserve?.()
-                    unobserve = null
-                    await prefetch(nuxtApp)
-                  })
-                }
-              })
-            })
+            if (el?.value?.tagName) {
+              unobserve = useObserver()!.observe(el.value, async () => {
+                unobserve?.()
+                unobserve = null
+                await prefetch(nuxtApp)
+              }, true)
+            }
           })
           onBeforeUnmount(() => {
-            if (idleId) { cancelIdleCallback(idleId) }
             unobserve?.()
             unobserve = null
           })
@@ -560,16 +640,15 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
         ) || null
 
         const getCustomSlotProps = (routerLinkSlotProps?: RouterLinkSlotProps): NuxtLinkSlotProps<true> => ({
-          href: href.value,
           navigate,
           get route () {
             if (!href.value) { return undefined }
 
-            const url = new URL(href.value, import.meta.client ? window.location.href : 'http://localhost')
+            const url = new URL(href.value, import.meta.client ? documentURL() : 'http://localhost')
             return {
               path: url.pathname,
               fullPath: url.pathname,
-              get query () { return parseQuery(url.search) },
+              get query () { return url.search ? parseQuery(url.search) : {} },
               hash: url.hash,
               params: {},
               name: undefined,
@@ -585,13 +664,14 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           isActive: false,
           isExactActive: false,
           ...routerLinkSlotProps,
+          href: typeof routerLinkSlotProps?.href === 'string' ? sanitizeAnchorHref(routerLinkSlotProps.href) : href.value,
           prefetch,
           prefetched: prefetched.value,
           shouldPrefetch,
         })
 
-        if (!isExternal.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
-          const routerLinkProps: RouterLinkProps & PublicProps & AnchorHTMLAttributes & { 'data-internal'?: string } = {
+        if (!isExternal.value && !download.value && !hasTarget.value && !isHashLinkWithoutHashMode(to.value)) {
+          const routerLinkProps: RouterLinkProps & PublicProps & AnchorHTMLAttributes = {
             ref: elRef,
             to: to.value,
             activeClass: props.activeClass || options.activeClass,
@@ -616,15 +696,6 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
               }
             }
             routerLinkProps.rel = props.rel || undefined
-
-            if (import.meta.server && componentIslands && useNuxtApp().ssrContext?.islandContext) {
-              // marks internal links within island HTML for client-side navigation
-              const flags: string[] = []
-              if (props.replace) { flags.push('replace') }
-              const prefetchOnVisibility = typeof props.prefetchOn === 'string' ? props.prefetchOn === 'visibility' : (props.prefetchOn?.visibility ?? options.prefetchOn?.visibility)
-              if (prefetchOnVisibility && (props.prefetch ?? options.prefetch) !== false && props.noPrefetch !== true) { flags.push('prefetch') }
-              routerLinkProps['data-internal'] = flags.join(' ')
-            }
           }
 
           // Internal link
@@ -652,7 +723,7 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
           rel,
           target,
           onClick: async (event) => {
-            if (isExternal.value || hasTarget.value) {
+            if (isExternal.value || hasTarget.value || download.value) {
               return
             }
 
@@ -681,10 +752,157 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
       }
     },
   }) as unknown as NuxtLinkComponent & Record<string, any>
+
+  if (import.meta.server && !import.meta.dev) {
+    component.__ssrLink = resolveSsrLink
+  }
+
+  if (import.meta.client && !import.meta.dev) {
+    component.__inlineLink = createInlineLinkVNode
+  }
+
+  return component
+
+  /** Creates the anchor of a template `<NuxtLink>` rendered without a component instance. */
+  function createInlineLinkVNode (rawProps: Record<string, unknown> | null, slots: Slots | null, block: boolean): VNode | undefined {
+    const props = rawProps && !hashMode && !options.prefetchedClass ? directRenderProps(rawProps) : undefined
+    const rawTo = props?.to
+    const slot = slots?.default as (Slot & { _c?: boolean, _d?: boolean }) | undefined
+    if (!props || !rawTo || (typeof rawTo === 'object' ? ('state' in rawTo || 'force' in rawTo || 'replace' in rawTo) : typeof rawTo !== 'string') || props.prefetchedClass || (slot && !slot._c) || !isStaticInternalLink(props, rawTo, props.attrs?.download !== undefined)) { return }
+    const prefetchOn = (mode: 'visibility' | 'interaction') => typeof props.prefetchOn === 'string' ? props.prefetchOn === mode : (props.prefetchOn?.[mode] ?? options.prefetchOn?.[mode])
+    if (prefetchOn('interaction')) { return }
+    const nuxtApp = useNuxtApp() as NuxtApp & { _inlineLinks?: InlineLinks | false }
+    const inline = nuxtApp._inlineLinks ??= createInlineLinks(nuxtApp)
+    if (!inline) { return }
+
+    const router = inline.router
+    const to = resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash)
+    const link = resolveStaticLink(props, router, rawTo, inject(PageRouteSymbol, nuxtApp._route))
+    link.navigate = (e?: MouseEvent) => {
+      if (e && !guardEvent(e, e.currentTarget as Element)) { return Promise.resolve() }
+      e?.preventDefault()
+      return router.push(to).then(() => {}, () => {})
+    }
+    const [activeClass, exactActiveClass] = staticInternalLinkClasses(props, router)
+    // absent attributes are omitted rather than nullish, which mounting would remove from the fresh element
+    const anchorProps: Record<string, unknown> = { key: (props as { key?: unknown }).key }
+    if (link.isExactActive) { anchorProps['aria-current'] = props.ariaCurrentValue ?? 'page' }
+    if (link.href !== null) { anchorProps.href = link.href }
+    const className = link.isActive ? normalizeClass([{ [activeClass]: true, [exactActiveClass]: link.isExactActive }, props.class]) : props.class && normalizeClass(props.class)
+    if (className) { anchorProps.class = className }
+    if (props.style) { anchorProps.style = normalizeStyle(props.style) }
+    if (props.rel) { anchorProps.rel = props.rel }
+    if (props.attrs) { Object.assign(anchorProps, props.attrs) }
+    const onClick = typeof rawTo === 'object' ? link.navigate : inline.onClick
+    anchorProps.onClick = props.attrs?.onClick ? [onClick].concat(props.attrs.onClick as () => void) : onClick
+    if (prefetchOn('visibility') && options.prefetch !== false) {
+      anchorProps.onVnodeMounted = inline.observe
+      anchorProps.onVnodeBeforeUnmount = inline.unobserve
+    }
+
+    if (!block) { openBlock() }
+    // tracks the dynamic vnodes of the slot content in the anchor block
+    if (slot) { slot._d = false }
+    const children = slot?.(link)
+    if (slot) { slot._d = true }
+    // dynamic slots can change shape between renders, so their content is diffed in full
+    return createElementBlock('a', anchorProps, children, (slots as { _?: number } | null)?._ === 2 ? -2 /* PatchFlags.BAIL */ : 16 /* PatchFlags.FULL_PROPS */)
+  }
+}
+
+interface InlineLinks {
+  router: Router
+  onClick: (e: MouseEvent) => void
+  observe: (vnode: VNode) => void
+  unobserve: (vnode: VNode) => void
+}
+
+function createInlineLinks (nuxtApp: NuxtApp): InlineLinks | false {
+  const routerLink = nuxtApp.vueApp.component('RouterLink')
+  if (!routerLink || !('useLink' in routerLink)) { return false }
+  const router = nuxtApp.$router as unknown as Router
+  const base = router.options.history.base
+  const pathOf = (el: Element) => {
+    const href = el.getAttribute('href') || ''
+    return (href.startsWith(base) ? href.slice(base.length) : href) || '/'
+  }
+
+  let observer: ReturnType<typeof useObserver>
+  const unobservers = new WeakMap<Element, () => void>()
+  const prefetched = new WeakSet<Element>()
+  let listening = false
+
+  function escalate (e: Event) {
+    const el = (e.target as Element | null)?.closest?.('a')
+    if (el && prefetched.has(el)) {
+      nuxtApp._prefetch?.promote(prefetchGroup(pathOf(el)))
+    }
+  }
+
+  async function prefetch (el: Element) {
+    if (!canPrefetch()) { return }
+    prefetched.add(el)
+    if (!listening) {
+      listening = true
+      for (const type of ['pointerover', 'focusin', 'pointerdown']) {
+        document.addEventListener(type, escalate, { capture: true, passive: true })
+      }
+    }
+    const path = pathOf(el)
+    await Promise.all([
+      nuxtApp.hooks.callHook('link:prefetch', path)?.catch(() => {}),
+      prefetchRouteComponents(path, router),
+    ])
+  }
+
+  function unobserve (vnode: VNode) {
+    const el = vnode.el as Element
+    unobservers.get(el)?.()
+    unobservers.delete(el)
+  }
+
+  return {
+    router,
+    onClick (e) {
+      const anchor = e.currentTarget as Element
+      if (guardEvent(e, anchor)) {
+        e.preventDefault()
+        router.push(pathOf(anchor)).catch(() => {})
+      }
+    },
+    observe (vnode) {
+      const el = vnode.el as Element
+      observer ||= nuxtApp.runWithContext(() => useObserver()) as ReturnType<typeof useObserver>
+      unobservers.set(el, observer!.observe(el, () => {
+        unobserve(vnode)
+        return prefetch(el)
+      }, true))
+    },
+    unobserve,
+  }
 }
 
 const NuxtLink: NuxtLinkComponent & Record<string, any> = defineNuxtLink(nuxtLinkDefaults)
 export default NuxtLink
+
+type InlineLinkComponent = Component & { __inlineLink?: (props: Record<string, unknown> | null, slots: Slots | null, block: boolean) => VNode | undefined }
+
+/**
+ * Creates the vnode of a template `<NuxtLink>`, as a plain anchor without a component instance
+ * when the link resolves to a static internal anchor.
+ * @internal
+ */
+export function createNuxtLinkVNode (comp: InlineLinkComponent, props?: Record<string, unknown> | null, slots?: Slots | null, patchFlag?: number, dynamicProps?: string[] | null): VNode {
+  return comp.__inlineLink?.(props ?? null, slots ?? null, false) ?? createVNode(comp, props, slots, patchFlag, dynamicProps)
+}
+
+/**
+ * Block variant of {@link createNuxtLinkVNode}.
+ * @internal
+ */
+export function createNuxtLinkBlock (comp: InlineLinkComponent, props?: Record<string, unknown> | null, slots?: Slots | null, patchFlag?: number, dynamicProps?: string[]): VNode {
+  return comp.__inlineLink?.(props ?? null, slots ?? null, true) ?? createBlock(comp, props, slots, patchFlag, dynamicProps)
+}
 
 // -- NuxtLink utils --
 
@@ -720,6 +938,67 @@ function isSameRouteLocationParams (a: RouteParamsGeneric, b: RouteParamsGeneric
   return true
 }
 
+/** The link state `<RouterLink>` exposes for an internal location, resolving `route` when it is read. */
+class StaticLink {
+  href: string | null
+  isActive: boolean
+  isExactActive: boolean
+  navigate: (e?: MouseEvent) => Promise<void>
+  #router: Router
+  #to: RouteLocationRaw
+  #route: RouteLocationResolved | undefined
+
+  constructor (router: Router, to: RouteLocationRaw, route: RouteLocationResolved | undefined, href: string, isActive: boolean, isExactActive: boolean, replace: boolean | undefined) {
+    this.href = sanitizeAnchorHref(href)
+    this.isActive = isActive
+    this.isExactActive = isExactActive
+    this.navigate = async () => { await navigateTo(href, { replace }) }
+    this.#router = router
+    this.#to = to
+    this.#route = route
+  }
+
+  get route (): RouteLocationResolved {
+    return this.#route ??= this.#router.resolve(this.#to)
+  }
+}
+
+/** @internal */
+export interface NuxtLinkSsrState {
+  link: object
+  /** The opening tag without its closing `>`, when no fallthrough `class` or `style` needs merging. */
+  openTag?: string
+  attrs: () => Record<string, unknown>
+}
+
+type DirectRenderProps = NuxtLinkProps & { to: RouteLocationRaw, class?: unknown, style?: unknown, attrs?: Record<string, unknown> }
+
+// Boolean props are excluded: without prop normalisation a bare attribute arrives as `''`.
+const DIRECT_RENDER_PROPS = new Set(['key', 'to', 'class', 'style', 'rel', 'activeClass', 'exactActiveClass', 'ariaCurrentValue', 'prefetchOn', 'prefetchedClass'])
+
+// Props and attributes that need the component: everything else falls through to the anchor.
+const COMPONENT_RENDER_KEYS = new Set(['href', 'target', 'noRel', 'prefetch', 'noPrefetch', 'replace', 'external', 'custom', 'trailingSlash', 'viewTransition', 'ref', 'ref_for', 'ref_key', 'innerHTML', 'textContent'])
+
+function directRenderProps (raw: Record<string, unknown>): DirectRenderProps | undefined {
+  let props = raw
+  let attrs: Record<string, unknown> | undefined
+  for (const key in raw) {
+    const name = key.includes('-') ? camelize(key) : key
+    if (!DIRECT_RENDER_PROPS.has(name)) {
+      if (COMPONENT_RENDER_KEYS.has(name) || key.startsWith('onVnode')) { return }
+      (attrs ??= {})[key] = raw[key]
+    } else if (name !== key) {
+      if (props === raw) { props = { ...raw } }
+      props[name] = raw[key]
+    }
+  }
+  if (attrs) {
+    if (props === raw) { props = { ...raw } }
+    props.attrs = attrs
+  }
+  return props as unknown as DirectRenderProps
+}
+
 function includesParams (outer: RouteParamsGeneric, inner: RouteParamsGeneric): boolean {
   for (const key in inner) {
     const innerValue = inner[key]
@@ -747,6 +1026,20 @@ function activeRecordIndex (route: RouteLocationGeneric, currentRoute: RouteLoca
     : index
 }
 
+/**
+ * Whether a click should be handled as a client-side navigation rather than by the browser.
+ * @internal
+ */
+export function guardEvent (e: MouseEvent, anchor: Element | undefined): boolean {
+  if (e.metaKey || e.altKey || e.ctrlKey || e.shiftKey || e.defaultPrevented) { return false }
+  if (e.button !== undefined && e.button !== 0) { return false }
+  if (anchor) {
+    const target = anchor.getAttribute('target')
+    if (target && /\b_blank\b/i.test(target)) { return false }
+  }
+  return true
+}
+
 /** Resolve an active-link class, falling back from the per-link value to the router-wide one. */
 function getLinkClass (propClass: string | undefined, globalClass: string | undefined, defaultClass: string): string {
   return propClass ?? globalClass ?? defaultClass
@@ -768,7 +1061,7 @@ function applyTrailingSlashBehavior (to: string, trailingSlash: NuxtLinkOptions[
 
 // --- Prefetching utils ---
 type CallbackFn = () => void
-type ObserveFn = (element: Element, callback: CallbackFn) => () => void
+type ObserveFn = (element: Element, callback: CallbackFn, whenReady?: boolean) => () => void
 
 /** @internal */
 export function useObserver (): { observe: ObserveFn } | undefined {
@@ -782,8 +1075,10 @@ export function useObserver (): { observe: ObserveFn } | undefined {
   let observer: IntersectionObserver | null = null
 
   const callbacks = new Map<Element, CallbackFn>()
+  const pending = new Set<Element>()
+  let flushScheduled = false
 
-  const observe: ObserveFn = (element, callback) => {
+  const start = (element: Element) => {
     observer ||= new IntersectionObserver((entries) => {
       for (const entry of entries) {
         const callback = callbacks.get(entry.target)
@@ -791,9 +1086,26 @@ export function useObserver (): { observe: ObserveFn } | undefined {
         if (isVisible && callback) { callback() }
       }
     })
-    callbacks.set(element, callback)
     observer.observe(element)
+  }
+
+  const observe: ObserveFn = (element, callback, whenReady) => {
+    callbacks.set(element, callback)
+    if (!whenReady) {
+      start(element)
+    } else {
+      pending.add(element)
+      if (!flushScheduled) {
+        flushScheduled = true
+        nuxtApp.runWithContext(() => onNuxtReady(() => {
+          flushScheduled = false
+          pending.forEach(start)
+          pending.clear()
+        }))
+      }
+    }
     return () => {
+      pending.delete(element)
       callbacks.delete(element)
       observer?.unobserve(element)
       if (callbacks.size === 0) {

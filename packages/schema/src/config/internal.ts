@@ -17,4 +17,5 @@ export default defineResolvers({
   _installedModules: [],
   _modules: [],
   _noScriptsPageSources: [],
+  _spaOnlyPageSources: [],
 })

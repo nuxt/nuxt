@@ -40,19 +40,47 @@ function createEnvironment (graph: Record<string, string[]>) {
 }
 
 describe('warmupViteServer', () => {
-  it('should crawl the entry\'s transitive imports', async () => {
-    const { environment, transformed } = createEnvironment({
-      '/app/entry.js': ['/app/a.js', '/app/b.js'],
-      '/app/a.js': ['/app/c.js'],
-      '/app/b.js': ['/app/c.js'],
-      '/app/c.js': [],
-    })
+  it.each([
+    {
+      name: 'the entry\'s transitive imports',
+      graph: { '/app/entry.js': ['/app/a.js', '/app/b.js'], '/app/a.js': ['/app/c.js'], '/app/b.js': ['/app/c.js'], '/app/c.js': [] },
+      expected: ['/app/a.js', '/app/b.js', '/app/c.js', '/app/entry.js'],
+    },
+    {
+      name: 'imports without the base and vite url decorations',
+      graph: { '/app/entry.js': ['/base/app/a.js', '/base/@id/virtual:thing', '/base/app/b.js?import='], '/app/a.js': [], 'virtual:thing': [], '/app/b.js': [] },
+      options: { base: '/base/' },
+      expected: ['/app/a.js', '/app/b.js', '/app/entry.js', 'virtual:thing'],
+    },
+    {
+      name: 'imports without `import`, keeping the remaining query',
+      graph: {
+        '/app/entry.js': ['/app/a.js?import&t=1', '/app/b.js?import=&v=2', '/app/c.vue?vue&type=style&index=0&lang.css', '/app/d.js?'],
+        '/app/a.js?t=1': [],
+        '/app/b.js?v=2': [],
+        '/app/c.vue?vue&type=style&index=0&lang.css': [],
+        '/app/d.js': [],
+      },
+      expected: ['/app/a.js?t=1', '/app/b.js?v=2', '/app/c.vue?vue&type=style&index=0&lang.css', '/app/d.js', '/app/entry.js'],
+    },
+    {
+      name: 'an /@fs/ url for entries outside the root',
+      graph: { '/@fs/elsewhere/entry.js': [] },
+      entry: '/elsewhere/entry.js',
+      expected: ['/@fs/elsewhere/entry.js'],
+    },
+    {
+      name: 'css requests without following their imports',
+      graph: { '/app/entry.js': ['/app/style.css'], '/app/style.css': ['/app/nested.js'], '/app/nested.js': [] },
+      expected: ['/app/entry.js', '/app/style.css'],
+    },
+  ] as Array<{ name: string, graph: Record<string, string[]>, entry?: string, options?: { base?: string }, expected: string[] }>)('should transform $name', async ({ graph, entry = `${root}/app/entry.js`, options, expected }) => {
+    const { environment, transformed } = createEnvironment(graph)
 
-    const result = await warmupViteServer(environment, [`${root}/app/entry.js`], { root })
+    const result = await warmupViteServer(environment, [entry], { root, ...options })
 
-    expect(transformed.sort()).toStrictEqual(['/app/a.js', '/app/b.js', '/app/c.js', '/app/entry.js'])
-    expect(result.modules).toBe(4)
-    expect(result.stopped).toBe(false)
+    expect(transformed.sort()).toStrictEqual(expected)
+    expect(result).toMatchObject({ modules: expected.length, stopped: false })
   })
 
   it('should handle cycles and already-transformed modules', async () => {
@@ -65,39 +93,6 @@ describe('warmupViteServer', () => {
     await warmupViteServer(environment, [`${root}/app/entry.js`], { root })
 
     expect(transformed).toStrictEqual(['/app/entry.js', '/app/a.js'])
-  })
-
-  it('should strip the base and vite url decorations', async () => {
-    const { environment, transformed } = createEnvironment({
-      '/app/entry.js': ['/base/app/a.js', '/base/@id/virtual:thing', '/base/app/b.js?import='],
-      '/app/a.js': [],
-      'virtual:thing': [],
-      '/app/b.js': [],
-    })
-
-    await warmupViteServer(environment, [`${root}/app/entry.js`], { root, base: '/base/' })
-
-    expect(transformed.sort()).toStrictEqual(['/app/a.js', '/app/b.js', '/app/entry.js', 'virtual:thing'])
-  })
-
-  it('should drop `import` without corrupting the remaining query', async () => {
-    const { environment, transformed } = createEnvironment({
-      '/app/entry.js': ['/app/a.js?import&t=1', '/app/b.js?import=&v=2', '/app/c.vue?vue&type=style&index=0&lang.css', '/app/d.js?'],
-      '/app/a.js?t=1': [],
-      '/app/b.js?v=2': [],
-      '/app/c.vue?vue&type=style&index=0&lang.css': [],
-      '/app/d.js': [],
-    })
-
-    await warmupViteServer(environment, [`${root}/app/entry.js`], { root })
-
-    expect(transformed.sort()).toStrictEqual([
-      '/app/a.js?t=1',
-      '/app/b.js?v=2',
-      '/app/c.vue?vue&type=style&index=0&lang.css',
-      '/app/d.js',
-      '/app/entry.js',
-    ])
   })
 
   it('should transform modules in parallel', async () => {
@@ -161,14 +156,6 @@ describe('warmupViteServer', () => {
     expect(result.visited).toBe(2)
   })
 
-  it('should use an /@fs/ url for entries outside the root', async () => {
-    const { environment, transformed } = createEnvironment({ '/@fs/elsewhere/entry.js': [] })
-
-    await warmupViteServer(environment, ['/elsewhere/entry.js'], { root })
-
-    expect(transformed).toStrictEqual(['/@fs/elsewhere/entry.js'])
-  })
-
   it('should stop at the module bound', async () => {
     const { environment, transformed } = createEnvironment({
       '/app/entry.js': ['/app/a.js', '/app/b.js', '/app/c.js'],
@@ -205,18 +192,6 @@ describe('warmupViteServer', () => {
 
     expect(transformed).toStrictEqual(['/app/entry.js'])
     expect(result.stopped).toBe(true)
-  })
-
-  it('should not follow imports of css requests', async () => {
-    const { environment, transformed } = createEnvironment({
-      '/app/entry.js': ['/app/style.css'],
-      '/app/style.css': ['/app/nested.js'],
-      '/app/nested.js': [],
-    })
-
-    await warmupViteServer(environment, [`${root}/app/entry.js`], { root })
-
-    expect(transformed.sort()).toStrictEqual(['/app/entry.js', '/app/style.css'])
   })
 
   it('should survive a failing transform', async () => {

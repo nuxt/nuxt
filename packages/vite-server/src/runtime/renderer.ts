@@ -1,8 +1,11 @@
 import { joinURL, withQuery } from 'ufo'
-import { createHooks } from 'hookable'
-import { SSR_ERROR_PARAM, describeError, encodeSSRError, isExpectedError } from 'nuxt/internal/renderer/error'
+import { SSR_ERROR_PARAM, appendVary, describeError, encodeSSRError, isExpectedError, isJsonRequest } from 'nuxt/internal/renderer/error'
+import type { DescribedError } from 'nuxt/internal/renderer/error'
+import { encodeDocument } from 'nuxt/internal/renderer/encode'
+import { mergeHeaders } from 'nuxt/internal/renderer/headers'
+import { claimServerHooks } from 'nuxt/internal/server-default'
 import { createError } from 'nuxt/server'
-import type { NuxtRendererOptions, RendererHooks } from 'nuxt/internal/renderer/runtime'
+import type { NuxtRendererOptions } from 'nuxt/internal/renderer/runtime'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 import { createRequestEvent } from './event.ts'
@@ -12,8 +15,8 @@ export interface NuxtRenderer {
   fetch: (event: ReturnType<typeof createRequestEvent>) => Promise<Response>
 }
 
-/** Route rules matched for a path, as the build's compiled matcher resolves them. */
-export type MatchRouteRules = (path: string) => {
+/** Route rules matched for a path and request method, as the build's compiled matcher resolves them. */
+export type MatchRouteRules = (path: string, method?: string) => {
   ssr?: boolean
   streaming?: boolean
   noScripts?: boolean
@@ -21,12 +24,6 @@ export type MatchRouteRules = (path: string) => {
   redirect?: { to: string, status?: number, base?: string } | false
   headers?: Record<string, string>
 }
-
-/**
- * Hooks the renderer calls while rendering. Without a server runtime there is no channel
- * for a module to register one at build time, so a custom server is the one that hooks in.
- */
-export const serverHooks: RendererHooks = createHooks() as unknown as RendererHooks
 
 /**
  * The capabilities `@nuxt/vite-server` provides to the renderer. Everything comes from the
@@ -37,32 +34,37 @@ export const serverHooks: RendererHooks = createHooks() as unknown as RendererHo
  * unless a rule says otherwise.
  */
 export function createRendererOptions (runtimeConfig: NuxtRendererOptions['runtimeConfig'], matchRouteRules: MatchRouteRules, prerender?: NuxtRendererOptions['prerender']): NuxtRendererOptions {
-  // the URL helpers the app build generates read these off the global
-  ;(globalThis as { __buildAssetsURL?: unknown }).__buildAssetsURL = buildAssetsURL
-  ;(globalThis as { __publicAssetsURL?: unknown }).__publicAssetsURL = publicAssetsURL
+  // loaded up front, as a runtime may drop a request's pending work once it has responded
+  const devErrors = import.meta.dev ? import('./dev-error.ts') : undefined
+
+  const hooks = claimServerHooks()
 
   return {
     runtimeConfig,
     buildAssetsURL,
     publicAssetsURL,
-    getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname) }),
-    hooks: () => serverHooks,
+    getRouteRules: event => ({ ssr: true, ...matchRouteRules(event.url.pathname, event.req.method) }),
+    hooks: () => hooks,
     createResponse: (body, init) => new Response(body, init),
+    createDocumentResponse: (chunks, init) => new Response(encodeDocument(chunks), init),
     createError: init => createError(init),
     prerender,
-    onRenderSuccess: import.meta.dev
-      ? () => {
-          import('./dev-error.ts').then(({ clearErrorReport }) => clearErrorReport()).catch(() => {})
+    onRenderSuccess: devErrors
+      ? (event) => {
+          devErrors.then(({ clearErrorReport }) => clearErrorReport(event.url)).catch(() => {})
         }
       : undefined,
     captureError: (error) => {
       // in development the live error channel reports and prints the error itself
-      if (!import.meta.dev) {
+      if (!import.meta.dev && ((error as { status?: number } | null)?.status || 500) >= 500) {
         console.error(error)
       }
     },
-    onDevError: import.meta.dev
-      ? (error, event, options) => import('./dev-error.ts').then(({ observeDevError }) => observeDevError(error, event.req, options))
+    onDevError: devErrors
+      ? (error, event, options) => devErrors.then(({ observeDevError }) => observeDevError(error, event.req, options))
+      : undefined,
+    renderDevBadge: devErrors
+      ? (event, nonce) => devErrors.then(({ renderDevBadge }) => renderDevBadge(event.req, nonce))
       : undefined,
   }
 }
@@ -76,18 +78,21 @@ const PRERENDER_HINTS_HEADER = 'x-nuxt-prerender'
 /**
  * A web-standard handler over the renderer: it renders the request, and renders the app's
  * error page for a request the render refused. In development it also serves the live
- * error channel and publishes what it failed on to it.
+ * error channel and publishes what it failed on to it. `context` seeds the context of the
+ * request event.
  */
-export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: MatchRouteRules): (request: Request) => Promise<Response> {
-  return async function fetch (request: Request): Promise<Response> {
+export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: MatchRouteRules): (request: Request, context?: Record<string, unknown>) => Promise<Response> {
+  return async function fetch (request: Request, context?: Record<string, unknown>): Promise<Response> {
     if (import.meta.dev) {
       const devErrors = await import('./dev-error.ts')
       if (devErrors.isErrorChannelRequest(new URL(request.url).pathname)) {
+        request.signal.throwIfAborted()
         return devErrors.fetchErrorChannel(request)
       }
     }
-    const event = createRequestEvent(request)
-    const rules = matchRouteRules(event.url.pathname)
+    request.signal.throwIfAborted()
+    const event = createRequestEvent(request, context)
+    const rules = matchRouteRules(event.url.pathname, request.method)
     if (rules.redirect) {
       return redirectResponse(event, rules.redirect, rules.headers)
     }
@@ -99,7 +104,8 @@ export function createFetchHandler (renderer: NuxtRenderer, matchRouteRules: Mat
       }
       return response
     } catch (error) {
-      const response = await renderError(renderer, request, error, event)
+      request.signal.throwIfAborted()
+      const response = await renderError(renderer, request, error, event, context)
       applyHeaders(response, rules.headers)
       if (import.meta.prerender) {
         applyPrerenderHints(event, response)
@@ -121,14 +127,7 @@ function applyHeaders (response: Response, headers: Record<string, string> | und
  * parameter of the matched pattern are not resolved; those need a server runtime.
  */
 function redirectResponse (event: ReturnType<typeof createRequestEvent>, redirect: { to: string, status?: number, base?: string }, headers: Record<string, string> | undefined): Response {
-  let location = redirect.to
-  if (location.includes('**')) {
-    const path = event.url.pathname
-    const tail = redirect.base && path.startsWith(redirect.base) ? path.slice(redirect.base.length) : path
-    location = location.endsWith('/**')
-      ? joinURL(location.slice(0, -3), tail)
-      : location.replace('**', tail.replace(/^\//, ''))
-  }
+  const location = redirect.to.includes('**') ? resolveRedirectTarget(redirect.to, redirectTail(event.url.pathname, redirect.base)) : redirect.to
   const target = appendSearch(location, event.url.search)
   const response = new Response(redirectBody(target), {
     status: redirect.status ?? 307,
@@ -136,6 +135,38 @@ function redirectResponse (event: ReturnType<typeof createRequestEvent>, redirec
   })
   applyHeaders(response, headers)
   return response
+}
+
+const VARIABLE_WIDTH_RE = /\*\*|:\w+[?*+]/
+const LEADING_SEPARATORS_RE = /^(?:[/\\]|%(?:25)*(?:2f|5c))+/i
+const QUERY_UNSAFE_RE = /[#&+;=?]/g
+
+/**
+ * Interpolate a tail into the `**` of a redirect target. A run of separators leading the tail
+ * collapses to one, so the target stays on the origin it names, and a tail in the query or
+ * fragment of the target is encoded as a single value.
+ */
+function resolveRedirectTarget (to: string, tail: string): string {
+  const path = tail.replace(LEADING_SEPARATORS_RE, '/')
+  if (to.endsWith('/**')) {
+    return joinURL(to.slice(0, -3), path)
+  }
+  const index = to.indexOf('**')
+  const query = to.search(/[?#]/)
+  const value = path.replace(/^\//, '')
+  return to.slice(0, index) + (query !== -1 && index > query ? value.replace(QUERY_UNSAFE_RE, char => '%' + char.charCodeAt(0).toString(16).toUpperCase()) : value) + to.slice(index + 2)
+}
+
+/**
+ * The part of `path` past the segments `base` matched, which may differ in spelling from `base`.
+ * A run of slashes or encoded slashes (`%2F`) separates two segments.
+ */
+function redirectTail (path: string, base: string | undefined): string {
+  if (!base) { return path }
+  if (VARIABLE_WIDTH_RE.test(base)) {
+    return path.startsWith(base) ? path.slice(base.length) : path
+  }
+  return base.split('/').slice(1).reduce(rest => rest.replace(/^(?:\/|%2f)+(?:(?!%2f)[^/])*/i, ''), path)
 }
 
 /** A meta-refresh document, so a prerendered redirect is followed when served as a static file. */
@@ -164,13 +195,25 @@ function applyPrerenderHints (event: ReturnType<typeof createRequestEvent>, resp
   response.headers.append(PRERENDER_HINTS_HEADER, paths.map(path => encodeURIComponent(path)).join(', '))
 }
 
-async function renderError (renderer: NuxtRenderer, request: Request, error: unknown, event: ReturnType<typeof createRequestEvent>): Promise<Response> {
+async function renderError (renderer: NuxtRenderer, request: Request, error: unknown, event: ReturnType<typeof createRequestEvent>, context?: Record<string, unknown>): Promise<Response> {
   const described = describeError(error)
-  const { status, statusText, message, headers } = described
+  const { status, statusText, message } = described
   const url = new URL(request.url)
 
   const devErrors = import.meta.dev ? await import('./dev-error.ts') : undefined
-  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: isExpectedError(error, described) }) : undefined
+  const report = devErrors ? await devErrors.observeDevError(error, request, { expected: isExpectedError(error, described) }).catch(() => undefined) : undefined
+
+  if (isJsonRequest(request, url.pathname)) {
+    const body = {
+      error: true,
+      status,
+      statusText,
+      message,
+      data: described.data,
+      ...(import.meta.dev && { stack: (error as { stack?: string })?.stack?.split('\n').map(line => line.trim()) }),
+    }
+    return new Response(JSON.stringify(body), { status, statusText, headers: errorResponseHeaders(event, described, 'application/json;charset=utf-8') })
+  }
 
   const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
     [SSR_ERROR_PARAM]: encodeSSRError({
@@ -182,7 +225,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
       data: (error as { data?: unknown })?.data,
       ...(import.meta.dev && { stack: (error as { stack?: string })?.stack }),
     }),
-  }), { headers: request.headers }))
+  }), { headers: request.headers }), context)
   // while prerendering the two renders share one state, so routes the error page asks
   // for are reported alongside those the failed render collected before it threw
   const state = (import.meta.prerender ? (event.context as { nuxt?: Record<string, unknown> }).nuxt : undefined) || {}
@@ -200,11 +243,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
 
   const rendered = await renderer.fetch(errorEvent).catch(() => null)
   if (rendered) {
-    const responseHeaders = new Headers(rendered.headers)
-    for (const [name, value] of new Headers(headers)) {
-      responseHeaders.set(name, value)
-    }
-    responseHeaders.set('content-type', 'text/html;charset=utf-8')
+    const responseHeaders = errorResponseHeaders(event, described, 'text/html;charset=utf-8', rendered.headers)
     if (report && !import.meta.test) {
       const html = await rendered.text()
       // the overlay is a development aid; never let it replace the real error
@@ -217,13 +256,20 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
   if (report) {
     const page = await report.page().catch(() => undefined)
     if (page) {
-      return new Response(page, { status, statusText, headers: { ...headers, 'content-type': 'text/html;charset=utf-8' } })
+      return new Response(page, { status, statusText, headers: errorResponseHeaders(event, described, 'text/html;charset=utf-8') })
     }
   }
 
-  return new Response(message, {
-    status,
-    statusText,
-    headers: { ...headers, 'content-type': 'text/plain;charset=utf-8' },
-  })
+  return new Response(message, { status, statusText, headers: errorResponseHeaders(event, described, 'text/plain;charset=utf-8') })
+}
+
+function errorResponseHeaders (event: ReturnType<typeof createRequestEvent>, described: DescribedError, contentType: string, page?: Headers): Headers {
+  const headers = new Headers(event.res.headers)
+  if (page) {
+    mergeHeaders(headers, page)
+  }
+  mergeHeaders(headers, described.headers)
+  headers.set('content-type', contentType)
+  appendVary(headers, 'accept, sec-fetch-mode')
+  return headers
 }

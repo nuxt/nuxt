@@ -61,7 +61,7 @@ export type ServerRouteSegment =
 
 /**
  * Types the configured `server.builder` contributes for reading a handler's validated request
- * shapes, named as `Type<typeof handler>` in generated declarations.
+ * shapes and its response, named as `Type<typeof handler>` in generated declarations.
  *
  * Reading these means naming the server runtime's own event type, so the builder supplies them
  * rather than the app layer deriving them. A builder that omits a key contributes no typing for
@@ -76,6 +76,11 @@ export interface ServerRequestTypes {
   query?: string
   /** Name of the type resolving a handler's validated headers. */
   headers?: string
+  /**
+   * Name of the type resolving the value a request to a handler resolves to before it is
+   * serialised. Without one, that is the handler's awaited return type.
+   */
+  response?: string
 }
 
 /**
@@ -132,6 +137,8 @@ export interface NuxtRequestContext {
   '~devClientCss'?: string[]
   /** @internal */
   '~error-cause'?: unknown
+  /** @internal */
+  '~response-headers'?: Headers
 }
 
 /** The context of a {@link RequestEvent}, which carries Nuxt's own per-request state. */
@@ -159,6 +166,23 @@ export interface RequestEvent {
   }
   readonly context: RequestEventContext
 }
+
+/**
+ * Server runtime hooks declared by modules. Augment it to declare a hook.
+ *
+ * @example
+ * ```ts
+ * declare module 'nuxt/schema' {
+ *   interface NuxtServerHooks {
+ *     'my-module:request': (payload: { url: string }, event: RequestEvent) => void | Promise<void>
+ *   }
+ * }
+ * ```
+ *
+ * @since 4.6.0
+ */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface NuxtServerHooks {}
 
 /**
  * Resolves the event type contributed to a {@link ServerTypes} registry, or

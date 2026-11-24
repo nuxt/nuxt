@@ -1,5 +1,8 @@
+import { dirname, join, resolve } from 'pathe'
+import { isWithinDir } from '@nuxt/kit/internal'
+
 export { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
-export { toVirtualId } from '../../../nuxt/src/core/plugins/virtual.ts'
+export { toVirtualId } from '../../../nuxt/src/core/utils/virtual.ts'
 
 // Copied from vue-bundle-renderer utils
 export const IS_CSS_RE = /\.(?:css|scss|sass|postcss|pcss|less|stylus|styl)(?:\?[^.]+)?$/
@@ -11,6 +14,46 @@ export function isCSS (file: string) {
 /** @since 3.9.0 */
 export function toArray<T> (value: T | T[]): T[] {
   return Array.isArray(value) ? value : [value]
+}
+
+/**
+ * De-duplicate `dirs` and drop any dir nested inside another entry, keeping the first-seen order.
+ */
+export function removeNestedDirs (dirs: string[]): string[] {
+  const unique = new Set<string>()
+  for (const dir of dirs) {
+    if (dir) {
+      unique.add(dir)
+    }
+  }
+  return [...unique].filter((dir) => {
+    for (let i = dir.indexOf('/'); i !== -1; i = dir.indexOf('/', i + 1)) {
+      if (unique.has(dir.slice(0, i))) {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+/**
+ * A rolldown `sourcemapIgnoreList` that lists sources from `node_modules` or the build directory.
+ */
+export function createSourcemapIgnoreList (buildDir: string): (relativeSourcePath: string, sourcemapPath: string) => boolean {
+  return (relativeSourcePath, sourcemapPath) => relativeSourcePath.includes('node_modules') || isWithinDir(resolve(dirname(sourcemapPath), relativeSourcePath), buildDir)
+}
+
+/**
+ * The `node_modules` directory of `dir` and of each of its ancestors, where Node resolves packages from.
+ */
+export function getAncestorModulesDirs (dir: string): string[] {
+  const dirs: string[] = []
+  for (let current = dir; ; current = dirname(current)) {
+    dirs.push(join(current, 'node_modules'))
+    if (dirname(current) === current) {
+      return dirs
+    }
+  }
 }
 
 // eslint-disable-next-line no-control-regex -- control characters are exactly what is being stripped

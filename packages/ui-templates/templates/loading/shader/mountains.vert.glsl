@@ -54,6 +54,11 @@ const float Z_FAR = 26.0;
 const float CAM_Y = 2.4;
 const float FOCAL = 1.3;
 const float HORIZON = 0.30;
+// Narrower windows get this view scaled down to fit their width, rather than
+// the full-height scene squeezed sideways.
+const float MIN_VIEW_ASPECT = 0.95;
+/** how far the fitted scene rises, so the peaks clear the icon */
+const float FIT_LIFT = 0.35;
 
 // the two summits that shape the skyline, in screen-x units
 const float PEAK1_X = -0.40;
@@ -121,7 +126,7 @@ void main () {
   int corner = gl_VertexID % 6;
   float t = uMisc.x;
   vec2 resolution = max(uResolution, vec2(1.0));
-  float aspect = max(resolution.x / resolution.y, 0.5);
+  float aspect = max(resolution.x / resolution.y, 0.25);
   float winter = uSeason.x;
   float light = uSeason.y;
 
@@ -176,8 +181,13 @@ void main () {
   float z = mix(Z_NEAR, Z_FAR, pow(v, 1.5));
   // widen the field of view and flatten the range as the window narrows, so a
   // phone shows a range rather than a row of spikes
-  float shape = clamp(aspect / 1.6, 0.5, 1.0);
-  float tanX = max(aspect, 0.95) / FOCAL;
+  float view = max(aspect, MIN_VIEW_ASPECT);
+  float shape = clamp(view / 1.6, 0.5, 1.0);
+  float tanX = view / FOCAL;
+  // below the minimum aspect the vertical shrinks with the horizontal, so the
+  // range keeps its proportions instead of stretching down a tall screen
+  float fit = aspect / view;
+  float lift = (1.0 - fit) * FIT_LIFT;
   float xw = u * z * tanX;
 
   float h = terrain(xw, z, u, shape);
@@ -194,14 +204,14 @@ void main () {
   float diffuse = pow(max(dot(normal, lightDir), 0.0), 1.3);
   float crest = smoothstep(0.0, 1.5, (2.0 * h - hxp - hxm) / (e * e) * 0.2);
 
-  float sy = (h - CAM_Y) / z * FOCAL + HORIZON;
+  float sy = ((h - CAM_Y) / z * FOCAL + HORIZON) * fit + lift;
 
   // nearer ridges hide what lies behind them, which is what makes the skyline
   float occluded = 0.0;
   for (int k = 1; k <= 4; k++) {
     float zs = Z_NEAR + (z - Z_NEAR) * float(k) / 5.0;
     float hs = terrain(u * zs * tanX, zs, u, shape);
-    occluded = max(occluded, step(sy + 0.012, (hs - CAM_Y) / zs * FOCAL + HORIZON));
+    occluded = max(occluded, step(sy + 0.012 * fit, ((hs - CAM_Y) / zs * FOCAL + HORIZON) * fit + lift));
   }
 
   // the icon sits in a tight clearing so it always reads on plain ground.
@@ -252,14 +262,19 @@ void main () {
 
   // snow throws light back, so the caps read brighter as well as whiter
   float lit = diffuse * 0.18 + crest * (0.34 + diffuse * 0.45) + snow * (0.06 + winter * 0.30);
+  // The fitted range packs the same dust into a smaller area, so overlapping
+  // particles add up faster: the base is dimmed and the highlights calmed, or
+  // pulses and shockwaves blow out to white.
   float brightness = (0.008 + lit * grain)
     * fog * nearFade * wave * shimmer
-    * (1.0 + pulse * (0.18 + pulses * 1.1))
-    * (1.0 + ripple * 0.75 + shock * 3.0);
+    * (1.0 + pulse * (0.18 + pulses * 1.1) * fit)
+    * (1.0 + (ripple * 0.75 + shock * 3.0) * fit)
+    * sqrt(fit);
   vec3 tint = mix(MINT * 0.75, MINT_PALE, clamp(crest + snow * 0.5, 0.0, 1.0));
   tint = mix(tint, SNOW, winter * snow) * brightness;
 
-  float glint = step(0.993, rnd) * diffuse * (0.5 + 0.5 * sin(t * 2.0 + rnd * 47.0));
+  // faded with the near ground too, or stray glints read as falling snow
+  float glint = step(0.993, rnd) * diffuse * (0.5 + 0.5 * sin(t * 2.0 + rnd * 47.0)) * nearFade;
   tint += vec3(0.85, 1.0, 0.93) * glint * fog * 0.55;
 
   // the pointer stirs nearby dust
@@ -295,10 +310,10 @@ void main () {
 
   float sizePx = clamp(16.0 / z, 0.65, 1.9)
     * (0.75 + 0.5 * hash21(seed + 27.0))
-    * (1.0 + glint * 0.25 + ripple * 0.20 + shock * 0.75);
+    * (1.0 + glint * 0.25 + (ripple * 0.20 + shock * 0.75) * fit);
 
   gl_Position = vec4(
-    vec2(u, sy) + drift + push + shockPush + offset * sizePx * 2.0 / resolution,
+    vec2(u, sy) + (drift + push + shockPush) * fit + offset * sizePx * 2.0 / resolution,
     0.5,
     1.0
   );

@@ -1,0 +1,190 @@
+import { rm } from 'node:fs/promises'
+import process from 'node:process'
+import { join } from 'pathe'
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
+import { x } from 'tinyexec'
+import nuxt from '../../nuxt/package.json' with { type: 'json' }
+
+import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand, toPackageName } from '../src/dependency.ts'
+import { logger } from '../src/logger.ts'
+import { createTempDir, fakePackage, writeFiles } from './utils.ts'
+
+vi.mock('std-env', async original => ({ ...await original<typeof import('std-env')>(), isCI: false, hasTTY: true, provider: '' }))
+vi.mock('tinyexec', () => ({ x: vi.fn(() => Promise.resolve({ exitCode: 0, stdout: '', stderr: '' })) }))
+vi.mock('package-manager-detector', async original => ({
+  ...await original<typeof import('package-manager-detector')>(),
+  detect: () => Promise.resolve({ name: 'pnpm', agent: 'pnpm' }),
+}))
+
+let rootDir: string
+
+const createPackage = (name: string, exports: Record<string, string>) => writeFiles(rootDir, fakePackage(name, 'export default {}\n', { exports }))
+
+function installCreatesPackage (name: string, exports: Record<string, string>) {
+  vi.mocked(x).mockImplementationOnce((() => createPackage(name, exports).then(() => ({ exitCode: 0, stdout: '', stderr: '' }))) as any)
+}
+
+beforeAll(async () => {
+  rootDir = await createTempDir('nuxt-dependency-')
+  await writeFiles(rootDir, { 'package.json': { name: 'app', private: true } })
+  await createPackage('tailwindcss', { '.': './index.js' })
+  await createPackage('subpath-only', { './a': './index.js' })
+})
+
+afterAll(async () => {
+  await rm(rootDir, { recursive: true, force: true })
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.mocked(x).mockClear()
+})
+
+describe('toPackageName', () => {
+  it.each([
+    ['tailwindcss/nesting', 'tailwindcss'],
+    ['@scope/pkg/sub/path', '@scope/pkg'],
+    ['@scope/pkg', '@scope/pkg'],
+    ['pkg', 'pkg'],
+    ['~/plugins/postcss', '~/plugins/postcss'],
+    ['@/plugins/postcss', '@/plugins/postcss'],
+    ['#build/postcss', '#build/postcss'],
+    ['./postcss.js', './postcss.js'],
+    ['/abs/postcss.js', '/abs/postcss.js'],
+    ['C:/abs/postcss.js', 'C:/abs/postcss.js'],
+    ['npm:pkg/sub', 'npm:pkg/sub'],
+  ])('maps %s to %s', (specifier, expected) => {
+    expect(toPackageName(specifier)).toBe(expected)
+  })
+})
+
+describe('findPackageMissingSubpath', () => {
+  it('returns the installed package a subpath is missing from', () => {
+    expect(findPackageMissingSubpath('tailwindcss/nesting', [rootDir])).toBe('tailwindcss')
+    expect(findPackageMissingSubpath('subpath-only/b', [rootDir])).toBe('subpath-only')
+    expect(findPackageMissingSubpath('subpath-only/b', [join(rootDir, 'node_modules')])).toBe('subpath-only')
+  })
+
+  it('returns nothing for a subpath that resolves, a missing package or a bare package name', () => {
+    expect(findPackageMissingSubpath('subpath-only/a', [rootDir])).toBeUndefined()
+    expect(findPackageMissingSubpath('missing/b', [rootDir])).toBeUndefined()
+    expect(findPackageMissingSubpath('tailwindcss', [rootDir])).toBeUndefined()
+  })
+})
+
+describe('getAddDependencyCommand', () => {
+  it('installs a subpath as the package it belongs to', async () => {
+    const command = await getAddDependencyCommand(['tailwindcss/nesting', '@tailwindcss/vite/internal', '@tailwindcss/vite'], rootDir, { dev: true })
+    expect(command.split(' ')).toContain('tailwindcss')
+    expect(command.split(' ').filter(arg => arg === '@tailwindcss/vite')).toHaveLength(1)
+    expect(command).not.toContain('tailwindcss/nesting')
+    expect(command).not.toContain('/internal')
+  })
+})
+
+describe('ensureDependencyInstalled', () => {
+  it('does not offer to install a package that is already installed', async () => {
+    const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+
+    await expect(ensureDependencyInstalled('tailwindcss/nesting', { rootDir, searchPaths: [] })).resolves.toBe(false)
+    await expect(ensureDependencyInstalled(['tailwindcss/nesting'], { rootDir, searchPaths: [] })).resolves.toEqual(['tailwindcss/nesting'])
+    await expect(ensureDependencyInstalled('subpath-only/b', { rootDir, searchPaths: [] })).resolves.toBe(false)
+
+    expect(prompt).not.toHaveBeenCalled()
+    expect(x).not.toHaveBeenCalled()
+  })
+
+  it.each(['~~/postcss/plugin', './postcss.js', '/abs/postcss.js', '#build/postcss'])('does not offer to install %s', async (specifier) => {
+    const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+
+    await expect(ensureDependencyInstalled(specifier, { rootDir, searchPaths: [] })).resolves.toBe(false)
+
+    expect(prompt).not.toHaveBeenCalled()
+    expect(x).not.toHaveBeenCalled()
+  })
+
+  it('installs the package a missing subpath belongs to', async () => {
+    const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('@scope/missing', { './plugin': './index.js' })
+
+    await expect(ensureDependencyInstalled('@scope/missing/plugin', { rootDir, searchPaths: [] })).resolves.toBe(true)
+
+    expect(prompt).toHaveBeenCalledWith('Do you want to install `@scope/missing`?', expect.anything())
+    expect(x).toHaveBeenCalledOnce()
+    const [command, args] = vi.mocked(x).mock.calls[0]!
+    expect(command).toBe('pnpm')
+    expect(args).toContain('@scope/missing')
+    expect(args).not.toContain('@scope/missing/plugin')
+  })
+
+  it('returns the packages still missing after installing the others', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('other', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled(['tailwindcss/nesting', 'other'], { rootDir, searchPaths: [] })).resolves.toEqual(['tailwindcss/nesting'])
+
+    const [, args] = vi.mocked(x).mock.calls[0]!
+    expect(args).toContain('other')
+    expect(args).not.toContain('tailwindcss')
+  })
+
+  it('installs a dev dependency unless asked for a regular one', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('dev-dependency', { '.': './index.js' })
+    installCreatesPackage('regular-dependency', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled('dev-dependency', { rootDir, searchPaths: [] })).resolves.toBe(true)
+    await expect(ensureDependencyInstalled('regular-dependency', { rootDir, searchPaths: [], dev: false })).resolves.toBe(true)
+
+    const calls = vi.mocked(x).mock.calls
+    expect(calls[0]![1]).toContain('-D')
+    expect(calls[1]![1]).not.toContain('-D')
+  })
+
+  it('returns false when the installed package does not provide the subpath', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('@scope/other', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled('@scope/other/plugin', { rootDir, searchPaths: [] })).resolves.toBe(false)
+    expect(x).toHaveBeenCalledOnce()
+  })
+})
+
+describe('install advice', () => {
+  const nodeVersion = process.versions.node
+
+  afterEach(() => {
+    Object.defineProperty(process.versions, 'node', { value: nodeVersion })
+  })
+
+  async function requestPackage (name: string, { version, typescript }: { version: string, typescript: 'strip' | false }) {
+    Object.defineProperty(process.versions, 'node', { value: version })
+    vi.spyOn(process.features, 'typescript', 'get').mockReturnValue(typescript)
+    vi.spyOn(logger, 'prompt').mockResolvedValue(false)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    await expect(ensureDependencyInstalled(name, { rootDir, searchPaths: [] })).resolves.toBe(false)
+    const message = warn.mock.calls.map(args => String(args[0])).find(message => message.includes('NUXT_B5010'))
+    return message?.split('fix: ')[1]
+  }
+
+  it('suggests upgrading Node.js before installing jiti on a Node.js that cannot strip types', async () => {
+    const fix = await requestPackage('jiti', { version: '22.12.0', typescript: false })
+    expect(fix).toMatch(/^Upgrade Node\.js to a supported version \(`(.+)`\)\. Alternatively, run `pnpm add .*jiti` to install them\.$/)
+    expect(fix).toContain(`(\`${nuxt.engines.node}\`)`)
+  })
+
+  it('suggests turning type stripping back on for a supported Node.js', async () => {
+    const fix = await requestPackage('jiti', { version: '24.15.0', typescript: false })
+    expect(fix).toMatch(/^Type stripping is turned off in this Node\.js process\. .* Alternatively, run `pnpm add .*jiti` to install them\.$/)
+  })
+
+  it('only suggests installing jiti on a Node.js that strips types', async () => {
+    const fix = await requestPackage('jiti', { version: '22.18.0', typescript: 'strip' })
+    expect(fix).toMatch(/^Run `pnpm add .*jiti` to install them\.$/)
+  })
+
+  it('only suggests installing any other package', async () => {
+    const fix = await requestPackage('not-jiti', { version: '22.12.0', typescript: false })
+    expect(fix).toMatch(/^Run `pnpm add .*not-jiti` to install them\.$/)
+  })
+})

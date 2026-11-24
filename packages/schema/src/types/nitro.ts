@@ -1,4 +1,5 @@
 import type { NuxtImport } from './imports.ts'
+import type { RequestEvent } from './server.ts'
 
 /**
  * Extension point through which the configured `server.builder` contributes the types of the
@@ -132,7 +133,7 @@ export interface DevServerHandler extends DevServerHandlerBase {
 /** A development-only registration as `addDevServerHandler()` accepts it. */
 export interface DevServerHandlerInput extends DevServerHandlerBase {
   /** The handler, or one per server API. */
-  handler: ServerApiVariants<DevServerHandlerFunction>
+  handler: DevServerHandlerFunction | { nuxt?: (event: RequestEvent) => unknown, nitro2?: DevServerHandlerFunction, nitro3?: DevServerHandlerFunction }
 }
 
 /**
@@ -147,6 +148,21 @@ export interface ServerPlugin {
   plugin: string
   /** The server API it was registered for, when the module named one. */
   compatibility?: ServerApi
+  /** Paths of the variants the host does not run. */
+  unused?: string[]
+}
+
+/**
+ * A renderer plugin as `addRendererPlugin()` accepts it: the path of a renderer plugin, or
+ * one per server API. The `nuxt` variant is the renderer plugin; `nitro2` and `nitro3`
+ * are nitro plugins registered instead on a host that does not run renderer plugins.
+ */
+export type RendererPluginInput = ServerApiVariants<string>
+
+/** A renderer plugin registration, as written into `_rendererPlugins`. */
+export interface RendererPluginEntry {
+  /** Path to the renderer plugin. */
+  plugin: string
   /** Paths of the variants the host does not run. */
   unused?: string[]
 }
@@ -181,7 +197,7 @@ export type RouteRuleConfig = ResolveRouteRuleConfig<NitroTypes>
 
 /** The tracing channels Nuxt owns, enabled independently of the server runtime's own. */
 export interface TracingChannelOptionsBase {
-  /** Enable Nuxt-owned channels (`nuxt.render`, `nuxt.island`, `nuxt.data`, `nuxt.plugin`). */
+  /** Enable Nuxt-owned `nuxt.*` channels. */
   nuxt?: boolean
 }
 
@@ -201,7 +217,7 @@ export interface PrerenderOptions {
   /** Routes to prerender, in addition to those discovered by crawling or matched by `prerender` route rules. */
   routes?: string[]
   /** Routes to skip. A string matches as a path prefix. */
-  ignore?: Array<string | RegExp | ((path: string) => boolean | undefined)>
+  ignore?: Array<string | RegExp | ((path: string) => boolean | null | undefined)>
   /** Follow links in each rendered page to discover further routes. */
   crawlLinks?: boolean
 }
@@ -229,6 +245,7 @@ export interface NitroConfigFallback {
   typescript?: { tsConfig?: Record<string, any>, generateTsConfig?: boolean, strict?: boolean }
   tracingChannel?: boolean | (TracingChannelOptionsBase & Record<string, boolean | undefined>)
   experimental?: { envExpansion?: boolean }
+  rollupConfig?: { plugins?: unknown }
 }
 
 /** @internal */

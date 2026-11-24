@@ -6,6 +6,11 @@ export function ReplacePlugin (): Plugin {
     name: 'nuxt:replace',
     enforce: 'post',
     applyToEnvironment (environment) {
+      // Vite applies `define` statically everywhere except the unbundled dev client.
+      if (environment.config.consumer !== 'client' || environment.config.isBundled) {
+        return false
+      }
+
       const config = environment.getTopLevelConfig()
 
       const replaceOptions: Record<string, string> = Object.create(null)
@@ -18,7 +23,10 @@ export function ReplacePlugin (): Plugin {
         }
       }
 
-      return replacePlugin(replaceOptions, { preventAssignment: true })
+      return replacePlugin(replaceOptions, {
+        preventAssignment: true,
+        delimiters: ['(?<![\\w$.\'"`])', '\\b(?!\\.)'],
+      })
     },
   }
 }

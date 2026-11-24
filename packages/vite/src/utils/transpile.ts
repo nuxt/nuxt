@@ -8,42 +8,24 @@ interface Envs {
   isServer?: boolean
 }
 
-export function getTranspilePatterns (envs: Envs): Array<string | RegExp> {
-  const nuxt = useNuxt()
-  const transpile: RegExp[] = []
-
-  for (let pattern of nuxt.options.build.transpile) {
-    if (typeof pattern === 'function') {
-      const result = pattern(envs)
-      if (result) { pattern = result }
-    }
-    if (typeof pattern === 'string') {
-      transpile.push(new RegExp(escapeRegExp(normalize(pattern))))
-    } else if (pattern instanceof RegExp) {
-      transpile.push(pattern)
-    }
-  }
-
-  return transpile
-}
-
-/**
- * Get transpile patterns as strings for use with Vite's optimizeDeps.exclude
- * This resolves functions and filters to only string patterns
- */
-export function getTranspileStrings (envs: Envs): string[] {
-  const nuxt = useNuxt()
-  const patterns: string[] = []
-
-  for (let pattern of nuxt.options.build.transpile) {
-    if (typeof pattern === 'function') {
-      const result = pattern(envs)
-      if (result) { pattern = result }
-    }
+function resolveTranspile (envs: Envs): Array<string | RegExp> {
+  const patterns: Array<string | RegExp> = []
+  for (const entry of useNuxt().options.build.transpile) {
+    const pattern = typeof entry === 'function' ? entry(envs) || undefined : entry
     if (typeof pattern === 'string') {
       patterns.push(normalize(pattern))
+    } else if (pattern instanceof RegExp) {
+      patterns.push(pattern)
     }
   }
-
   return patterns
+}
+
+export function getTranspilePatterns (envs: Envs): RegExp[] {
+  return resolveTranspile(envs).map(pattern => typeof pattern === 'string' ? new RegExp(escapeRegExp(pattern)) : pattern)
+}
+
+/** The string patterns of `build.transpile`, for `optimizeDeps.exclude`. */
+export function getTranspileStrings (envs: Envs): string[] {
+  return resolveTranspile(envs).filter(pattern => typeof pattern === 'string')
 }

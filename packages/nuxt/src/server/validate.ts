@@ -86,7 +86,7 @@ function createValidationError (cause: unknown) {
  * ```ts
  * import { z } from 'zod'
  *
- * export default defineEventHandler(async (event) => {
+ * export default defineHandler(async (event) => {
  *   const { page } = await getValidatedQuery(event, z.object({ page: z.coerce.number() }))
  *   return { page }
  * })

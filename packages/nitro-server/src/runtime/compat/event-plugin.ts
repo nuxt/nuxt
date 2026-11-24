@@ -1,5 +1,4 @@
-import { definePlugin } from 'nitro'
-import { fetch as nitroFetch } from 'nitro/app'
+import { definePlugin, fetch as nitroFetch } from 'nitro'
 import { createFetch } from 'ofetch'
 import type { H3Event } from 'nitro/h3'
 

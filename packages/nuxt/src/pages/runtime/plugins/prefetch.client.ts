@@ -1,5 +1,4 @@
 import { hasProtocol } from 'ufo'
-import { toArray } from '../utils'
 import { defineNuxtPlugin } from '#app/nuxt'
 import type { ObjectPlugin, Plugin } from '#app/nuxt'
 import { useRouter } from '#app/composables/router'
@@ -9,6 +8,7 @@ import { _loadAsyncComponent } from '#app/composables/preload'
 import { usePrefetchScheduler } from '#app/internal/prefetch-scheduler'
 import { prefetchGroup } from '#app/internal/prefetch-util'
 import { componentIslands } from '#build/nuxt.config.mjs'
+import { toArray } from '#app/utils'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
   name: 'nuxt:prefetch',
@@ -18,9 +18,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     // Force layout prefetch on route changes
     nuxtApp.hooks.hook('app:mounted', () => {
       router.beforeEach(async (to) => {
-        const layout = to?.meta?.layout as keyof typeof layouts | undefined
-        if (layout && typeof layouts[layout] === 'function') {
-          await layouts[layout]()
+        const layout = to?.meta?.layout
+        if (typeof layout === 'string' && layout in layouts) {
+          await _loadAsyncComponent(layouts[layout])
         }
       })
     })
@@ -57,7 +57,9 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         },
       })
 
-      if (componentIslands) {
+      // importing the page in dev would transform it and all its components for every visible link,
+      // which `<NuxtLink>` already avoids for route components in dev
+      if (componentIslands && !import.meta.dev) {
         await Promise.all(route.matched.map((record) => {
           const component = record.components?.default
           if (typeof component !== 'function') { return }

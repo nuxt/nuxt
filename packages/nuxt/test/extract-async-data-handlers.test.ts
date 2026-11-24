@@ -7,6 +7,7 @@ describe('extract async data handlers plugin', () => {
     enabled: true,
     sourcemap: false,
     rootDir: '/app',
+    appDir: '/project/node_modules/nuxt-nightly/dist/app',
   }
 
   function createTransform (options = defaultOptions) {
@@ -22,6 +23,16 @@ describe('extract async data handlers plugin', () => {
   }
 
   describe('basic functionality', () => {
+    it('should not transform Nuxt\'s own app directory, whatever the package is called', () => {
+      const plugin = ExtractAsyncDataHandlersPlugin(defaultOptions).raw({}, { framework: 'rollup', versions: {} }) as {
+        transform: { filter: { id: { exclude: RegExp[] } } }
+      }
+      const isExcluded = (id: string) => plugin.transform.filter.id.exclude.some(re => re.test(id))
+      expect(isExcluded('/project/node_modules/nuxt-nightly/dist/app/composables/fetch.js')).toBe(true)
+      expect(isExcluded('/project/app/pages/index.vue')).toBe(false)
+      expect(isExcluded('/project/node_modules/nuxt-nightly/dist/application.js')).toBe(false)
+    })
+
     it('should not transform when no async data functions are present', async () => {
       const transform = createTransform()
       const code = `
@@ -254,21 +265,25 @@ describe('extract async data handlers plugin', () => {
 
     it('should handle Vue SFC script blocks', async () => {
       const transform = createTransform()
-      const code = `
-        <template>
-          <div>{{ data }}</div>
-        </template>
-        
-        <script setup>
-        const { data } = await useAsyncData('key', async () => {
-          return await $fetch('/api/data')
-        })
-        </script>
-      `
+      const code = `<template><div>{{ data }}</div></template>
+<script setup>
+const { data } = await useAsyncData('key', () => 42)
+</script >
+<style scoped>div { color: red }</style>`
       const result = await transform(code, '/app/test.vue')
 
-      expect(result).toBeDefined()
-      expect(result).toContain('() => import(')
+      expect(result).toBe(`<template><div>{{ data }}</div></template>
+<script setup>
+const { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))
+</script >
+<style scoped>div { color: red }</style>`)
+      expect(transform.load('/app/async-data-chunk-0.js')).toBe('export default async function () { return 42 }')
+    })
+
+    it('should not treat script tags in a module string as an SFC script block', async () => {
+      const transform = createTransform()
+      const code = `const html = '<script>0</script>'\nconst { data } = await useAsyncData('key', () => 42)`
+      expect(await transform(code)).toBe(`const html = '<script>0</script>'\nconst { data } = await useAsyncData('key', () => import('/app/async-data-chunk-0.js').then(r => (r.default || r)()))`)
     })
   })
 

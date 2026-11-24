@@ -1,11 +1,5 @@
-import process from 'node:process'
-import { createConsoleReporter, defineDiagnostics } from 'nostics'
-import { ansiFormatter } from 'nostics/formatters/ansi'
-import { colors } from 'consola/utils'
-
-// TODO: bump the `4.x` path segment to `5.x` when the v5 docs go live.
-const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+import { defineDiagnostics } from 'nostics'
+import { diagnosticReporters, docsBase } from '@nuxt/kit/internal'
 
 /**
  * B9xxx
@@ -13,16 +7,16 @@ const docsBase = (code: string): string =>
  */
 export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  reporters: [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const,
+  reporters: diagnosticReporters,
   codes: {
     NUXT_B9001: {
       why: (p: { keys: string }) => `The following \`nitro\` config options are no longer supported by Nitro v3 and were ignored: ${p.keys}.`,
-      fix: 'Remove them from your `nitro` configuration.',
+      fix: (p: { replacements: string }) => `Remove them from your \`nitro\` configuration.${p.replacements ? ` Settings with a replacement can be moved: ${p.replacements}` : ''}`,
       docs: false,
     },
     NUXT_B9002: {
       why: (p: { count: number, handlers: string }) => `${p.count} Nitro v2 handler${p.count === 1 ? ' has' : 's have'} no \`route\`, which Nitro v3 requires:\n  - ${p.handlers}`,
-      fix: 'They have been registered as middleware on `/**`. Give each handler an explicit `route` to control where it runs.',
+      fix: 'They have been registered as middleware on `/**`. Set `middleware: true` on each handler that runs for every request, or give it an explicit `route`. Report it to the module author if the handler is not your own.',
       docs: false,
     },
     NUXT_B9003: {
@@ -33,6 +27,71 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B9004: {
       why: (p: { count: number, handlers: string }) => `${p.count} Nitro v2 middleware handler${p.count === 1 ? '' : 's'} ran for every path below ${p.count === 1 ? 'its' : 'their'} \`route\` in Nitro v2, which matches routed middleware exactly in Nitro v3, so ${p.count === 1 ? 'it was' : 'they were'} registered on a wildcard route:\n  - ${p.handlers}`,
       fix: 'Give each middleware the `route` it needs, ending in `/**` if it has to keep running for sub-paths. Nitro v2 also stripped the route from `event.path`; the layer keeps doing so, but a migrated handler reads the full path.',
+      docs: false,
+    },
+    NUXT_B9005: {
+      why: (p: { count: number, files: string }) => `${p.count} file${p.count === 1 ? '' : 's'} in your server code use${p.count === 1 ? 's' : ''} Nitro v2 or h3 v1 APIs, which Nitro v3 does not provide:\n  - ${p.files}`,
+      fix: 'Move these imports to `nuxt/server` (or `nitro/h3` and `nitro/*`), and read the request from `event.req` rather than `event.node`. To ship before migrating, enable `nitroLegacy`.',
+      docs: false,
+    },
+    NUXT_B9006: {
+      why: (p: { file: string, count: number, names: string }) => `\`${p.file}\` uses ${p.names} without importing ${p.count === 1 ? 'it' : 'them'}. Files in subdirectories of \`server/utils/\` are not auto-imported.`,
+      fix: 'Import each one explicitly, re-export it from a file directly in `server/utils/`, or enable `nitroLegacy.imports` (included in `nitroLegacy: true`) to scan subdirectories of `server/utils/` as Nitro v2 did.',
+      docs: false,
+    },
+    NUXT_B9007: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} use${p.count === 1 ? 's' : ''} Nitro or h3 utilities without importing them, and server auto-imports of these are off by default in Nuxt 5:\n  - ${p.files}`,
+      fix: (p: { imports: string }) => `Import them explicitly: ${p.imports}. To keep auto-importing them, enable \`experimental.nitroAutoImports\`, or \`nitroLegacy: true\` to also keep the rest of your Nitro v2 server code running while you migrate.`,
+      docs: false,
+    },
+    NUXT_B9008: {
+      why: (p: { builder: string }) => `The Nitro \`${p.builder}\` builder was requested, but with \`experimental.nitroViteEnvironment\` the server is built by Vite, so it is ignored.`,
+      fix: 'Remove `nitro.builder` (or `NITRO_BUILDER`), or disable `experimental.nitroViteEnvironment` to build the server with another Nitro builder.',
+      docs: false,
+    },
+    NUXT_B9009: {
+      why: (p: { count: number, version: string, files: string }) => `${p.count} file${p.count === 1 ? '' : 's'} in your server code import${p.count === 1 ? 's' : ''} from \`h3\`, which your project resolves to \`h3@${p.version}\`. Nitro v3 uses h3 v2, and h3 v1 helpers do not work with its events:\n  - ${p.files}`,
+      fix: 'Remove `h3` from your dependencies and import from `nuxt/server` (or `nitro/h3`) instead. To ship before migrating, enable `nitroLegacy.h3`, which resolves `h3` to the h3 v1 helpers.',
+      docs: false,
+    },
+    NUXT_B9010: {
+      why: (p: { file: string, specifier: string }) => `\`${p.file}\` imports \`${p.specifier}\`, a path inside Nitro v2 that Nitro v3 does not provide.`,
+      fix: 'Import from `nuxt/server` (or `nitro/h3` and `nitro/*`) instead. While you migrate, `nitropack/runtime` still resolves, to the Nitro v2 compatibility layer. Report it to the package author if the file is not your own.',
+      docs: false,
+    },
+    NUXT_B9011: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} call${p.count === 1 ? 's' : ''} \`$fetch\` without importing it, and Nitro v3 does not provide a global \`$fetch\` to server code, so a request that renders no page can fail with \`$fetch is not defined\`:\n  - ${p.files}`,
+      fix: 'Call routes of your app with `serverFetch(event, path)` from `nuxt/server`, and other URLs with `fetch`, or add `import { $fetch } from \'ofetch\'`.',
+      docs: false,
+    },
+    NUXT_B9012: {
+      why: (p: { id: string }) => `Nitro does not provide \`${p.id}\` in the form Nuxt reads the runtime config from. This version of Nitro is not supported by this version of Nuxt.`,
+      fix: 'Install the version of `nitro` that `@nuxt/nitro-server` depends on, or upgrade Nuxt.',
+      docs: false,
+    },
+    NUXT_B9013: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? ' has a suffix in its name' : 's have a suffix in their names'} that Nitro v3 rejects unless it is listed in \`scanSuffixes\`. The Nitro v2 compatibility layer added ${p.count === 1 ? 'it' : 'them'} to \`nitro.scanSuffixes\`, which keeps a suffix part of the name as Nitro v2 did:\n  - ${p.files}`,
+      fix: (p: { suffixes: string }) => `This layer is transitional and will be removed in Nuxt 6. Rename the files, or add ${p.suffixes} to \`nitro.scanSuffixes\` in your \`nuxt.config\` to keep the names.`,
+      docs: false,
+    },
+    NUXT_B9014: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? ' has a suffix in its name' : 's have a suffix in their names'} that Nitro v3 rejects unless it is listed in \`scanSuffixes\`, so Nitro fails the build, or ignores ${p.count === 1 ? 'the file' : 'them'} in development:\n  - ${p.files}`,
+      fix: (p: { suffixes: string }) => `Rename the files, or add ${p.suffixes} to \`nitro.scanSuffixes\` in your \`nuxt.config\` to keep the names.`,
+      docs: false,
+    },
+    NUXT_B9015: {
+      why: (p: { count: number, aliases: string }) => `${p.count} server alias${p.count === 1 ? '' : 'es'} pointed \`h3\` at h3 v1, which does not work with Nitro v3 events, and ${p.count === 1 ? 'was' : 'were'} removed, so that \`h3\` resolves to the h3 v1 helpers of \`nitroLegacy.h3\` in Nitro v2 server code and to h3 v2 elsewhere:\n  - ${p.aliases}`,
+      fix: 'Remove the alias from your configuration, or report it to the author of the module that sets it.',
+      docs: false,
+    },
+    NUXT_B9016: {
+      why: (p: { base: string, driver: string, error: string }) => `\`nitro.storage\` cannot read or write \`${p.base}:\` at build time, because its \`${p.driver}\` driver failed to load: ${p.error}`,
+      fix: 'Check that the driver can be imported from your project, or report it to the author of the module that reads this storage at build time.',
+      docs: false,
+    },
+    NUXT_B9017: {
+      why: (p: { keys: string }) => `\`nitro.options.routeRules\` was replaced after Nitro was initialised, and the new object leaves out built-in route rules, so the server no longer applies them: ${p.keys}.`,
+      fix: 'Keep the existing rules when replacing `nitro.options.routeRules`, for example `nitro.options.routeRules = { ...nitro.options.routeRules, ...rules }`, or add the rules to the existing object. If your code does not replace `nitro.options.routeRules`, a module does: report it to the module author.',
       docs: false,
     },
   },

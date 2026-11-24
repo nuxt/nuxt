@@ -1,12 +1,10 @@
-import { isObject } from '@vue/shared'
 import { isIgnored } from '@nuxt/kit'
-import { buildDiagnostics } from '@nuxt/kit/internal'
+import { buildDiagnostics, hasOwnSubpathImport, isWithinDir } from '@nuxt/kit/internal'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
 import { parseModuleId } from '../../core/utils/plugins.ts'
-import { isAbsolute, normalize } from 'pathe'
-import { type PackageJson, readPackage } from 'pkg-types'
+import { normalize } from 'pathe'
 import { genImport } from 'knitwork'
 import type { getComponentsT } from '../module.ts'
 import type { Nuxt } from 'nuxt/schema'
@@ -31,8 +29,6 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     virtualImports: ['#components'],
     injectAtEnd: true,
   })
-
-  const rootDirWithSlash = nuxt.options.rootDir.replace(/\/?$/, '/')
 
   function getComponentsImports (): Import[] {
     const components = options.getComponents(options.mode)
@@ -59,19 +55,22 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     })
   }
 
+  function transformInclude (id: string) {
+    id = normalize(id)
+    return id.startsWith('virtual:') || id.startsWith('\0virtual:') || isWithinDir(id, nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
+  }
+
   return createUnplugin(() => [
     {
       name: 'nuxt:components:imports-wrapper',
       enforce: 'post',
-      transformInclude (id) {
-        id = normalize(id)
-        return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
-      },
       transform: {
         filter: {
           id: COMPONENT_QUERY_RE,
         },
         handler (_code, id) {
+          if (!transformInclude(id)) { return }
+
           // Virtual component wrapper
           const { search } = parseModuleId(id)
           const params = new URLSearchParams(search)
@@ -79,7 +78,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
           const bare = id.replace(/\?.*/, '')
           const componentExport = params.get('nuxt_component_export') || 'default'
           if (!IDENTIFIER_RE.test(componentExport)) {
-            throw buildDiagnostics.NUXT_B1021({ export: componentExport })
+            throw buildDiagnostics.NUXT_B1021({ export: componentExport }, { method: 'error' })
           }
           const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
           if (mode === 'async') {
@@ -118,7 +117,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) })
+            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) }, { method: 'error' })
           }
         },
       },
@@ -126,22 +125,16 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     {
       name: 'nuxt:components:imports-alias',
       enforce: 'post',
-      transformInclude (id) {
-        id = normalize(id)
-        return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
-      },
       transform: {
         filter: {
           code: /#components/,
         },
         async handler (code, id) {
+          if (!transformInclude(id)) { return }
+
           // If package defines a "#components" import mapping, assume is used internally by the package.
-          if (isAbsolute(id) && (/node_modules[\\/](?!\.virtual)/.test(id) || !id.includes(rootDirWithSlash))) {
-            let pkg: PackageJson | undefined
-            try { pkg = await readPackage(id) } catch { /* ignore */ }
-            if (isObject(pkg) && isObject(pkg.imports) && Object.keys(pkg.imports).some(k => k.includes('#components'))) {
-              return
-            }
+          if (await hasOwnSubpathImport(id, '#components', nuxt.options.rootDir)) {
+            return
           }
 
           componentUnimport.modifyDynamicImports((imports) => {

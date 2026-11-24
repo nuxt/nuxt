@@ -4,6 +4,28 @@
  * @module nuxt/internal/dev/peer
  */
 
+/** Header the dev server in front sets, to {@link DEV_PEER_TOKEN_ENV}, on requests from a loopback peer. */
+export const DEV_PEER_HEADER = 'x-nuxt-dev-peer'
+
+/** Environment variable holding the value the dev server in front sets {@link DEV_PEER_HEADER} to. */
+export const DEV_PEER_TOKEN_ENV = 'NUXT_DEV_PEER_TOKEN'
+
+/**
+ * Whether the dev server in front vouched for a request as coming from a loopback peer.
+ * The app's own socket only ever sees that server, so its address says nothing about the client.
+ */
+export function isVouchedLoopbackPeer (header: string | undefined | null): boolean {
+  const token = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env[DEV_PEER_TOKEN_ENV]
+  if (!token || typeof header !== 'string' || header.length !== token.length) {
+    return false
+  }
+  let difference = 0
+  for (let i = 0; i < token.length; i++) {
+    difference |= token.charCodeAt(i) ^ header.charCodeAt(i)
+  }
+  return difference === 0
+}
+
 /**
  * Whether the connected peer is a loopback address.
  *

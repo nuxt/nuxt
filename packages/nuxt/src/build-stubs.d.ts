@@ -47,11 +47,12 @@ declare module '#build/plugins.client.mjs'
 declare module '#build/plugins.server.mjs'
 declare module '#build/root-component.mjs'
 declare module '#build/route-rules.mjs'
-declare module '#build/server-routes' {
-  export type { ErrorBody, GeneratedServerRoutes, Methods, Path, RequestBody, RequestHeaders, RequestQuery, Requires, Response, ResponseHeaders, StrictFetchPaths, ValidInput } from './build-stub-server-routes'
-}
 declare module '#build/test-component-wrapper.mjs'
 declare module '#build/unhead-options.mjs'
+declare module '#build/unhead-client.mjs' {
+  export const createClientHead: () => import('@unhead/vue/types').VueHeadClient
+  export const appComponentHead: import('@unhead/vue/types').SerializableHead[]
+}
 declare module '#build/unhead.config.mjs'
 
 declare module '#components'

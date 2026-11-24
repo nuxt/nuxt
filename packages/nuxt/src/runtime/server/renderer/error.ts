@@ -74,7 +74,7 @@ export interface DescribedError {
   message: string
   /** The error's `data`, present only where it is safe to expose. */
   data: unknown
-  headers: Record<string, string>
+  headers: Headers
   /** Whether the error named an HTTP status itself, rather than being given 500. */
   isHTTPError: boolean
 }
@@ -119,13 +119,13 @@ export function describeError (error: unknown): DescribedError {
   const named = status ?? statusCode
   const isHTTPError = typeof named === 'number' && named >= 400 && named <= 599
   const exposed = import.meta.dev || (isHTTPError && isRaisedByApp(error))
-  const reason = (isHTTPError && statusText) || (exposed && message) || (isHTTPError ? 'Request failed' : 'Internal Server Error')
+  const reason = (isHTTPError && statusText) || (exposed && message) || (isHTTPError && named !== 500 ? 'Request failed' : 'Internal Server Error')
   return {
     status: isHTTPError ? named : 500,
     statusText: reason.replace(INVALID_REASON_PHRASE_RE, '') || 'Error',
     message: (exposed && message) || reason,
     data: exposed ? jsonSafeData(data) : undefined,
-    headers: exposed ? (headers instanceof Headers ? Object.fromEntries(headers) : (headers as Record<string, string> | undefined) ?? {}) : {},
+    headers: new Headers(exposed ? (headers ?? undefined) as HeadersInit | undefined : undefined),
     isHTTPError,
   }
 }

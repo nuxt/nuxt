@@ -8,11 +8,14 @@ import {
   getQuery,
   getRequestHeader,
   getRequestHeaders,
+  getRequestHost,
   getRequestIP,
+  getRequestProtocol,
   getRequestURL,
   getRouterParam,
   getRouterParams,
   isNuxtError,
+  parseCookies,
   readBody,
   sendRedirect,
   setCookie,
@@ -73,6 +76,35 @@ describe('request', () => {
   it('parses the query, resolving a repeated parameter to an array', () => {
     const e = event(new Request('https://nuxt.com/?name=nuxt&tag=a&tag=b'))
     expect(getQuery(e)).toEqual({ name: 'nuxt', tag: ['a', 'b'] })
+  })
+})
+
+describe('forwarded headers', () => {
+  const forwarded = () => event(new Request('http://internal:3000/api?a=1', { headers: { 'host': 'internal:3000', 'x-forwarded-host': 'nuxt.com, proxy', 'x-forwarded-proto': 'https, http' } }))
+
+  it('trusts no forwarded header by default', () => {
+    const e = forwarded()
+    expect(getRequestURL(e).href).toBe('http://internal:3000/api?a=1')
+    expect(getRequestHost(e)).toBe('internal:3000')
+    expect(getRequestProtocol(e)).toBe('http')
+  })
+
+  it('reads the first forwarded host and protocol when opted in', () => {
+    const e = forwarded()
+    expect(getRequestURL(e, { xForwardedHost: true, xForwardedProto: true }).href).toBe('https://nuxt.com/api?a=1')
+    expect(getRequestHost(e, { xForwardedHost: true })).toBe('nuxt.com')
+    expect(getRequestProtocol(e, { xForwardedProto: true })).toBe('https')
+  })
+
+  it('ignores a forwarded protocol other than http or https', () => {
+    const e = event(new Request('http://nuxt.com/', { headers: { 'x-forwarded-proto': 'javascript' } }))
+    expect(getRequestProtocol(e, { xForwardedProto: true })).toBe('http')
+  })
+
+  it('leaves the URL on the event untouched', () => {
+    const e = forwarded()
+    getRequestURL(e, { xForwardedHost: true, xForwardedProto: true }).pathname = '/changed'
+    expect(e.url.href).toBe('http://internal:3000/api?a=1')
   })
 })
 
@@ -172,6 +204,11 @@ describe('cookies', () => {
     const e = event(new Request('https://nuxt.com/', { headers: { cookie: 'a=1; b=2' } }))
     expect(getCookie(e, 'b')).toBe('2')
     expect(getCookie(e, 'c')).toBeUndefined()
+  })
+
+  it('reads every cookie sent with the request', () => {
+    expect(parseCookies(event(new Request('https://nuxt.com/', { headers: { cookie: 'a=1; b=%20' } })))).toEqual({ a: '1', b: ' ' })
+    expect(parseCookies(event(new Request('https://nuxt.com/')))).toEqual({})
   })
 
   it('reads no cookie from a request that sent none', () => {

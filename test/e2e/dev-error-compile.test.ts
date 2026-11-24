@@ -1,15 +1,12 @@
-import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
 import { expect, test } from './test-utils'
-import { useDevErrorFixture } from './dev-error-fixture'
+import { useTempFixture } from './temp-fixture'
 
-const fixture = useDevErrorFixture('dev-error-compile')
+const fixture = useTempFixture('dev-error-compile')
 
 test.use({
   nuxt: {
     rootDir: fixture.fixtureDir,
-    dev: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
   },
 })
 
@@ -29,13 +26,15 @@ interface CompileCase {
   nameIsLostOverHmr?: boolean
 }
 
+const templateCase: CompileCase = {
+  title: 'a template that does not close a tag',
+  break: healthy => healthy.replace('<div>{{ message }}</div>', '<span\n    {{ message }}\n  </span>'),
+  message: 'Illegal',
+  name: 'SyntaxError',
+}
+
 const cases: CompileCase[] = [
-  {
-    title: 'a template that does not close a tag',
-    break: healthy => healthy.replace('<div>{{ message }}</div>', '<span\n    {{ message }}\n  </span>'),
-    message: 'Illegal',
-    name: 'SyntaxError',
-  },
+  templateCase,
   {
     title: 'a script block that does not parse',
     break: healthy => healthy.replace('const message', 'const x: = 1\nconst message'),
@@ -51,6 +50,35 @@ const cases: CompileCase[] = [
 ]
 
 const overlayOf = (page: Page) => page.locator('nuxt-error-overlay')
+
+test('reloads the error page once the file compiles again', async ({ page }) => {
+  const healthy = fixture.read(TARGET)
+  fixture.write(TARGET, templateCase.break(healthy))
+  await page.goto('/compile-target')
+  await expect(page.locator('.mb-message').first()).toContainText('Illegal', { timeout: 30_000 })
+
+  fixture.write(TARGET, healthy)
+  // the frame quotes the fixed line too, so wait for the page it reloads into
+  await expect(page.locator('.mb-message')).toHaveCount(0, { timeout: 30_000 })
+  await expect(page.locator('body')).toContainText('compile target healthy')
+})
+
+test('shows the current compile report in a newly opened page', async ({ page, goto }) => {
+  const healthy = fixture.read(TARGET)
+  await goto('/compile-target')
+  await expect(page.locator('body')).toContainText('compile target healthy')
+  fixture.write(TARGET, templateCase.break(healthy))
+  await expectCompileOverlay(page, templateCase)
+
+  const secondPage = await page.context().newPage()
+  try {
+    await secondPage.goto('/ok')
+    await expect(secondPage.locator('body')).toContainText('ok page')
+    await expectCompileOverlay(secondPage, templateCase)
+  } finally {
+    await secondPage.close()
+  }
+})
 
 async function expectCompileOverlay (page: Page, scenario: CompileCase) {
   const overlay = overlayOf(page)
@@ -69,6 +97,8 @@ for (const scenario of cases) {
 
     fixture.write(TARGET, scenario.break(healthy))
     await expectCompileOverlay(page, scenario)
+    await expect(overlayOf(page).locator('.mb-overlay')).toHaveAttribute('data-minimized', '')
+    await expect(overlayOf(page).locator('.mb-loc').first()).toContainText('compile-target.vue')
 
     fixture.write(TARGET, healthy)
     await expect(overlayOf(page)).toHaveCount(0, { timeout: 30_000 })

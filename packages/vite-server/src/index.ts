@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
 import { resolve } from 'pathe'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, getLayerDirectories, logger } from '@nuxt/kit'
-import { bundlerDiagnostics, setServerBuild } from '@nuxt/kit/internal'
+import { bundlerDiagnostics, setServerBuild, useServerBuild } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import { joinURL } from 'ufo'
@@ -9,10 +9,13 @@ import type { Nuxt } from '@nuxt/schema'
 
 import { distDir } from './dirs.ts'
 import { setupSSR } from './ssr.ts'
-import { DevServerListenerPlugin, setupDevServer } from './dev.ts'
+import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { finishStaticOutput, writeStaticOutput } from './output.ts'
+import { RUNTIME_CONFIG_ID, RuntimeConfigPlugin } from './runtime-config.ts'
+import { SpaDocumentPlugins, rendersSpaDocument } from './spa-document.ts'
 import { isPrerendering, manifestTimestamp, prerenderRoutes, writeAppManifest } from './prerender.ts'
+import { DeployTargetPlugin } from './target.ts'
 
 /**
  * Experimental server builder implemented with Vite alone.
@@ -46,21 +49,25 @@ export function bundle (nuxt: Nuxt): Promise<void> {
   nuxt.options.vite.build ||= {}
   nuxt.options.vite.build.outDir ||= outputDir
 
-  const publicDir = resolve(outputDir, 'public')
+  let publicDir = resolve(outputDir, 'public')
   const ssr = nuxt.options.ssr !== false
   const prerender = isPrerendering(nuxt)
   const handler = ssr && !nuxt.options.dev ? resolve(outputDir, 'server/index.mjs') : undefined
+  const deployTarget = ssr && !prerender ? DeployTargetPlugin(nuxt) : undefined
 
   setServerBuild({
     name: 'vite',
     label: ssr ? 'Vite server' : 'Vite SPA',
+    target: () => deployTarget?.target(),
+    targetLabel: 'deploy target',
     output: { dir: () => outputDir, publicDir: () => publicDir },
     capabilities: { server: ssr && !prerender, dev: true },
     buildsSeparately: false,
     // neither `nitro` nor `nitro/runtime-config` resolves in a build without nitro
     runtime: {
-      fetch: resolve(distDir, 'runtime/fetch'),
-      runtimeConfig: resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'),
+      fetch: ssr ? resolve(nuxt.options.buildDir, 'vite-server/fetch.mjs') : resolve(distDir, 'runtime/fetch'),
+      runtimeConfig: RUNTIME_CONFIG_ID,
+      server: ssr ? resolve(nuxt.options.buildDir, 'vite-server/server.mjs') : undefined,
       // the emitted entry, which only exists once a build has run
       handler,
     },
@@ -80,24 +87,19 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 
   warnExperimental(nuxt, { ssr, unsupported: server?.unsupported ?? [] })
 
-  // There is no server to read runtime config from the environment, so the values known
-  // at build time are serialised instead. Only `app` and `public` are included: this
-  // module is reachable from the client, where anything else would be a leak.
-  addTemplate({
-    filename: 'vite-server/runtime-config.mjs',
-    write: true,
-    getContents: ({ nuxt }) => [
-      `const config = ${JSON.stringify({ app: nuxt.options.runtimeConfig.app, public: nuxt.options.runtimeConfig.public })}`,
-      `export const useRuntimeConfig = () => globalThis.__NUXT__?.config || config`,
-    ].join('\n'),
-  })
-
   setupAppManifest(nuxt, prerender)
 
   // Registered at the root rather than through `addVitePlugin`, which scopes plugins to
   // an environment, where an app-level `buildApp` hook is never called.
   nuxt.options.vite.plugins ||= []
-  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), DevServerListenerPlugin(nuxt))
+  nuxt.options.vite.plugins.push(BuildEnvironmentsPlugin(nuxt), RuntimeConfigPlugin(nuxt))
+  if (deployTarget) {
+    nuxt.options.vite.plugins.push(deployTarget.plugin)
+  }
+
+  if (rendersSpaDocument(nuxt)) {
+    nuxt.options.vite.plugins.push(...SpaDocumentPlugins(nuxt))
+  }
 
   if (!nuxt.options.dev) {
     // the document is a real HTML build input, so vite links the entry chunk, injects its
@@ -131,6 +133,20 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     }
 
     nuxt.options.vite.$client = client
+    // Deployment plugins can redirect client output during Vite config resolution.
+    // Finalize the resolved assets instead of a stale default output directory, unless
+    // Nuxt's own node server serves them from `../public/` next to itself.
+    nuxt.options.vite.plugins.push({
+      name: 'nuxt:vite-server:client-output',
+      enforce: 'post',
+      configResolved (config) {
+        if (useServerBuild(nuxt).runtime.handler !== undefined) { return }
+        const outDir = config.environments?.client?.build?.outDir
+        if (outDir) {
+          publicDir = resolve(config.root, outDir)
+        }
+      },
+    })
     addVitePlugin(() => [DocumentPlugin(nuxt), EntryImportMapPlugin()], { server: false })
   }
 
@@ -139,14 +155,14 @@ export function bundle (nuxt: Nuxt): Promise<void> {
     setupDevServer(nuxt, server?.entry)
   } else {
     nuxt.hook('build:done', async () => {
-      await writeStaticOutput(nuxt, publicDir, { ssr, prerender })
+      await writeStaticOutput(nuxt, publicDir, { ssr })
       if (!prerender || !handler) { return }
 
       const routes = await prerenderRoutes(nuxt, { publicDir, handler })
       if (nuxt.options.experimental.appManifest) {
         await writeAppManifest(nuxt, publicDir, routes)
       }
-      await finishStaticOutput(outputDir, publicDir)
+      await finishStaticOutput(outputDir)
     })
   }
 
@@ -156,13 +172,11 @@ export function bundle (nuxt: Nuxt): Promise<void> {
 /**
  * Resolves `#server-entry` to the render as a module for a deploy target's own environment
  * to build, so that the app is compiled with that target's export conditions and nothing
- * spells a path inside the build directory.
- *
- * In development it resolves to a stub answering every request with a 503: the dev server
- * serves the app there, and a target rendering would render from a second module graph.
+ * spells a path inside the build directory. In development, the target's environment runs it
+ * from its own module graph.
  */
 function addServerEntryAlias (nuxt: Nuxt, entry: string): void {
-  nuxt.options.alias['#server-entry'] = nuxt.options.dev ? resolve(distDir, 'runtime/dev-handler') : entry
+  nuxt.options.alias['#server-entry'] = entry
 
   addTypeTemplate({
     filename: 'types/server-entry.d.ts',

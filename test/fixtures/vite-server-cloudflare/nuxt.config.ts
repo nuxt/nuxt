@@ -18,6 +18,8 @@ export default defineNuxtConfig({
   vite: {
     plugins: [cloudflare({ configPath: fileURLToPath(new URL('wrangler.jsonc', import.meta.url)) })],
   },
+  // the overlay is skipped when `test` is set
+  test: false,
   server: {
     builder: 'vite',
   },

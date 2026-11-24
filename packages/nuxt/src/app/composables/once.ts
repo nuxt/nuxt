@@ -13,7 +13,7 @@ let _isHmrUpdating = false
  * @param key a unique key ensuring the function can be properly de-duplicated across requests
  * @param fn a function to call
  * @param options Setup the mode, e.g. to re-execute on navigation
- * @see https://nuxt.com/docs/4.x/api/utils/call-once
+ * @see https://nuxt.com/docs/5.x/api/utils/call-once
  * @since 3.9.0
  */
 export function callOnce (key?: string, fn?: (() => any | Promise<any>), options?: CallOnceOptions): Promise<void>
@@ -29,10 +29,12 @@ export async function callOnce (...args: any[]): Promise<void> {
     throw stateDiagnostics.NUXT_E7008({ type: typeof fn })
   }
   const nuxtApp = useNuxtApp()
+  nuxtApp._once ||= {}
 
   if (options?.mode === 'navigation') {
     const removeGuard = useRouter().beforeResolve(() => {
       nuxtApp.payload.once.delete(_key)
+      delete nuxtApp._once[_key]
       removeGuard()
     })
   }
@@ -45,16 +47,19 @@ export async function callOnce (...args: any[]): Promise<void> {
     }
   }
 
-  nuxtApp._once ||= {}
-  nuxtApp._once[_key] ||= fn() || true
+  const promise = nuxtApp._once[_key] ||= fn() || true
   try {
-    await nuxtApp._once[_key]
+    await promise
   } catch (e) {
-    delete nuxtApp._once[_key]
+    if (nuxtApp._once[_key] === promise) {
+      delete nuxtApp._once[_key]
+    }
     throw e
   }
-  nuxtApp.payload.once.add(_key)
-  delete nuxtApp._once[_key]
+  if (nuxtApp._once[_key] === promise) {
+    nuxtApp.payload.once.add(_key)
+    delete nuxtApp._once[_key]
+  }
 }
 
 if (import.meta.hot) {

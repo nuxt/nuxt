@@ -1,8 +1,6 @@
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
-import escapeStringRegexp from 'escape-string-regexp'
-import { withTrailingSlash } from 'ufo'
 
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
 import { useServerBuild } from '@nuxt/kit/internal'
@@ -31,7 +29,6 @@ export function ssr (nuxt: Nuxt) {
 
 export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
   const isEnvApi = !useServerBuild(nuxt).buildsSeparately
-  const sharedDirExternal = new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))))
   const legacyExternals = isEnvApi
     ? []
     : [
@@ -49,18 +46,18 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
     build: {
       // we'll display this in nitro build output
       reportCompressedSize: false,
-      sourcemap: nuxt.options.sourcemap.server ? nuxt.options.vite.build?.sourcemap ?? nuxt.options.sourcemap.server : false,
+      sourcemap: nuxt.options.sourcemap.server ? nuxt.options.vite.build?.sourcemap ?? (nuxt.options.sourcemap.server === 'nosource' ? true : nuxt.options.sourcemap.server) : false,
       outDir: resolve(nuxt.options.buildDir, 'dist/server'),
       ssr: true,
       rolldownOptions: {
         input: { server: serverEntry },
-        external: [
-          ...legacyExternals,
-          sharedDirExternal,
-        ],
+        external: legacyExternals,
+        makeAbsoluteExternalsRelative: false,
         output: {
           entryFileNames: '[name].mjs',
           format: 'module',
+          polyfillRequire: isEnvApi, // Let the server builder resolve intermediate require() calls.
+          ...nuxt.options.sourcemap.server === 'nosource' ? { sourcemapExcludeSources: true } : {},
         },
         onwarn (warning, rollupWarn) {
           if (warning.code && 'UNUSED_EXTERNAL_IMPORT' === warning.code) {
@@ -79,16 +76,11 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       'import.meta.client': false,
       'import.meta.browser': false,
       'import.meta.envName': JSON.stringify(nuxt.options.envName),
-      // TODO: investigate - issue is onPrehydrate callbacks
-      ...(nuxt.options.dev && isEnvApi)
-        ? {}
-        : {
-            'window': 'undefined',
-            'document': 'undefined',
-            'navigator': 'undefined',
-            'location': 'undefined',
-            'XMLHttpRequest': 'undefined',
-          },
+      'window': 'undefined',
+      'document': 'undefined',
+      'navigator': 'undefined',
+      'location': 'undefined',
+      'XMLHttpRequest': 'undefined',
     },
     optimizeDeps: {
       noDiscovery: true,

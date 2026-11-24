@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Component } from '@nuxt/schema'
-import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
 import { normalizeLineEndings } from './utils.ts'
 
 const getComponents = () => [{
@@ -73,7 +73,6 @@ describe('islandTransform - server and island components', () => {
               <script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const someData = 'some data'
@@ -101,7 +100,6 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
         "<script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
         withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
@@ -111,7 +109,7 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
         </script>
 
         <template>
-          <template v-for="thing in __vforBound(things)">
+          <template v-for="thing in things">
             <NuxtTeleportSsrSlot name="thing" :props="[__mergeProps(thing, {  })]"><slot name="thing" v-bind="thing" /></NuxtTeleportSsrSlot>
           </template>
         </template>
@@ -119,73 +117,9 @@ withDefaults(defineProps<{ things?: any[]; somethingElse?: string }>(), {
       `)
     })
 
-    it('bounds the slot element v-for source, not only the :props array', async () => {
-      const result = await viteTransform(`<template>
-  <slot v-for="n in count" :key="n" name="loop" :n="n" />
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue')
-      // both the `:props` array and the emitted `<slot v-for>` must be bounded
-      expect(result).toContain('__vforToArray(__vforBound(count))')
-      expect(result).toContain('v-for="n in __vforBound(count)"')
-    })
-
-    it('bounds a plain element v-for source with __vforBound', async () => {
-      const result = await viteTransform(`<template>
-  <div v-for="n in count" :key="n">{{ n }}</div>
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue')
-      expect(result).toContain('v-for="n in __vforBound(count)"')
-      expect(result).not.toContain('v-for="n in count"')
-    })
-
-    it('bounds a plain v-for in a slotless island (no <slot>/nuxt-client)', async () => {
-      const result = await viteTransform(`<template>
-  <ul><li v-for="n in count" :key="n">{{ n }}</li></ul>
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue')
-      expect(result).toContain('v-for="n in __vforBound(count)"')
-    })
-
-    it('bounds a plain v-for with destructured alias and preserves the of keyword', async () => {
-      const result = await viteTransform(`<template>
-  <div v-for="(item, index) of items" :key="index">{{ item }}</div>
-</template>
-<script setup lang="ts">
-defineProps<{ items: any[] }>()
-</script>
-`, 'hello.server.vue')
-      expect(result).toContain('v-for="(item, index) of __vforBound(items)"')
-    })
-
-    it('bounds a v-for on a nuxt-client element when selectiveClient is disabled', async () => {
-      const source = `<template>
-  <HelloWorld v-for="n in count" :key="n" nuxt-client />
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`
-      const viteResult = await viteTransform(source, 'hello.server.vue')
-      expect(viteResult).toContain('v-for="n in __vforBound(count)"')
-      expect(viteResult).not.toContain('v-for="n in count"')
-
-      const webpackResult = await webpackTransform(source, 'hello.server.vue')
-      expect(webpackResult).toContain('v-for="n in __vforBound(count)"')
-      expect(webpackResult).not.toContain('v-for="n in count"')
-    })
-
     it('injects helpers into a setup block when the SFC uses the Options API (#35876)', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <script lang="ts">
 export default {
@@ -194,13 +128,12 @@ export default {
 </script>
 `, 'hello.server.vue')
       expect(result).toContain('<script setup lang="ts">')
-      expect(result).toContain('v-for="item in __vforBound(items)"')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
     })
 
     it('injects helpers once when the SFC has both <script> and <script setup>', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <script lang="ts">
 export const foo = 'bar'
@@ -209,13 +142,13 @@ export const foo = 'bar'
 defineProps<{ items: any[] }>()
 </script>
 `, 'hello.server.vue')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
       expect(result).toContain(`<script setup lang="ts">\nimport { mergeProps as __mergeProps }`)
     })
 
     it('does not treat a non-setup script as a setup block', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <script lang="ts" data-setup="true">
 export default {
@@ -224,13 +157,13 @@ export default {
 </script>
 `, 'hello.server.vue')
       expect(result).toContain('<script setup lang="ts">')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
-      expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('data-setup'))
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
+      expect(result.indexOf('__mergeProps')).toBeLessThan(result.indexOf('data-setup'))
     })
 
     it('ignores script openers inside comments and string literals', async () => {
       const result = await viteTransform(`<template>
-  <div v-for="item in items" :key="item">{{ item }}</div>
+  <div v-for="item in items" :key="item"><slot :item="item" /></div>
 </template>
 <!-- <script setup> -->
 <script lang="ts">
@@ -241,8 +174,8 @@ export default {
 </script>
 `, 'hello.server.vue')
       expect(result).toContain('<script setup lang="ts">')
-      expect(result.match(/vforBound as __vforBound/g)).toHaveLength(1)
-      expect(result.indexOf('__vforBound')).toBeLessThan(result.indexOf('<!--'))
+      expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
+      expect(result.indexOf('__mergeProps')).toBeLessThan(result.indexOf('<!--'))
     })
 
     it('ignores an unclosed script opener in a line comment within <script setup> (#35893)', async () => {
@@ -253,23 +186,12 @@ const fields: any[] = []
 
 <template>
   <div>
-    <div v-for="f in fields">TEST</div>
+    <div v-for="f in fields"><slot /></div>
   </div>
 </template>
 `, 'hello.server.vue')
       expect(result.match(/mergeProps as __mergeProps/g)).toHaveLength(1)
       expect(result.indexOf('__mergeProps')).toBeLessThan(result.indexOf('// <script>'))
-    })
-
-    it('bounds a v-for on a nuxt-client element', async () => {
-      const result = await viteTransform(`<template>
-  <HelloWorld v-for="n in count" :key="n" nuxt-client />
-</template>
-<script setup lang="ts">
-defineProps<{ count: number }>()
-</script>
-`, 'hello.server.vue', true)
-      expect(result).toContain('__vforBound(count)')
     })
 
     it('expect slot fallback transform to match inline snapshot', async () => {
@@ -297,7 +219,6 @@ defineProps<{ count: number }>()
               <script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const someData = 'some data'
@@ -364,7 +285,6 @@ defineProps<{ count: number }>()
             <script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
             export interface Props {
@@ -393,7 +313,6 @@ defineProps<{ count: number }>()
         "<script setup lang="ts">
         import { mergeProps as __mergeProps } from 'vue'
         import { vforToArray as __vforToArray } from '#app/components/utils'
-        import { vforBound as __vforBound } from '#app/components/vfor'
         import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
         import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
               const foo = true;
@@ -434,7 +353,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
@@ -469,7 +387,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
@@ -506,7 +423,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
@@ -531,7 +447,6 @@ defineProps<{ count: number }>()
           "<script setup>
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
@@ -580,7 +495,6 @@ defineProps<{ count: number }>()
           "<script setup>
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'</script><template>
                   <div>
@@ -627,7 +541,6 @@ defineProps<{ count: number }>()
                 <script setup lang="ts">
           import { mergeProps as __mergeProps } from 'vue'
           import { vforToArray as __vforToArray } from '#app/components/utils'
-          import { vforBound as __vforBound } from '#app/components/vfor'
           import NuxtTeleportIslandComponent from '#app/components/nuxt-teleport-island-component'
           import NuxtTeleportSsrSlot from '#app/components/nuxt-teleport-island-slot'
                 import HelloWorld from './HelloWorld.vue'
@@ -639,6 +552,36 @@ defineProps<{ count: number }>()
 
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('only supported with the Vite builder'))
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('hello.server.vue'))
+      })
+
+      it('warns about nuxt-client once per file source, however many requests transform it', async () => {
+        const plugin = IslandsTransformPlugin({ getComponents, selectiveClient: true })
+          .raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => Promise<unknown> } }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const source = '<template><HelloWorld nuxt-client /></template>'
+
+        await plugin.transform.handler(source, 'hello.server.vue')
+        await plugin.transform.handler(source, 'hello.server.vue?vue&type=template')
+        expect(warn).toHaveBeenCalledTimes(1)
+
+        await plugin.transform.handler(`<template><div>${source}</div></template>`, 'hello.server.vue')
+        expect(warn).toHaveBeenCalledTimes(2)
+        warn.mockRestore()
+      })
+
+      it('warns again about a restored nuxt-client after the file changes on disk in development', async () => {
+        const hooks: Record<string, (event: string, path: string) => void> = {}
+        const nuxt = { options: { dev: true, srcDir: '/app' }, hook: (name: string, fn: (event: string, path: string) => void) => { hooks[name] = fn } } as any
+        const plugin = IslandsTransformPlugin({ getComponents, selectiveClient: true, nuxt })
+          .raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => Promise<unknown> } }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const source = '<template><HelloWorld nuxt-client /></template>'
+
+        await plugin.transform.handler(source, '/app/hello.server.vue')
+        hooks['builder:watch']!('change', 'hello.server.vue')
+        await plugin.transform.handler(source, '/app/hello.server.vue')
+        expect(warn).toHaveBeenCalledTimes(2)
+        warn.mockRestore()
       })
     })
   })
@@ -701,5 +644,41 @@ import InteractiveButton from '~/components/InteractiveButton.vue'
       const result = await viteTransform(source, pageFile, true, () => [pageFile])
       expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
     })
+  })
+})
+
+describe('components chunk', () => {
+  function setup (waitForClientBuild: () => Promise<void>) {
+    const plugins = ComponentsChunkPlugin({
+      dev: false,
+      getComponents: () => [{ filePath: '/app/components/Counter.vue', mode: 'all', pascalName: 'Counter' } as Component],
+      waitForClientBuild,
+    })
+    const client = plugins.find(p => p.name === 'nuxt:components-chunk:client')!
+    const server = plugins.find(p => p.name === 'nuxt:components-chunk:server')!
+    return {
+      buildClient () {
+        (client.buildStart as (this: unknown) => void).call({ emitFile: () => 'ref' })
+        ;(client.generateBundle as (this: unknown, options: unknown, bundle: object) => void).call({ getFileName: () => '_nuxt/Counter.js' }, {}, {})
+      },
+      load (environment: string) {
+        const load = server.load as { handler: (this: unknown, id: string) => Promise<string> }
+        return load.handler.call({ environment: { name: environment } }, '\0nuxt-component-chunk')
+      },
+    }
+  }
+
+  it('should not wait for the client build when loaded by the client build', async () => {
+    const { load } = setup(() => new Promise(() => {}))
+    await expect(load('client')).resolves.toBe('export default {}')
+  })
+
+  it('should include client chunk paths when loaded by the server build before the client build finishes', async () => {
+    let finish!: () => void
+    const { buildClient, load } = setup(() => new Promise((resolve) => { finish = resolve }))
+    const result = load('ssr')
+    buildClient()
+    finish()
+    expect(await result).toContain('Counter: "/_nuxt/Counter.js"')
   })
 })

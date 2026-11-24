@@ -16,9 +16,8 @@ const colors = {
  * SSR rendering diagnostics, sharing the range with the server runtime that
  * hosts the renderer.
  */
-// TODO: bump the `4.x` path segment to `5.x` when the v5 docs go live.
 const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/4.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
 export const rendererDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
@@ -52,6 +51,30 @@ export const rendererDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_E8009: {
       why: (p: { path: string, what: string, cause: string }) => `A page error interrupted the stream for \`${p.path}\`, and ${p.what} also failed while rendering the error response.\n  ${p.cause}`,
       fix: 'Fix the page error first. If it keeps happening, report the failure below - the browser will show a blank or partial page instead of the error page.',
+    },
+  },
+})
+
+/** Diagnostics reported only while prerendering. */
+export const prerenderDiagnostics = /* #__PURE__ */ defineDiagnostics({
+  docsBase,
+  // eslint-disable-next-line
+  reporters: [/* #__PURE__ */ (createConsoleReporter(import.meta.dev && process.env.NODE_ENV !== 'test' ? { formatter: ansiFormatter(colors) } : undefined))] as const,
+  codes: {
+    NUXT_E8015: {
+      why: (p: { path: string, env: string }) => `\`${p.path}\` was read while prerendering, but it is required and \`${p.env}\` is not set.`,
+      fix: 'Set the environment variable when prerendering, or make the value optional in its schema. The server will not start without it.',
+      docs: false,
+    },
+    NUXT_E8018: {
+      why: (p: { url: string, chain: string }) => `\`${p.url}\` was requested while it was already being prerendered (${p.chain}), so the request failed with \`508 Loop Detected\`.`,
+      fix: 'Check for `useFetch` or `$fetch` calls that target the page being rendered, for example from a middleware or layout that runs on every page.',
+      docs: false,
+    },
+    NUXT_E8019: {
+      why: (p: { url: string, chain: string }) => `The island \`${p.url}\` was requested while it was already being prerendered (${p.chain}), so the request failed with \`508 Loop Detected\`.`,
+      fix: 'Check for a server component that renders itself with the same props, directly or through another server component.',
+      docs: false,
     },
   },
 })

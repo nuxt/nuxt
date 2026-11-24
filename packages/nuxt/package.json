@@ -33,6 +33,7 @@
     "./internal/dev-error": "./src/runtime/server/dev-error/index.ts",
     "./internal/dev-error/sourcemap": "./src/runtime/server/dev-error/sourcemap.ts",
     "./internal/renderer": "./src/runtime/server/renderer/index.ts",
+    "./internal/runtime-config": "./src/runtime/server/runtime-config/index.ts",
     "./internal/*": "./src/runtime/server/*.ts",
     "./package.json": "./package.json"
   },
@@ -49,6 +50,9 @@
       ],
       "internal/renderer": [
         "./dist/runtime/server/renderer/index.d.ts"
+      ],
+      "internal/runtime-config": [
+        "./dist/runtime/server/runtime-config/index.d.ts"
       ],
       "internal/*": [
         "./dist/runtime/server/*.d.ts"
@@ -81,7 +85,7 @@
     "@dxup/nuxt": "catalog:build",
     "@jridgewell/trace-mapping": "catalog:nitro-runtime",
     "@nuxt/cli": "catalog:build",
-    "@nuxt/devtools": "catalog:build",
+    "@nuxt/devtools-onboard": "catalog:build",
     "@nuxt/kit": "workspace:*",
     "@nuxt/nitro-server": "workspace:*",
     "@nuxt/schema": "workspace:*",
@@ -109,8 +113,8 @@
     "klona": "catalog:app-runtime",
     "knitwork": "catalog:build",
     "magic-string": "catalog:vite",
+    "modern-tar": "catalog:build",
     "my-bad": "catalog:nitro-runtime",
-    "nanotar": "catalog:build",
     "nostics": "catalog:app-runtime",
     "object-identity": "catalog:app-runtime",
     "ofetch": "catalog:app-runtime",
@@ -130,17 +134,13 @@
     "ultrahtml": "catalog:build",
     "uncrypto": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
-    "undici": "catalog:build",
     "unhead": "catalog:app-runtime",
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
     "unrouting": "catalog:build",
-    "untyped": "catalog:build",
     "verkit": "catalog:build",
-    "vue": "catalog:app-runtime",
     "vue-bundle-renderer": "catalog:app-runtime",
-    "vue-component-type-helpers": "catalog:vue",
-    "vue-router": "catalog:app-runtime"
+    "vue-component-type-helpers": "catalog:vue"
   },
   "devDependencies": {
     "@nuxt/scripts": "catalog:dev",
@@ -149,20 +149,28 @@
     "@types/picomatch": "catalog:dev",
     "@vitejs/plugin-vue": "catalog:vue",
     "@vitejs/plugin-vue-jsx": "catalog:dev",
+    "@vue/compiler-core": "catalog:dev",
     "@vue/compiler-sfc": "catalog:vue",
     "jiti": "catalog:build",
+    "pug": "catalog:dev",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
+    "undici": "catalog:build",
+    "untyped": "catalog:build",
     "vite": "catalog:vite",
     "vitest": "catalog:dev",
+    "vue": "catalog:app-runtime",
+    "vue-router": "catalog:app-runtime",
     "vue-sfc-transformer": "catalog:dev"
   },
   "peerDependencies": {
     "@parcel/watcher": "^2.1.0",
     "@types/node": ">=18.12.0",
     "jiti": "^2.7.0",
-    "rolldown": "^1.1.5"
+    "rolldown": "^1.1.5",
+    "vue": "^3.5.45",
+    "vue-router": "^5.5.1"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {
@@ -173,10 +181,13 @@
     },
     "jiti": {
       "optional": true
+    },
+    "vue-router": {
+      "optional": true
     }
   },
   "engines": {
-    "node": "^22.19.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.22.0 || ^24.15.0 || >=26.0.0"
   },
   "publishConfig": {
     "exports": {
@@ -187,7 +198,7 @@
       "./config": {
         "types": "./config.d.ts",
         "import": "./config.js",
-        "require": "./config.cjs"
+        "require": "./config.js"
       },
       "./schema": "./schema.js",
       "./kit": "./kit.js",
@@ -197,6 +208,7 @@
       "./internal/dev-error": "./dist/runtime/server/dev-error/index.js",
       "./internal/dev-error/sourcemap": "./dist/runtime/server/dev-error/sourcemap.js",
       "./internal/renderer": "./dist/runtime/server/renderer/index.js",
+      "./internal/runtime-config": "./dist/runtime/server/runtime-config/index.js",
       "./internal/*": "./dist/runtime/server/*.js",
       "./package.json": "./package.json"
     },
@@ -207,5 +219,8 @@
       "#pages/composables": "./dist/pages/runtime/composables.js"
     },
     "types": "./types.d.ts"
+  },
+  "inlinedDependencies": {
+    "untyped": "2.0.0"
   }
 }

@@ -86,6 +86,7 @@ export function createPrefetchScheduler (options: PrefetchSchedulerOptions = {})
   }
 
   function drain () {
+    if (!lists.some(list => list.length)) { return }
     // held, not dropped: nothing re-fires prefetch work once a link has been prefetched
     if (canPrefetch && !canPrefetch()) { return }
     while (activeTotal < total) {

@@ -7,7 +7,9 @@ import type { VueWrapper } from '@vue/test-utils'
 import { flushPromises, mount } from '@vue/test-utils'
 import { NuxtLayout, NuxtPage } from '#components'
 import layouts from '#build/layouts.mjs'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { useRoute } from '#app/composables/router'
+import { resolveLayoutName, useLayout } from '#app/composables/layout'
 
 describe('NuxtLayout', () => {
   let router: ReturnType<typeof useRouter>
@@ -98,6 +100,7 @@ describe('NuxtLayout', () => {
   })
 
   afterAll(() => {
+    el.unmount()
     for (const layout of addedLayouts) {
       delete layouts[layout]
     }
@@ -213,6 +216,8 @@ describe('NuxtLayout', () => {
 
     // Page content (h3) should update even with name=false on inner layout
     expect.soft(nestedEl.find('h3').text()).toBe('Current route: /layout-2')
+
+    nestedEl.unmount()
   })
 
   it('should not block navigation when name is overridden to the current meta layout', async () => {
@@ -233,6 +238,8 @@ describe('NuxtLayout', () => {
     await flushPromises()
     expect.soft(overrideEl.find('h1').text()).toBe(`'layout-1' layout`)
     expect.soft(overrideEl.find('h3').text()).toBe('Current route: /no-layout')
+
+    overrideEl.unmount()
   })
 
   it.todo('should not change layout before child page resolves', async () => {
@@ -389,5 +396,204 @@ describe('layout transition', () => {
     router.removeRoute('head-layout-b')
     delete layouts['head-layout-a']
     delete layouts['head-layout-b']
+  })
+
+  it('should settle the page transition when switching layout to a suspended page without a layout transition', async () => {
+    const router = useRouter()
+    const nuxtApp = useNuxtApp()
+
+    for (const layout of ['settle-layout-a', 'settle-layout-b']) {
+      layouts[layout] = defineComponent({
+        setup: (_, ctx) => () => h('div', { class: layout }, ctx.slots.default?.()),
+      })
+    }
+    router.addRoute({
+      name: 'settle-layout-a',
+      path: '/settle-layout-a',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'settle-layout-a' },
+      component: defineComponent({
+        setup: () => () => h('div', 'Page A'),
+      }),
+    })
+    router.addRoute({
+      name: 'settle-layout-b',
+      path: '/settle-layout-b',
+      meta: {
+        // @ts-expect-error dynamically-added layout is not typed
+        layout: 'settle-layout-b',
+        pageTransition: { name: 'page', mode: 'out-in' as const, duration: 10 },
+      },
+      component: defineComponent({
+        async setup () {
+          await new Promise(resolve => setTimeout(resolve, 10))
+          return () => h('div', 'Page B')
+        },
+      }),
+    })
+
+    const el = await mountSuspended({
+      setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }),
+    }, { global: { stubs: { transition: false } } })
+
+    await navigateTo('/settle-layout-a')
+    await flushPromises()
+    await expect.poll(() => el.html()).toContain('Page A')
+
+    await navigateTo('/settle-layout-b')
+    await flushPromises()
+    await expect.poll(() => el.html()).toContain('Page B')
+
+    await expect.poll(() => nuxtApp['~transitionPromise']).toBeUndefined()
+
+    const scrollTo = vi.spyOn(globalThis, 'scrollTo').mockImplementation(() => {})
+    await navigateTo('/settle-layout-a')
+    await expect.poll(() => scrollTo.mock.calls.length).toBeGreaterThan(0)
+
+    scrollTo.mockRestore()
+    el.unmount()
+    router.removeRoute('settle-layout-a')
+    router.removeRoute('settle-layout-b')
+    delete layouts['settle-layout-a']
+    delete layouts['settle-layout-b']
+  })
+})
+
+describe('NuxtLayout nested layout route sync (#32904)', () => {
+  let router: ReturnType<typeof useRouter>
+  let resolveDeferredPage: () => void
+  let el: VueWrapper
+
+  const addedLayouts = ['x-full', 'x-default', 'x-secondary']
+  const addedPages = ['x-a', 'x-b']
+
+  beforeAll(async () => {
+    router = useRouter()
+
+    layouts['x-full'] = defineComponent({
+      setup (_, ctx) {
+        const route = useRoute()
+        return () => h('div', {}, [
+          h('span', { 'data-testid': 'full-route' }, String(route.name)),
+          ...ctx.slots.default?.() || [],
+        ])
+      },
+    })
+
+    layouts['x-default'] = defineComponent({
+      setup (_, ctx) {
+        const route = useRoute()
+        return () => h(NuxtLayout, { name: 'x-full' }, {
+          default: () => [
+            h('span', { 'data-testid': 'default-route' }, String(route.name)),
+            ...ctx.slots.default?.() || [],
+          ],
+        })
+      },
+    })
+
+    layouts['x-secondary'] = defineComponent({
+      setup (_, ctx) {
+        const route = useRoute()
+        return () => h('div', {}, [
+          h('span', { 'data-testid': 'secondary-route' }, String(route.name)),
+          ...ctx.slots.default?.() || [],
+        ])
+      },
+    })
+
+    router.addRoute({
+      name: 'x-a',
+      path: '/x-a',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'x-default' },
+      component: defineComponent({
+        setup () {
+          return () => h('div', { 'data-testid': 'page-a' }, 'A')
+        },
+      }),
+    })
+
+    router.addRoute({
+      name: 'x-b',
+      path: '/x-b',
+      // @ts-expect-error dynamically-added layout is not typed
+      meta: { layout: 'x-secondary' },
+      component: defineComponent({
+        async setup () {
+          await new Promise<void>((resolve) => {
+            resolveDeferredPage = resolve
+          })
+          return () => h('div', { 'data-testid': 'page-b' }, 'B')
+        },
+      }),
+    })
+
+    el = await mountSuspended({ setup: () => () => h(NuxtLayout, {}, { default: () => h(NuxtPage) }) })
+  })
+
+  afterAll(() => {
+    el.unmount()
+    for (const layout of addedLayouts) {
+      delete layouts[layout]
+    }
+    for (const page of addedPages) {
+      router.removeRoute(page)
+    }
+  })
+
+  it('does not update inner nested layout route before the suspended destination page resolves', async () => {
+    const nuxtApp = useNuxtApp()
+
+    await navigateTo('/x-a')
+    await flushPromises()
+
+    expect.soft(el.get('[data-testid="full-route"]').text()).toBe('x-a')
+    expect.soft(el.get('[data-testid="default-route"]').text()).toBe('x-a')
+
+    await navigateTo('/x-b')
+    await flushPromises()
+
+    expect.soft(el.get('[data-testid="default-route"]').text()).toBe('x-a')
+    expect.soft(el.get('[data-testid="page-a"]').text()).toBe('A')
+    expect(el.get('[data-testid="full-route"]').text()).toBe('x-a')
+
+    resolveDeferredPage()
+    await new Promise<void>(resolve => nuxtApp.hooks.hookOnce('page:finish', () => resolve()))
+    await flushPromises()
+
+    expect.soft(el.get('[data-testid="secondary-route"]').text()).toBe('x-b')
+    expect.soft(el.get('[data-testid="page-b"]').text()).toBe('B')
+  })
+})
+
+function route (path: string, meta: Record<string, unknown> = {}) {
+  return { path, meta } as unknown as RouteLocationNormalizedLoaded
+}
+
+describe('resolveLayoutName', () => {
+  it('defaults to `default` when nothing is defined', () => {
+    expect(resolveLayoutName(route('/'))).toBe('default')
+  })
+
+  it('resolves the layout defined in route meta', () => {
+    expect(resolveLayoutName(route('/', { layout: 'from-meta' }))).toBe('from-meta')
+  })
+
+  it('prefers an explicit name over route meta', () => {
+    expect(resolveLayoutName(route('/', { layout: 'from-meta' }), 'explicit')).toBe('explicit')
+  })
+
+  it('keeps the layout disabled when set to `false`', () => {
+    expect(resolveLayoutName(route('/', { layout: false }))).toBe(false)
+  })
+})
+
+describe('useLayout', () => {
+  it('falls back to the layout resolved for the current route', async () => {
+    const wrapper = await mountSuspended(defineComponent({
+      setup: () => () => h('div', useLayout().value as string),
+    }))
+    expect(wrapper.text()).toBe('default')
   })
 })

@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - 4.x
+      - 'release/v*'
   pull_request:
     types: [closed]
     branches:
@@ -17,6 +18,10 @@ on:
         description: 'Cut a prerelease instead of a normal release, e.g. `beta`, `rc`, or `0`'
         required: false
         default: ''
+      npm-tag:
+        description: 'npm dist-tag override for maintenance releases'
+        required: false
+        default: ''
 
 # Remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/tutorials/authenticate-with-github_token
@@ -25,8 +30,6 @@ permissions: {}
 env:
   PACKAGES: |
     packages/*
-    !packages/nuxi
-    !packages/test-utils
     !packages/ui-templates
     docs
 
@@ -35,17 +38,18 @@ jobs:
   pr:
     if: |
       github.repository_owner == 'nuxt'
+      && !github.event.repository.fork
       && (
         github.event_name == 'push'
         || (github.event_name == 'workflow_dispatch' && !startsWith(github.ref, 'refs/tags/'))
       )
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     permissions:
       contents: write
       pull-requests: write
     steps:
-      - uses: danielroe/uppt/pr@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
+      - uses: danielroe/uppt/pr@2c9a289359311b9661cc99886a71121209b89d17 # v0.6.14
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           base-branch: ${{ github.ref_name }}
@@ -61,7 +65,8 @@ jobs:
       && startsWith(github.event.pull_request.head.ref, 'release/v')
       && github.event.pull_request.head.repo.full_name == github.repository
       && github.repository_owner == 'nuxt'
-    runs-on: ubuntu-24.04-arm
+      && !github.event.repository.fork
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     concurrency:
       group: release-${{ github.event.pull_request.number }}
@@ -70,7 +75,7 @@ jobs:
       contents: write
       actions: write
     steps:
-      - uses: danielroe/uppt/release@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
+      - uses: danielroe/uppt/release@2c9a289359311b9661cc99886a71121209b89d17 # v0.6.14
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           packages: ${{ env.PACKAGES }}
@@ -78,7 +83,7 @@ jobs:
   # the chained dispatch lands here on the vX.Y.Z tag; build the tarballs
   pack:
     if: github.event_name == 'workflow_dispatch' && startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     concurrency:
       group: pack-${{ github.ref }}
@@ -88,7 +93,7 @@ jobs:
       files: ${{ steps.pack.outputs.files }}
     steps:
       - id: pack
-        uses: danielroe/uppt/pack@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
+        uses: danielroe/uppt/pack@2c9a289359311b9661cc99886a71121209b89d17 # v0.6.14
         with:
           packages: ${{ env.PACKAGES }}
 
@@ -99,7 +104,7 @@ jobs:
       && startsWith(github.ref, 'refs/tags/v')
       && needs.pack.outputs.files != '[]'
     needs: pack
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 20
     concurrency:
       group: publish-${{ github.ref }}
@@ -109,7 +114,16 @@ jobs:
     environment: npm
     steps:
       # v5 is still a prerelease line, so it takes `5x` rather than `latest`
-      - uses: danielroe/uppt/publish@09882a5a0a1a20a0e802613a77ad59fcb1c1611c # v0.6.9
+      - uses: danielroe/uppt/publish@2c9a289359311b9661cc99886a71121209b89d17 # v0.6.14
         with:
           files: ${{ needs.pack.outputs.files }}
-          npm-tag: ${{ startsWith(github.ref_name, 'v5.') && '5x' || '' }}
+          npm-tag: ${{ startsWith(github.ref_name, 'v5.') && '5x' || inputs.npm-tag }}
+
+  notify:
+    if: "!contains(github.ref_name, '-')"
+    needs: publish
+    permissions:
+      issues: write
+    uses: $/.github/workflows/notify-resolved-issues.yml
+    with:
+      tag: ${{ github.ref_name }}

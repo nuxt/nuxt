@@ -2,6 +2,8 @@ import { describe, expectTypeOf, it } from 'vitest'
 
 import type { Serialize, SerializeObject } from '../src/app/types/serialize'
 
+declare const sym: unique symbol
+
 describe('Serialize', () => {
   it('passes JSON primitives through unchanged', () => {
     expectTypeOf<Serialize<string>>().toEqualTypeOf<string>()
@@ -40,8 +42,26 @@ describe('Serialize', () => {
     expectTypeOf<Serialize<{ type: 'a', at: Date } | { type: 'b', fn: () => void }>>().toEqualTypeOf<{ type: 'a', at: string } | { type: 'b' }>()
   })
 
+  it('keeps the named keys of a type with an index signature', () => {
+    expectTypeOf<Serialize<{ [key: string]: string | number | Date, version: number, at: Date }>>().toEqualTypeOf<{ [key: string]: string | number, version: number, at: string }>()
+  })
+
+  it('keeps optional keys optional', () => {
+    expectTypeOf<Serialize<{ name?: string, at?: Date }>>().toEqualTypeOf<{ name?: string, at?: string }>()
+  })
+
+  it('drops symbol keys', () => {
+    expectTypeOf<Serialize<{ [sym]: string, keep: string }>>().toEqualTypeOf<{ keep: string }>()
+  })
+
   it('leaves `any` as `any` rather than collapsing it', () => {
     expectTypeOf<Serialize<any>>().toBeAny()
+  })
+
+  it('leaves `unknown` as `unknown` rather than collapsing it', () => {
+    expectTypeOf<Serialize<unknown>>().toBeUnknown()
+    expectTypeOf<Serialize<{ [key: string]: unknown, version: number }>>().toEqualTypeOf<{ [key: string]: unknown, version: number }>()
+    expectTypeOf<Serialize<unknown[]>>().toEqualTypeOf<unknown[]>()
   })
 
   it('serializes object types directly via `SerializeObject`', () => {

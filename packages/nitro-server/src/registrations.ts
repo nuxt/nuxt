@@ -35,6 +35,11 @@ export function collectServerRegistrations (nuxt: Nuxt, nitroConfig: NitroConfig
   for (const entry of nuxt.options.devServerHandlers) {
     collectUnused(entry)
   }
+  for (const entry of nuxt.options._rendererPlugins || []) {
+    for (const variant of entry.unused || []) {
+      unused.add(variant)
+    }
+  }
 
   nitroConfig.plugins ||= []
   for (const entry of (nuxt.options._serverPlugins || []) as ServerPlugin[]) {
@@ -67,4 +72,14 @@ export function migratedPlugins (nuxt: Nuxt): Set<string> {
     migrated.set(nuxt, paths)
   }
   return paths
+}
+
+/** Add the dev server handlers that nitro does not already hold a copy of from its config. */
+export function addDevServerHandlers<T extends { handler: unknown }> (nitroHandlers: T[], handlers: T[]): void {
+  const registered = new Set(nitroHandlers.map(entry => entry.handler))
+  for (const entry of handlers) {
+    if (!registered.has(entry.handler)) {
+      nitroHandlers.push(entry)
+    }
+  }
 }

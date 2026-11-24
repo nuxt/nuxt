@@ -176,6 +176,26 @@ onMounted(() => {
 </script>
 ```
 
+### Phone Numbers on iOS Safari
+
+**Problem**: iOS Safari detects phone numbers (and other data such as dates, addresses and email addresses) in the rendered text and wraps them in links. This changes the DOM before Vue hydrates it, causing a hydration mismatch on iOS only.
+
+**Solution**: Disable detection with the `format-detection` meta tag in your `nuxt.config`:
+
+```ts [nuxt.config.ts]
+export default defineNuxtConfig({
+  app: {
+    head: {
+      meta: [
+        { name: 'format-detection', content: 'telephone=no, date=no, email=no, address=no' },
+      ],
+    },
+  },
+})
+```
+
+To keep a phone number tappable, wrap it in an `<a href="tel:...">` element so the link is part of the server-rendered HTML.
+
 ## In Summary
 
 1. **Use SSR-friendly composables**: [`useFetch`](/docs/api/composables/use-fetch), [`useAsyncData`](/docs/api/composables/use-async-data), [`useState`](/docs/api/composables/use-state)

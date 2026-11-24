@@ -1,13 +1,13 @@
 import { resolve } from 'pathe'
+import { joinRelativeURL } from 'ufo'
 import { addTemplate } from '@nuxt/kit'
-import { getServerRuntime, useServerBuild } from '@nuxt/kit/internal'
+import { getServerRuntime, isWithinDir, resolveSpaLoadingTemplate, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { Plugin } from 'vite'
 
 import { distDir } from './dirs.ts'
-import { spaLoadingTemplate } from './output.ts'
 import { isPrerendering } from './prerender.ts'
 import { addRouteRulesTemplate } from './route-rules.ts'
 
@@ -34,7 +34,7 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
   const serverRuntime = getServerRuntime({
     phase: prerender ? 'prerender' : 'server',
     overrides: async () => ({
-      spaTemplate: JSON.stringify(await spaLoadingTemplate(nuxt)),
+      spaTemplate: JSON.stringify(await resolveSpaLoadingTemplate(nuxt)),
       ...prerender
         ? {
             NUXT_PRERENDER_ERROR_PAGES: JSON.stringify(errorPages),
@@ -57,8 +57,8 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
   nuxt.options.vite.plugins.push(
     AppServerEnvironmentsPlugin(nuxt),
     ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir, prerender),
-    BundledVuePlugin(nuxt),
     ServerRuntimeModulesPlugin(serverRuntime),
+    StaticAssetsURLPlugin(nuxt),
   )
 
   return { entry, handler, unsupported }
@@ -102,14 +102,43 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     write: true,
     getContents: () => [
       `import { createNuxtRenderer } from ${JSON.stringify(serverRuntime.entry)}`,
-      `import { useRuntimeConfig } from ${JSON.stringify(resolve(nuxt.options.buildDir, 'vite-server/runtime-config.mjs'))}`,
+      `import { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}`,
       `import { createFetchHandler, createRendererOptions } from ${JSON.stringify(resolve(distDir, 'runtime/renderer'))}`,
       `import matchRouteRules from ${JSON.stringify(routeRules)}`,
       ...prerender ? [`import { createPrerenderOptions } from ${JSON.stringify(resolve(distDir, 'runtime/prerender'))}`] : [],
       '',
+      `useRuntimeConfig()`,
       `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig, matchRouteRules${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
       `export const fetch = createFetchHandler(renderer, matchRouteRules)`,
       `export default { fetch }`,
+    ].join('\n'),
+  })
+
+  addTemplate({
+    filename: 'vite-server/server.mjs',
+    write: true,
+    getContents: () => [
+      `import match from ${JSON.stringify(routeRules)}`,
+      `import { createServerHelpers } from ${JSON.stringify(resolve(distDir, 'runtime/server'))}`,
+      `import { fetch as appFetch } from ${JSON.stringify(handler)}`,
+      '',
+      `export * from 'nuxt/internal/server-default'`,
+      '',
+      `const helpers = createServerHelpers(match, () => Promise.resolve(appFetch), ${JSON.stringify(nuxt.options.app.baseURL || '/')})`,
+      `export const getRouteRules = helpers.getRouteRules`,
+      `export const matchRouteRules = helpers.matchRouteRules`,
+      `export const serverFetch = helpers.serverFetch`,
+    ].join('\n'),
+  })
+
+  addTemplate({
+    filename: 'vite-server/fetch.mjs',
+    write: true,
+    getContents: () => [
+      `import { createAppFetch } from ${JSON.stringify(resolve(distDir, 'runtime/fetch'))}`,
+      `import { fetch as appFetch } from ${JSON.stringify(handler)}`,
+      '',
+      `export const fetch = createAppFetch(() => Promise.resolve(appFetch))`,
     ].join('\n'),
   })
 
@@ -161,9 +190,25 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       // extraction, so the renderer's defines take precedence over a configured value
       config.define = { ...config.define, ...serverRuntime.defines }
 
-      // only this builder's own environment emits the handler it describes; a target's is
-      // built with its own input, output and conditions
-      if (nuxt.options.dev || name !== 'ssr') { return }
+      // a target's environment is built with its own input, output and conditions
+      if (name !== 'ssr') { return }
+
+      // the app build's entry is in Nuxt's app directory, and a repeated resolution pass sees
+      // the entry substituted below; anything else belongs to a target, whose input vite
+      // merges with the app's
+      const input = config.build?.rolldownOptions?.input
+      const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
+        ? Object.entries(input).filter(([, value]) => value !== entry && !isWithinDir(value, nuxt.options.appDir))
+        : []
+
+      // server runtimes provide `navigator`; the other browser globals stay `undefined`, which
+      // the app relies on and which is what a runtime without them reports
+      if (targetEntries.length > 0) {
+        delete config.define.navigator
+      }
+
+      // only this builder's own environment emits the handler it describes
+      if (nuxt.options.dev) { return }
 
       // mutated rather than returned: vite merges what a plugin returns, and the app
       // entry has to be dropped from the input rather than merged with
@@ -172,19 +217,7 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.build.emptyOutDir = true
       config.build.rolldownOptions ||= {}
 
-      // the app build names its own entry `server`, and a repeated resolution pass sees the
-      // entry substituted below; anything else belongs to a target
-      const input = config.build.rolldownOptions.input
-      const named = !!input && typeof input === 'object' && !Array.isArray(input) ? input as Record<string, string> : undefined
-      const claimed = !!named && !('server' in named) && named.index !== entry
-      if (claimed) {
-        if (prerender) {
-          throw new Error('[nuxt:vite-server] `nuxt generate` cannot prerender through a deploy target: the target owns the server environment and its output is not a node handler. Remove the target, or run `nuxt build`.')
-        }
-        useServerBuild(nuxt).runtime.handler = undefined
-      } else {
-        config.build.rolldownOptions.input = { index: entry }
-      }
+      config.build.rolldownOptions.input = targetEntries.length > 0 ? Object.fromEntries(targetEntries) : { index: entry }
       // `nuxt preview` runs `server/index.mjs`, so the entry name is not configurable
       config.build.rolldownOptions.output = {
         ...defu({ chunkFileNames: '_chunks/[name]-[hash].mjs' }, config.build.rolldownOptions.output),
@@ -197,34 +230,47 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       config.resolve.noExternal = true
       config.resolve.external = []
     },
+    // a target can also set the input from a later `configEnvironment` hook
+    configResolved (config) {
+      if (nuxt.options.dev) { return }
+      const input = config.environments.ssr?.build.rolldownOptions.input
+      if ((typeof input === 'object' ? Object.values(input) : [input]).some(value => value !== entry)) {
+        if (prerender) {
+          throw new Error('[nuxt:vite-server] `nuxt generate` cannot prerender through a deploy target: the target owns the server environment and its output is not a node handler. Remove the target, or run `nuxt build`.')
+        }
+        useServerBuild(nuxt).runtime.handler = undefined
+      }
+    },
   }
 }
 
-/**
- * Resolves Vue to its bundler builds for the server bundle.
- *
- * Bundling every dependency means resolving Vue ourselves: its `node` export condition is
- * the CommonJS full build, which carries the template compiler the SSR app never calls
- * (~700kB of it, between `vue` and `vue/server-renderer`) and cannot be tree-shaken
- * through cjs interop. The bundler builds are the same runtime without the compiler.
- */
-function BundledVuePlugin (nuxt: Nuxt): Plugin {
-  const BUNDLER_BUILDS: Record<string, string> = {
-    'vue': 'vue/dist/vue.runtime.esm-bundler.js',
-    'vue/server-renderer': '@vue/server-renderer/dist/server-renderer.esm-bundler.js',
-  }
+const ASSETS_URL_RE = /^(?:globalThis\.)?__(build|public)AssetsURL\(("(?:[^"\\]|\\.)*")\)$/
 
+/**
+ * Resolves the asset URLs of the server build at build time, from the `app` runtime config
+ * known to the build, so each URL is a constant.
+ */
+function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
   return {
-    name: 'nuxt:vite-server:bundled-vue',
-    // dev resolves Vue through node, and inlining it into the module graph breaks that
+    name: 'nuxt:vite-server:static-assets-url',
     apply: 'build',
-    applyToEnvironment: environment => environment.config.consumer === 'server',
-    resolveId: {
-      order: 'pre',
-      filter: { id: /^vue(?:\/server-renderer)?$/ },
-      handler (id, importer) {
-        if (nuxt.options.vue.runtimeCompiler) { return }
-        return this.resolve(BUNDLER_BUILDS[id]!, importer, { skipSelf: true })
+    config: {
+      order: 'post',
+      handler (config) {
+        const renderBuiltUrl = config.experimental?.renderBuiltUrl
+        if (!renderBuiltUrl) { return }
+
+        config.experimental!.renderBuiltUrl = (filename, context) => {
+          const result = renderBuiltUrl(filename, context)
+          const match = context.ssr && result && typeof result === 'object' && 'runtime' in result && result.runtime?.match(ASSETS_URL_RE)
+          if (!match) { return result }
+
+          const { cdnURL, baseURL, buildAssetsDir } = nuxt.options.runtimeConfig.app
+          const path: string = JSON.parse(match[2]!)
+          return match[1] === 'build'
+            ? joinRelativeURL(cdnURL || baseURL, buildAssetsDir, path)
+            : joinRelativeURL(cdnURL || baseURL, path)
+        }
       },
     },
   }
@@ -234,10 +280,10 @@ function BundledVuePlugin (nuxt: Nuxt): Plugin {
  * Resolves the modules the renderer imports for the environment that renders.
  *
  * Every specifier comes from the record, so this plugin never names one: the set is Nuxt's
- * to change. Each body is read when the environment loads it, which is after the client
- * environment has built, so the values it derives from the client build are final.
+ * to change. Each body is read when the environment loads it, so a body the renderer
+ * derives from the client build is read once the client environment has built.
  */
-function ServerRuntimeModulesPlugin (serverRuntime: NuxtServerRuntime): Plugin {
+export function ServerRuntimeModulesPlugin (serverRuntime: NuxtServerRuntime): Plugin {
   const prefix = '\0nuxt-server-runtime:'
 
   return {
@@ -268,7 +314,9 @@ function disableUnsupported (nuxt: Nuxt): string[] {
   // the renderer's module for it has been loaded in the same build
   if (nuxt.options.features.inlineStyles) {
     nuxt.options.features.inlineStyles = false
-    unsupported.push('inlined styles (stylesheets are linked instead)')
+    if (nuxt.options._layers?.some(layer => layer.config.features?.inlineStyles)) {
+      unsupported.push('inlined styles (stylesheets are linked instead)')
+    }
   }
   if (nuxt.options.experimental.componentIslands && nuxt.options.experimental.componentIslands !== 'auto') {
     unsupported.push('server components and islands')

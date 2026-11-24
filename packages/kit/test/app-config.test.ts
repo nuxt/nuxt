@@ -1,83 +1,22 @@
-import { afterAll, describe, expect, it } from 'vitest'
-import { loadNuxt, updateAppConfig } from '../src/index.ts'
-import { join } from 'pathe'
-import { fileURLToPath } from 'node:url'
-import { dirname } from 'node:path'
-import { rm } from 'node:fs/promises'
+import { describe, expect, it } from 'vitest'
+import type { Nuxt } from '@nuxt/schema'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { updateAppConfig } from '../src/app-config.ts'
+import { runWithNuxtContext } from '../src/context.ts'
 
-describe('updateAppConfig', { concurrent: false }, () => {
-  const tempDir = join(__dirname, '..', '..', 'temp', 'app-config-test')
+describe('updateAppConfig', () => {
+  it('merges into the app config deeply and in place, overriding existing values', () => {
+    const appConfig = { existing: 'original', keepThis: 'value', nested: { key: 'original' } }
+    const nuxt = { options: { appConfig } } as unknown as Nuxt
 
-  it('merges appConfig deeply', async () => {
-    const nuxt = await loadNuxt({
-      cwd: tempDir,
-      overrides: {
-        appConfig: {
-          existing: 'value',
-          nested: { key: 'original' },
-        },
-      },
-    })
+    runWithNuxtContext(nuxt, () => updateAppConfig({ existing: 'updated', newKey: 'newValue', nested: { anotherKey: 'new' } }))
 
-    updateAppConfig({
-      new: 'value',
-      nested: { anotherKey: 'new' },
-    })
-
-    expect(nuxt.options.appConfig).toMatchObject({
-      existing: 'value',
-      new: 'value',
-      nested: {
-        key: 'original',
-        anotherKey: 'new',
-      },
-    })
-
-    await nuxt.close()
-  })
-
-  it('overwrites existing values with new values', async () => {
-    const nuxt = await loadNuxt({
-      cwd: tempDir,
-      overrides: {
-        appConfig: {
-          existing: 'original',
-        },
-      },
-    })
-
-    updateAppConfig({
+    expect(nuxt.options.appConfig).toBe(appConfig)
+    expect(appConfig).toEqual({
       existing: 'updated',
-    })
-
-    expect(nuxt.options.appConfig.existing).toBe('updated')
-
-    await nuxt.close()
-  })
-
-  it('preserves keys not in update', async () => {
-    const nuxt = await loadNuxt({
-      cwd: tempDir,
-      overrides: {
-        appConfig: {
-          keepThis: 'value',
-        },
-      },
-    })
-
-    updateAppConfig({
+      keepThis: 'value',
       newKey: 'newValue',
+      nested: { key: 'original', anotherKey: 'new' },
     })
-
-    expect(nuxt.options.appConfig.keepThis).toBe('value')
-    expect(nuxt.options.appConfig.newKey).toBe('newValue')
-
-    await nuxt.close()
-  })
-
-  afterAll(async () => {
-    await rm(tempDir, { recursive: true, force: true })
   })
 })

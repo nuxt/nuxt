@@ -1,5 +1,5 @@
 import { normalize } from 'pathe'
-import type { DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
+import type { DevServerHandler, DevServerHandlerInput, NitroInstance, Nuxt, NuxtImport, RendererPluginEntry, RendererPluginInput, ServerApi, ServerApiVariants, ServerHandler, ServerHandlerInput, ServerPlugin, ServerPluginInput } from '@nuxt/schema'
 
 import { tryUseNuxt, useNuxt } from './context.ts'
 import { getNitroVersion } from './compatibility.ts'
@@ -29,6 +29,22 @@ export function getHostServerApis (nuxt: Nuxt = useNuxt()): ServerApi[] | undefi
   }
 }
 
+/**
+ * Returns the variant the configured server prefers, or `undefined` (with a warning)
+ * when it runs none of them.
+ *
+ * @example
+ * ```ts
+ * const server = resolveServerVariant({
+ *   nuxt: resolver.resolve('./runtime/server'),
+ *   nitro2: resolver.resolve('./runtime/server.legacy'),
+ * })
+ * ```
+ */
+export function resolveServerVariant<T> (variants: Partial<Record<ServerApi, T>>): T | undefined {
+  return resolveVariant<T, ServerApi>('resolveServerVariant', variants, value => value, SERVER_APIS)?.value
+}
+
 /** An unidentifiable host is, in practice, an older Nuxt on nitro v2. */
 const UNIDENTIFIED_HOST_APIS: ServerApi[] = ['nitro2', 'nuxt', 'nitro3']
 
@@ -55,8 +71,8 @@ interface ResolvedVariant<T> {
  * Resolved here rather than by the server builder, because kit is installed against hosts
  * whose builder knows nothing about variants.
  */
-function resolveVariant<T, Api extends ServerApi> (api: string, variants: ServerApiVariants<T, Api>, normalizeValue: (value: T) => T, accepted: Set<ServerApi>): ResolvedVariant<T> | undefined {
-  const host = (getHostServerApis() ?? UNIDENTIFIED_HOST_APIS).filter(candidate => accepted.has(candidate))
+function resolveVariant<T, Api extends ServerApi> (api: string, variants: ServerApiVariants<T, Api>, normalizeValue: (value: T) => T, accepted: Set<ServerApi>, hostApis: ServerApi[] = getHostServerApis() ?? UNIDENTIFIED_HOST_APIS): ResolvedVariant<T> | undefined {
+  const host = hostApis.filter(candidate => accepted.has(candidate))
 
   if (host.length === 0) {
     kitDiagnostics.NUXT_B8024({ api, declared: '', host: (getHostServerApis() ?? []).join('`, `') })
@@ -70,7 +86,7 @@ function resolveVariant<T, Api extends ServerApi> (api: string, variants: Server
   const declared = new Map<ServerApi, T>()
   for (const key in variants) {
     if (!accepted.has(key as ServerApi)) {
-      throw kitDiagnostics.NUXT_B8025({ api, value: key, accepted: [...accepted].join('`, `') })
+      throw kitDiagnostics.NUXT_B8025({ api, value: key, accepted: [...accepted].join('`, `') }, { method: 'error' })
     }
     declared.set(key as ServerApi, normalizeValue((variants as Record<string, T>)[key]!))
   }
@@ -98,6 +114,7 @@ function withVariantMeta<T extends object, V> (entry: T, resolved: ResolvedVaria
 
 const HANDLER_METHOD_RE = /\.(get|head|patch|post|put|delete|connect|options|trace|query)(\.\w+)*$/
 const WILDCARD_SUFFIX_RE = /\/\*\*(?::\w+)?$/
+const UNNAMED_WILDCARD_SUFFIX_RE = /\/\*\*$/
 
 /**
  * h3 v1 routes with radix3, where `/fonts/**` matches every path below `/fonts` but not
@@ -105,18 +122,21 @@ const WILDCARD_SUFFIX_RE = /\/\*\*(?::\w+)?$/
  * the base path gives one wildcard route the same reach on either, and rou3 prefers the
  * static route, so the pair is unambiguous where both are registered.
  *
+ * A named catch-all such as `/raw/**:slug` matches one or more segments on both routers, so
+ * its base path is out of reach on either and it is not given a second registration.
+ *
  * A handler already registered on the base path for the same method keeps it: a
  * method-specific handler there does not answer the other methods the wildcard covers.
  *
- * Not applied to middleware, which nitro v2 mounts with `app.use()` and so already runs on
- * the base path, nor to `/**`, whose base would shadow the renderer on `/`.
+ * Not applied to middleware, which nitro v2 mounts with `app.use()` as a literal path prefix,
+ * nor to `/**`, whose base would shadow the renderer on `/`.
  */
 function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: ResolvedVariant<string>): void {
   const route = entry.route
   if (!route || entry.middleware || getNitroVersion(nuxt) !== 2) {
     return
   }
-  const base = route.replace(WILDCARD_SUFFIX_RE, '')
+  const base = route.replace(UNNAMED_WILDCARD_SUFFIX_RE, '')
   if (base === route || !base || base === '/') {
     return
   }
@@ -124,6 +144,26 @@ function addLegacyBaseRoute (nuxt: Nuxt, entry: ServerHandler, resolved: Resolve
   const occupied = nuxt.options.serverHandlers.some(handler => handler.route === base && (!handler.method || handler.method.toUpperCase() === method))
   if (!occupied) {
     nuxt.options.serverHandlers.push(withVariantMeta({ ...entry, route: base }, resolved))
+  }
+}
+
+const LITERAL_ROUTE_RE = /^[^:*]+$/
+
+/**
+ * Nitro v2 mounts dev handlers with `app.use()`, a literal prefix match that ignores method,
+ * so a `/fonts/**` route needs a second registration on `/fonts` to reach anything.
+ */
+function addLegacyDevBaseRoute (nuxt: Nuxt, entry: DevServerHandler, resolved: ResolvedVariant<unknown>): void {
+  const route = entry.route
+  if (!route || getNitroVersion(nuxt) !== 2) {
+    return
+  }
+  const base = route.replace(WILDCARD_SUFFIX_RE, '')
+  if (base === route || !base || base === '/' || !LITERAL_ROUTE_RE.test(base)) {
+    return
+  }
+  if (!nuxt.options.devServerHandlers.some(handler => handler.route === base)) {
+    nuxt.options.devServerHandlers.push(withVariantMeta({ ...entry, route: base }, resolved))
   }
 }
 
@@ -154,7 +194,8 @@ export function addServerHandler (handler: ServerHandlerInput): void {
   // retrieve method from handler file name
   const [, method = undefined] = resolved.value.match(HANDLER_METHOD_RE) || []
   const entry: ServerHandler = {
-    method: method?.toUpperCase() as ServerHandler['method'],
+    // nitropack v2 writes the method into its route types as given, where requests are typed with lowercase methods
+    method: (getNitroVersion(nuxt) === 2 ? method : method?.toUpperCase()) as ServerHandler['method'],
     ...handler,
     handler: resolved.value,
   }
@@ -173,22 +214,26 @@ export function addDevServerHandler (handler: DevServerHandlerInput): void {
   if (!resolved) {
     return
   }
-  nuxt.options.devServerHandlers.push(withVariantMeta({ ...handler, handler: resolved.value }, resolved))
+  const entry: DevServerHandler = { ...handler, handler: resolved.value }
+  nuxt.options.devServerHandlers.push(withVariantMeta(entry, resolved))
+  addLegacyDevBaseRoute(nuxt, entry, resolved)
 }
 
 /**
  * Adds a nitro plugin, which runs once when the server starts.
  *
  * `plugin` is a path, or one path per nitro major, resolved as for
- * {@link addServerHandler}. There is no portable variant: `nuxt/server` has no plugin
- * surface, so a plugin is written against nitro.
+ * {@link addServerHandler}. A plugin that only registers render hooks is portable as a
+ * renderer plugin: see {@link addRendererPlugin}.
  */
 export function addNitroPlugin (plugin: ServerPluginInput): void {
-  const nuxt = useNuxt()
   const resolved = resolveVariant('addNitroPlugin', plugin, normalize, NITRO_APIS)
-  if (!resolved) {
-    return
+  if (resolved) {
+    registerNitroPlugin(useNuxt(), resolved)
   }
+}
+
+function registerNitroPlugin (nuxt: Nuxt, resolved: ResolvedVariant<string>): void {
   // a host without `_serverPlugins` is nitro v2, where the metadata has no reader
   const plugins = nuxt.options._serverPlugins as ServerPlugin[] | undefined
   if (Array.isArray(plugins)) {
@@ -204,6 +249,56 @@ export function addNitroPlugin (plugin: ServerPluginInput): void {
 /** @deprecated Use {@link addNitroPlugin}: a startup plugin is nitro's, not a portable server API. */
 export function addServerPlugin (plugin: ServerPluginInput): void {
   addNitroPlugin(plugin)
+}
+
+/**
+ * Adds a renderer plugin, which every SSR renderer calls once, before it renders, with the
+ * hooks it calls while rendering. It runs under any server builder, and in whatever
+ * runtime the server renders in.
+ *
+ * The plugin default-exports a function taking `{ hooks }`. On a host that does not run
+ * renderer plugins, the same file is registered as a nitro plugin instead, which nitro
+ * calls with its app, whose `hooks` are the ones the renderer calls. Pass `nitro2` or
+ * `nitro3` variants to register a different nitro plugin there.
+ *
+ * @example
+ * ```ts
+ * addRendererPlugin(resolver.resolve('./runtime/server/renderer'))
+ * ```
+ *
+ * ```ts
+ * // runtime/server/renderer.ts
+ * import type { RendererPlugin } from 'nuxt/server'
+ *
+ * export default (({ hooks }) => {
+ *   hooks.hook('render:html', (html) => {
+ *     html.head.push('<meta name="my-module">')
+ *   })
+ * }) satisfies RendererPlugin
+ * ```
+ */
+export function addRendererPlugin (plugin: RendererPluginInput): void {
+  const nuxt = useNuxt()
+  const variants = typeof plugin === 'string' ? { nuxt: plugin } : plugin
+  const hostApis = getHostServerApis(nuxt) ?? UNIDENTIFIED_HOST_APIS
+  // a host without `_rendererPlugins` predates them, and runs the `nuxt` variant as a nitro plugin
+  const rendererPlugins = nuxt.options._rendererPlugins as RendererPluginEntry[] | undefined
+  const supported = Array.isArray(rendererPlugins)
+  const host: ServerApi[] = supported
+    ? ['nuxt', ...hostApis.filter(api => api !== 'nuxt')]
+    : hostApis.some(api => NITRO_APIS.has(api)) ? hostApis : []
+
+  const resolved = resolveVariant('addRendererPlugin', variants, normalize, SERVER_APIS, host)
+  if (!resolved) {
+    return
+  }
+  if (supported && resolved.api === 'nuxt') {
+    if (!rendererPlugins.some(entry => entry.plugin === resolved.value)) {
+      rendererPlugins.push({ plugin: resolved.value, unused: resolved.unused })
+    }
+    return
+  }
+  registerNitroPlugin(nuxt, resolved)
 }
 
 /**
@@ -240,7 +335,7 @@ export function addPrerenderRoutes (routes: string | string[]): void {
 export function useNitro (): NitroInstance {
   const nitro = tryUseNitro()
   if (!nitro) {
-    throw kitDiagnostics.NUXT_B8003()
+    throw kitDiagnostics.NUXT_B8003({}, { method: 'error' })
   }
   return nitro
 }
@@ -257,12 +352,21 @@ export function tryUseNitro (): NitroInstance | undefined {
   return (tryUseNuxt() as any)?._nitro
 }
 
+/** A server import whose `from` may be one module per server API. */
+export type ServerImportInput = Omit<NuxtImport, 'from'> & { from: ServerApiVariants<string> }
+
 /**
  * Add server imports to be auto-imported in the server program.
  */
-export function addServerImports (imports: NuxtImport | NuxtImport[]): void {
+export function addServerImports (imports: ServerImportInput | ServerImportInput[]): void {
   const nuxt = useNuxt()
-  const _imports = toArray(imports)
+  const _imports: NuxtImport[] = []
+  for (const entry of toArray(imports)) {
+    const resolved = resolveVariant('addServerImports', entry.from, value => value, SERVER_APIS)
+    if (resolved) {
+      _imports.push({ ...entry, from: resolved.value })
+    }
+  }
   if (_imports.length === 0) {
     return
   }

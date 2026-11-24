@@ -42,6 +42,15 @@ describe('PublicDirsPlugin dev transform', () => {
   it('does not double up slashes when the base URL has a trailing slash', () => {
     expect(transformCSS('/cdn/', code)).toBe(expected)
   })
+
+  it('only receives css modules with a root-relative url', () => {
+    const { filter } = PublicDirsPlugin({ dev: true, baseURL: '/cdn' })[0]!.transform as { filter: { id: RegExp, code: RegExp } }
+    expect(filter.id.test('/styles.css')).toBe(true)
+    expect(filter.id.test('/app.vue?vue&type=style&index=0&lang.scss')).toBe(true)
+    expect(filter.id.test('/app.ts')).toBe(false)
+    expect(filter.code.test(code)).toBe(true)
+    expect(filter.code.test('a{background:url(./logo.svg)}')).toBe(false)
+  })
 })
 
 describe('PublicDirsPlugin', () => {
@@ -90,6 +99,13 @@ describe('PublicDirsPlugin', () => {
       return result?.code?.toString() ?? code
     }
 
+    it('only receives chunks with a root-relative css url', () => {
+      const { filter } = plugin.renderChunk as { filter?: { code: RegExp } }
+      expect(filter?.code.test('const a = "a{background:url(/logo.svg)}"')).toBe(true)
+      expect(filter?.code.test('export default 1')).toBe(false)
+      expect(filter?.code.test('const a = "a{background:url(./logo.svg)}"')).toBe(false)
+    })
+
     it('rewrites every public asset url in a chunk', () => {
       const code = 'const a = "a{background:url(/logo.svg)}b{background:url(/icon.svg)}c{background:url(/logo.svg)}"'
       const output = render(code)
@@ -110,6 +126,20 @@ describe('PublicDirsPlugin', () => {
       const output = render(code)
       expect(output).toContain('"a{background:url(" + publicAssetsURL("/logo.svg") + ")}"')
       expect(output).toContain('\'b{background:url(\' + publicAssetsURL(\'/icon.svg\') + \')}\'')
+    })
+
+    function evaluate (code: string) {
+      const body = render(code).replace('import { publicAssetsURL } from \'#internal/nuxt/paths\';', '')
+      return new Function('publicAssetsURL', `${body}; return a`)((url: string) => `/cdn${url}`)
+    }
+
+    it.each([
+      ['a double-quoted string containing other quotes', 'const a = "a::before{content:\\"\'`\\"}b{background:url(/logo.svg)}"', 'a::before{content:"\'`"}b{background:url(/cdn/logo.svg)}'],
+      ['a single-quoted string containing other quotes', 'const a = \'a::before{content:"`\\\'"}b{background:url(/logo.svg)}\'', 'a::before{content:"`\'"}b{background:url(/cdn/logo.svg)}'],
+      ['a template literal containing other quotes', 'const a = `a::before{content:"\'\\`"}b{background:url(/logo.svg)}`', 'a::before{content:"\'`"}b{background:url(/cdn/logo.svg)}'],
+      ['a template literal with substitutions', 'const x = "\'"; const a = `a{content:"${x}"}b{background:url(/logo.svg)}${"`"}c{background:url(/icon.svg)}`', 'a{content:"\'"}b{background:url(/cdn/logo.svg)}`c{background:url(/cdn/icon.svg)}'],
+    ])('rewrites public asset urls in %s', (_, code, expected) => {
+      expect(evaluate(code)).toBe(expected)
     })
   })
 })

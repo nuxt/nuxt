@@ -10,4 +10,12 @@ describe.skipIf(!runsOnceInMatrix)('SSR vite resolve conditions', () => {
     const result = await exec('pnpm', ['nuxt', 'build', rootDir], { throwOnError: false })
     expect(result.exitCode, result.stderr || result.stdout).toBe(0)
   }, 120 * 1000)
+
+  it('keeps the conditions nitro sets for the miniflare runner', async () => {
+    const result = await exec('pnpm', ['nuxt', 'build', rootDir], {
+      throwOnError: false,
+      nodeOptions: { env: { ...process.env, NITRO_DEV_RUNNER: 'miniflare' } },
+    })
+    expect(result.exitCode, result.stderr || result.stdout).toBe(0)
+  }, 120 * 1000)
 })

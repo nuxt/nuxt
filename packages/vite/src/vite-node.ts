@@ -1,9 +1,9 @@
 import process from 'node:process'
 import type { Socket } from 'node:net'
 import net from 'node:net'
-import { Buffer } from 'node:buffer'
 import { isTest } from 'std-env'
 import type { ViteNodeFetch, ViteNodeRequestMap, ViteNodeServerOptions } from './plugins/vite-node.ts'
+import { createMessageDecoder, encodeMessage } from './utils/ipc.ts'
 
 function getViteNodeOptionsEnvVar () {
   const envVar = process.env.NUXT_VITE_NODE_OPTIONS
@@ -58,15 +58,6 @@ function connectSocket (): Promise<Socket> {
 
     const attemptConnection = (attempt = 0) => {
       const socket = net.createConnection(viteNodeOptions.socketPath)
-
-      const INITIAL_BUFFER_SIZE = 64 * 1024 // 64KB
-      const MAX_BUFFER_SIZE = 1024 * 1024 * 1024 // 1GB
-
-      let buffer = Buffer.alloc(INITIAL_BUFFER_SIZE)
-      let writeOffset = 0
-      let readOffset = 0
-
-      // optimize socket for high-frequency IPC
       socket.setNoDelay(true)
       socket.setKeepAlive(true, 30000) // 30s
 
@@ -77,45 +68,30 @@ function connectSocket (): Promise<Socket> {
         socket.off('close', onClose)
       }
 
-      const resetBuffer = () => {
-        writeOffset = 0
-        readOffset = 0
-      }
-
-      const compactBuffer = () => {
-        if (readOffset > 0) {
-          const remainingData = writeOffset - readOffset
-          if (remainingData > 0) {
-            buffer.copy(buffer, 0, readOffset, writeOffset)
+      const decoder = createMessageDecoder((message) => {
+        try {
+          const response = JSON.parse(message)
+          const requestHandlers = pendingRequests.get(response.id)
+          if (requestHandlers) {
+            const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
+            if (response.type === 'error') {
+              const err: Error & { stack?: string, data?: unknown, status?: number, statusCode?: number, _fromServer?: boolean } = new Error(response.error.message)
+              if (response.error.stack) {
+                err.stack = response.error.stack
+              }
+              err.data = response.error.data
+              err.statusCode = err.status = response.error.status || response.error.statusCode
+              err._fromServer = true
+              rejectRequest(err)
+            } else {
+              resolveRequest(response.data)
+            }
+            pendingRequests.delete(response.id)
           }
-          writeOffset = remainingData
-          readOffset = 0
+        } catch (parseError) {
+          console.warn('vite-node-shared: Failed to parse IPC response:', parseError)
         }
-      }
-
-      const ensureBufferCapacity = (additionalBytes: number) => {
-        const requiredSize = writeOffset + additionalBytes
-
-        if (requiredSize > MAX_BUFFER_SIZE) {
-          throw new Error(`Buffer size limit exceeded: ${requiredSize} > ${MAX_BUFFER_SIZE}`)
-        }
-
-        if (requiredSize > buffer.length) {
-          // Try compacting first
-          compactBuffer()
-
-          // ... then if we still need more space, grow the buffer
-          if (writeOffset + additionalBytes > buffer.length) {
-            const newSize = Math.min(
-              Math.max(buffer.length * 2, requiredSize),
-              MAX_BUFFER_SIZE,
-            )
-            const newBuffer = Buffer.alloc(newSize)
-            buffer.copy(newBuffer, 0, 0, writeOffset)
-            buffer = newBuffer
-          }
-        }
-      }
+      }, (requiredSize, maxSize) => new Error(`Buffer size limit exceeded: ${requiredSize} > ${maxSize}`))
 
       const onConnect = () => {
         clientSocket = socket
@@ -124,49 +100,7 @@ function connectSocket (): Promise<Socket> {
 
       const onData = (data: Buffer) => {
         try {
-          ensureBufferCapacity(data.length)
-          data.copy(buffer, writeOffset)
-          writeOffset += data.length
-
-          while (writeOffset - readOffset >= 4) {
-            const messageLength = buffer.readUInt32BE(readOffset)
-
-            if (writeOffset - readOffset < 4 + messageLength) {
-              return // Wait for more data
-            }
-
-            const message = buffer.subarray(readOffset + 4, readOffset + 4 + messageLength).toString('utf-8')
-            readOffset += 4 + messageLength
-
-            try {
-              const response = JSON.parse(message)
-              const requestHandlers = pendingRequests.get(response.id)
-              if (requestHandlers) {
-                const { resolve: resolveRequest, reject: rejectRequest } = requestHandlers
-                if (response.type === 'error') {
-                  const err: Error & { stack?: string, data?: unknown, status?: number, statusCode?: number, _fromServer?: boolean } = new Error(response.error.message)
-                  if (response.error.stack) {
-                    err.stack = response.error.stack
-                  }
-                  err.data = response.error.data
-                  err.statusCode = err.status = response.error.status || response.error.statusCode
-                  err._fromServer = true
-                  rejectRequest(err)
-                } else {
-                  resolveRequest(response.data)
-                }
-                pendingRequests.delete(response.id)
-              }
-            } catch (parseError) {
-              console.warn('vite-node-shared: Failed to parse IPC response:', parseError)
-              // ignore malformed messages
-            }
-          }
-
-          // compact buffer periodically to prevent memory waste
-          if (readOffset > buffer.length / 2) {
-            compactBuffer()
-          }
+          decoder.push(data)
         } catch (error) {
           socket.destroy(error instanceof Error ? error : new Error('Buffer management error'))
         }
@@ -174,7 +108,7 @@ function connectSocket (): Promise<Socket> {
 
       const onError = (err: Error) => {
         cleanup()
-        resetBuffer()
+        decoder.reset()
 
         if (attempt < MAX_RETRY_ATTEMPTS) {
           const delay = calculateRetryDelay(attempt)
@@ -194,7 +128,7 @@ function connectSocket (): Promise<Socket> {
 
       const onClose = () => {
         cleanup()
-        resetBuffer()
+        decoder.reset()
         for (const { reject: rejectRequest } of pendingRequests.values()) {
           rejectRequest(new Error('IPC connection closed'))
         }
@@ -245,17 +179,8 @@ async function sendRequest<T extends keyof ViteNodeRequestMap> (type: T, payload
           },
         })
 
-        const message = JSON.stringify({ id: requestId, type, payload })
-        const messageBuffer = Buffer.from(message, 'utf-8')
-        const messageLength = messageBuffer.length
-
-        // pre-allocate single buffer for length + message to avoid Buffer.concat()
-        const fullMessage = Buffer.alloc(4 + messageLength)
-        fullMessage.writeUInt32BE(messageLength, 0)
-        messageBuffer.copy(fullMessage, 4)
-
         try {
-          socket.write(fullMessage)
+          socket.write(encodeMessage({ id: requestId, type, payload }))
         } catch (error) {
           clearTimeout(timeoutId)
           pendingRequests.delete(requestId)

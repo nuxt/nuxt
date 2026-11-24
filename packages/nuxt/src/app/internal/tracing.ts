@@ -2,11 +2,17 @@
  * Server-side diagnostics-channel tracing helper for Nuxt-owned subsystems.
  *
  * Channels published via this helper:
+ * - `nuxt.request` (each request the renderer handles, whichever server runtime
+ *   called it; payload is `{ event }`)
  * - `nuxt.render` (page-level Vue render, both buffered `renderToString` and
  *   streamed responses; payload includes `streaming: boolean`)
  * - `nuxt.island` (per-island `renderToString`)
  * - `nuxt.data` (`useAsyncData` / `useFetch` handler executions)
  * - `nuxt.plugin` (Nuxt app plugin invocations)
+ * - `nuxt.hook` (`nuxtApp.hooks` calls with at least one listener; payload is
+ *   `{ name, args }`)
+ * - `nuxt.middleware` (route middleware executions; payload is
+ *   `{ middleware: { name, path, global } }`)
  *
  * Channel names follow the [untracing](https://github.com/unjs/untracing)
  * `{namespace}.{operation}` convention.
@@ -62,5 +68,5 @@ export function traceAsync<T, C> (name: string, context: C, fn: () => Promise<T>
   if (!channel || channel.hasSubscribers === false) {
     return fn()
   }
-  return channel.tracePromise(fn, context)
+  return channel.tracePromise(() => Promise.resolve(fn()), context)
 }

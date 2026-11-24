@@ -3,8 +3,10 @@ import { createStreamableHead } from '@unhead/vue/stream/server'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
 import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SSR_STREAMING, unheadOptions } from 'nuxt/internal/renderer-config'
 import { appEvent, getRequestState } from './runtime'
-import type { NuxtRendererOptions, RendererEvent } from './runtime'
+import type { NuxtRendererOptions, NuxtRequestState, RendererEvent } from './runtime'
 import { urlHash } from './url'
+import { mergeHeaders } from './headers'
+import { captureError } from './error-page'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
@@ -30,6 +32,7 @@ export function createSSRContext (options: NuxtRendererOptions, event: RendererE
     nuxt: undefined!, /* NuxtApp */
     payload: {},
     ['~payloadReducers']: Object.create(null),
+    ['~captureError']: (error) => { void captureError(options, event, error, ['async-data']) },
     modules: new Set(),
   }
 
@@ -51,19 +54,6 @@ export function setSSRError (ssrContext: NuxtSSRContext, error: NuxtPayload['err
   ssrContext.url = url.pathname + url.search + url.hash
 }
 
-// Layer `overlay` onto `base`, overwriting per header except `set-cookie`,
-// which is appended so cookies from both sides survive.
-export function mergeHeaders (base: Headers, overlay: Headers): Headers {
-  for (const [name, value] of overlay) {
-    if (name === 'set-cookie') { continue }
-    base.set(name, value)
-  }
-  for (const cookie of overlay.getSetCookie()) {
-    base.append('set-cookie', cookie)
-  }
-  return base
-}
-
 export function returnRenderResponse (options: NuxtRendererOptions, event: RendererEvent, response: Response): Response {
   const headers = mergeHeaders(new Headers(event.res.headers), response.headers)
   return options.createResponse(response.body, {
@@ -75,6 +65,7 @@ export function returnRenderResponse (options: NuxtRendererOptions, event: Rende
 
 // TODO: rethink this before nuxt v5
 export function rethrowWithResponseHeaders (event: RendererEvent, error: any): never {
-  error.headers = mergeHeaders(error.headers instanceof Headers ? error.headers : new Headers(error.headers), event.res.headers)
+  const state = (event.context as { nuxt?: NuxtRequestState }).nuxt ||= {}
+  state['~response-headers'] = event.res.headers
   throw error
 }

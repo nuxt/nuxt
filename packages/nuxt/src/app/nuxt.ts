@@ -12,10 +12,11 @@ import type { RouteMiddleware } from './composables/router'
 import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
+import { guardedServerConfig } from './internal/runtime-config'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
-import type { RouteAnnouncer } from './composables/route-announcer'
 import type { NuxtAnnouncer } from './composables/announcer'
+import type { ClientHeadState } from '../head/runtime/client-head-state'
 import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
 import { appDiagnostics } from './diagnostics/core'
@@ -75,6 +76,8 @@ interface _NuxtApp {
   /** @internal */
   '_appliedSetCookies'?: number
   '_cookiesChanged'?: Record<string, boolean>
+  /** @internal */
+  '_cookieWriters'?: Set<() => void>
   /**
    * The id of the Nuxt application.
    * @internal */
@@ -95,6 +98,8 @@ interface _NuxtApp {
     /** @internal */
     _deps: number
     /** @internal */
+    _on: () => void
+    /** @internal */
     _off: () => void
     /** @internal */
     _init: boolean
@@ -109,10 +114,7 @@ interface _NuxtApp {
   } | undefined>
 
   /** @internal */
-  '_state': Record<string, {
-    /** @internal */
-    _default: () => unknown
-  } | undefined>
+  '_state': Record<string, Map<EffectScope | undefined, () => unknown> | undefined>
 
   /** @internal */
   '_loadingIndicator'?: LoadingIndicator
@@ -129,7 +131,7 @@ interface _NuxtApp {
   '_processingMiddleware'?: string | boolean
 
   /** @internal */
-  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta'>
+  '_middlewareTo'?: Pick<RouteLocationNormalizedLoaded, 'meta' | 'redirectedFrom'>
 
   /** @internal */
   '_once': {
@@ -137,7 +139,7 @@ interface _NuxtApp {
   }
 
   /** @internal */
-  '_observer'?: { observe: (element: Element, callback: () => void) => () => void }
+  '_observer'?: { observe: (element: Element, callback: () => void, whenReady?: boolean) => () => void }
 
   /** @internal */
   '_appConfig': AppConfig
@@ -162,9 +164,12 @@ interface _NuxtApp {
   '_prefetch'?: PrefetchScheduler
 
   /** @internal */
-  '_routeAnnouncer'?: RouteAnnouncer
+  '_routeAnnouncer'?: NuxtAnnouncer
   /** @internal */
   '_routeAnnouncerDeps'?: number
+
+  /** @internal */
+  '~head'?: ClientHeadState
 
   /** @internal */
   '~transitionPromise'?: Promise<void>
@@ -180,6 +185,8 @@ interface _NuxtApp {
   '$config': RuntimeConfig
 
   'isHydrating'?: boolean
+  /** @internal */
+  '_appCreated'?: boolean
   'deferHydration': () => () => void | Promise<void>
 
   'ssrContext'?: NuxtSSRContext
@@ -289,8 +296,8 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
         }
       }
     },
-    _asyncDataPromises: {},
-    _asyncData: shallowReactive({}),
+    _asyncDataPromises: Object.create(null),
+    _asyncData: shallowReactive(Object.create(null)),
     _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
@@ -338,11 +345,16 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
   nuxtApp.hook = nuxtApp.hooks.hook
 
   if (import.meta.server) {
-    const contextCaller = async function (hooks: NuxtHookCallback[], args: any[]) {
+    const runHooks = async (hooks: NuxtHookCallback[], args: any[]) => {
       for (const hook of hooks) {
         await nuxtApp.runWithContext(() => hook(...args))
       }
     }
+    const contextCaller = tracingChannelNuxt
+      ? (hooks: NuxtHookCallback[], args: any[], name?: string) => hooks.length
+          ? traceAsync('nuxt.hook', { name, args }, () => runHooks(hooks, args))
+          : runHooks(hooks, args)
+      : runHooks
     // Patch callHook to preserve NuxtApp context on server
     // TODO: Refactor after https://github.com/unjs/hookable/issues/74
     nuxtApp.hooks.callHook = (name: any, ...args: any[]) => nuxtApp.hooks.callHookWith(contextCaller, name, args)
@@ -375,6 +387,8 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     }
     window.useNuxtApp ||= useNuxtApp
 
+    nuxtApp.hooks.hook('app:created', () => { nuxtApp._appCreated = true })
+
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
     const unreg = nuxtApp.hook('app:error', (...args) => {
@@ -385,7 +399,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
   // Expose runtime config
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
-  nuxtApp.provide('config', import.meta.client && import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
+  nuxtApp.provide('config', import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
 
   return nuxtApp
 }
@@ -454,8 +468,13 @@ async function applyPluginsWithDependencies (nuxtApp: NuxtApp, plugins: Array<Pl
   let error: Error | undefined
   let promiseDepth = 0
 
+  const checkIslandEnv = import.meta.server && componentIslands && hasIslandOptOutPlugins
+  const activePlugins = checkIslandEnv && nuxtApp.ssrContext?.islandContext
+    ? plugins.filter(plugin => plugin.env?.islands !== false)
+    : plugins
+
   async function executePlugin (plugin: Plugin & ObjectPlugin<any>) {
-    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => plugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
+    const unresolvedPluginsForThisPlugin = plugin.dependsOn?.filter(name => activePlugins.some(p => p._name === name) && !resolvedPlugins.has(name)) ?? []
     if (unresolvedPluginsForThisPlugin.length > 0) {
       unresolvedPlugins.push([new Set(unresolvedPluginsForThisPlugin), plugin])
     } else {
@@ -488,17 +507,13 @@ async function applyPluginsWithDependencies (nuxtApp: NuxtApp, plugins: Array<Pl
     }
   }
 
-  const checkIslandEnv = import.meta.server && componentIslands && hasIslandOptOutPlugins
-
   if (hasPluginHooks) {
-    for (const plugin of plugins) {
-      if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+    for (const plugin of activePlugins) {
       registerPluginHooks(nuxtApp, plugin)
     }
   }
 
-  for (const plugin of plugins) {
-    if (checkIslandEnv && nuxtApp.ssrContext?.islandContext && plugin.env?.islands === false) { continue }
+  for (const plugin of activePlugins) {
     await executePlugin(plugin)
   }
 
@@ -522,7 +537,6 @@ export function defineNuxtPlugin<T extends Record<string, unknown>> (plugin: Plu
   return Object.assign(plugin.setup || (() => {}), plugin, { [NuxtPluginIndicator]: true, _name } as const)
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 export const definePayloadPlugin: typeof defineNuxtPlugin = defineNuxtPlugin
 
 /** @since 3.0.0 */
@@ -548,7 +562,6 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
   }
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
@@ -556,6 +569,7 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * @since 3.10.0
  */
 export function tryUseNuxtApp (): NuxtApp | null
+/* @__NO_SIDE_EFFECTS__ */
 export function tryUseNuxtApp (id?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
@@ -567,7 +581,6 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
   return nuxtAppInstance || null
 }
 
-/* @__NO_SIDE_EFFECTS__ */
 /**
  * Returns the current Nuxt instance.
  *
@@ -575,6 +588,7 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
  * @since 3.0.0
  */
 export function useNuxtApp (): NuxtApp
+/* @__NO_SIDE_EFFECTS__ */
 export function useNuxtApp (id?: string): NuxtApp {
   // @ts-expect-error internal usage of id
   const nuxtAppInstance = tryUseNuxtApp(id)
@@ -616,12 +630,10 @@ export function defineAppConfig<C extends AppConfigInput> (config: C): C {
   return config
 }
 
-/**
- * Configure error getter on runtime secret property access that doesn't exist on the client side
- */
 const loggedKeys = new Set<string>()
 function wrappedConfig (runtimeConfig: Record<string, unknown>) {
-  if (!import.meta.dev || import.meta.server) { return runtimeConfig }
+  if (!import.meta.dev) { return runtimeConfig }
+  if (import.meta.server) { return guardedServerConfig(runtimeConfig) }
   const keys: string[] = []
   for (const key in runtimeConfig) {
     keys.push(`\`${key}\``)

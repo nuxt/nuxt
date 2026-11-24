@@ -53,7 +53,9 @@ describe('getRendererConfig', () => {
     const stub = readFileSync(new URL('../../nuxt/src/runtime/server/renderer-config.ts', import.meta.url), 'utf-8')
     const expected = [...stub.matchAll(/^export const (\w+)/gm)].map(match => match[1])
 
-    expect(exportedNames(getRendererConfig({}, nuxt())).sort()).toEqual(expected.sort())
+    const experimental = expected.includes('NUXT_JSON_PAYLOADS') ? { renderJsonPayloads: true } : {}
+
+    expect(exportedNames(getRendererConfig({}, nuxt({ experimental }))).sort()).toEqual(expected.sort())
   })
 
   it('derives what it can from the resolved configuration', () => {
@@ -71,6 +73,12 @@ describe('getRendererConfig', () => {
     expect(code).toContain('export const appRootAttrs = {"id":"__nuxt"}')
   })
 
+  it('provides `NUXT_JSON_PAYLOADS` to a host that can render JS payloads', () => {
+    expect(exportedNames(getRendererConfig({}, nuxt()))).not.toContain('NUXT_JSON_PAYLOADS')
+    expect(getRendererConfig({}, nuxt({ experimental: { renderJsonPayloads: false } }))).toContain('export const NUXT_JSON_PAYLOADS = false')
+    expect(getRendererConfig({}, nuxt({ experimental: { renderJsonPayloads: true } }))).toContain('export const NUXT_JSON_PAYLOADS = true')
+  })
+
   it('defaults the constants a server builder resolves for itself, and takes overrides', () => {
     const code = getRendererConfig({ overrides: { componentIslands: 'true', spaTemplate: '"<span/>"' } }, nuxt())
 
@@ -84,7 +92,7 @@ describe('getRendererConfig', () => {
     const code = getRendererConfig({}, nuxt())
 
     expect(code).toContain(`export { default as unheadOptions } from "#build/unhead-options.mjs"`)
-    expect(code).toContain(`export { iifeChunkFileName, renderSSRHeadOptions } from "#build/unhead.config.mjs"`)
+    expect(code).toContain(`export { appComponentHead, iifeChunkFileName, renderSSRHeadOptions } from "#build/unhead.config.mjs"`)
 
     expect(getRendererConfig({ unheadOptions: '#custom', headConfig: '#custom-config' }, nuxt())).toContain(`from "#custom-config"`)
   })
@@ -114,7 +122,7 @@ describe('getServerRuntime', () => {
 
     const { modules } = getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() }))
 
-    expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/server'].sort())
+    expect(Object.keys(modules).sort()).toEqual([...stubs, 'nuxt/internal/dev-error', 'nuxt/server'].sort())
   })
 
   it('backs `nuxt/server` with the shipped implementations, and with a builder\'s where it supplies them', async () => {
@@ -124,6 +132,13 @@ describe('getServerRuntime', () => {
 
     const withDelegate = withServerRuntime(nuxt({ buildOutputs: buildOutputs() }), { server: '/delegate.mjs' })
     expect(await getServerRuntime({}, withDelegate).modules['nuxt/server']!.code()).toBe('export * from "/delegate.mjs"')
+  })
+
+  it('backs `nuxt/internal/dev-error` with the shipped module in development only', async () => {
+    const dev = nuxt({ buildOutputs: buildOutputs() })
+    dev.options.dev = true
+    expect(await getServerRuntime({}, dev).modules['nuxt/internal/dev-error']!.code()).toMatch(/^export \* from "\S+dev-error[/\\]index\.ts"$/)
+    expect(await getServerRuntime({}, nuxt({ buildOutputs: buildOutputs() })).modules['nuxt/internal/dev-error']!.code()).toBe('export {}')
   })
 
   it('reads runtime configuration from the module the server builder provides it in', async () => {

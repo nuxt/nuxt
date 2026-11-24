@@ -1,4 +1,4 @@
-import type { FetchOptions, FetchRequest, FetchResponse } from 'ofetch'
+import type { FetchRequest, FetchResponse, FetchOptions as OFetchOptions } from 'ofetch'
 import type { AnyHTTPMethod, LooseTypedHeaders, TypedFetchErrorBody, TypedFetchPath, TypedFetchRequestBody, TypedFetchRequestHeaders, TypedFetchRequestQuery, TypedFetchRequires, TypedFetchResponseBody, ValidFetchInput } from 'fetchdts'
 import type { ErrorBody, Methods, Path, RequestBody, RequestHeaders, RequestQuery, Requires, Response, StrictFetchPaths, ValidInput } from '#build/server-routes'
 
@@ -31,8 +31,18 @@ export type TypedFetchPathInput = StrictFetchPaths extends true
  * literal inferred into a parameter constrained by `string` widens - so `` `/api/posts/${id}` ``
  * arrives as `string`, matches nothing, and loses the union a parameter would have resolved to. The
  * pattern members keep the literal; `string & {}` keeps the signature total.
+ *
+ * @internal
  */
-type AnyFetchPath = `/${string}` | `${string}://${string}` | (string & {})
+export type AnyFetchPath = `/${string}` | `${string}://${string}` | (string & {})
+
+/**
+ * {@link AnyFetchPath}, or any non-string request `fetch` accepts: what `$fetch`'s permissive
+ * signature takes as its request.
+ *
+ * @internal
+ */
+type AnyFetchRequest = AnyFetchPath | Exclude<FetchRequest, string>
 
 /**
  * `unknown` where the path resolves, where it is an absolute URL, where the request is not a
@@ -104,10 +114,14 @@ export type AvailableServerRouteMethod<Request> = Lowercase<Methods<Request> & s
  *
  * A request the route set cannot resolve - a path built at runtime, or a `Request` object - falls
  * back to ofetch's own types rather than narrowing to nothing, which the accessors handle.
+ *
+ * The parameters are declared invariant so that TypeScript does not measure their variance, which
+ * it does by resolving the accessors against placeholder types at a cost that grows with the route
+ * set.
  */
-export type TypedRequestShape<Request, Method extends AnyServerRouteMethod> = {
-  body?: Declared<RequestBody<Request, Uppercase<Method>, never>, FetchOptions['body']>
-  query?: Declared<RequestQuery<Request, Uppercase<Method>, never>, FetchOptions['query']>
+export type TypedRequestShape<in out Request, in out Method extends AnyServerRouteMethod> = {
+  body?: Declared<RequestBody<Request, Uppercase<Method>, never>, OFetchOptions['body']>
+  query?: Declared<RequestQuery<Request, Uppercase<Method>, never>, OFetchOptions['query']>
   headers?: DeclaredHeaders<RequestHeaders<Request, Uppercase<Method>, never>>
 }
 
@@ -132,7 +146,7 @@ type Declared<Shape, Fallback> = [Shape] extends [never] ? Fallback : Shape
  */
 type DeclaredHeaders<Shape> =
   [Shape] extends [never]
-    ? FetchOptions['headers']
+    ? OFetchOptions['headers']
     : (Shape & Record<string, string>) | LooseTypedHeaders<Shape> | Array<[string, string]>
 
 /** Requires `body` where the route declares one that is not optional, and contributes nothing otherwise. */
@@ -218,13 +232,44 @@ export type ResolvedFetchPath<Request, BaseURL extends string> =
  */
 export type EffectiveBaseURL<Instance extends string, Call extends string> = Call extends '' ? Instance : Call
 
+/**
+ * The `baseURL` assumed where none is inferred: `''` while the request is inferred, and `string` once
+ * it falls back to `Default`. A call that names its type arguments infers none of the others, so a
+ * base it passes is not inferred either.
+ */
+export type FallbackBaseURL<Request, Default> = [Default] extends [Request] ? string : ''
+
 /** Options accepted by Nuxt's typed `$fetch`, narrowed to what the matching route validates. */
 export type TypedFetchOptions<Request, Method extends AnyServerRouteMethod = 'get', BaseURL extends string = string> =
-  & Omit<FetchOptions, 'method' | 'body' | 'query' | 'params' | 'headers' | 'baseURL'>
-  & { baseURL?: BaseURL }
-  & { method?: AcceptedMethod<Request, Method> }
-  & TypedRequestShape<Request, Method>
+  & TypedFetchOptionsBase<Request, Method, BaseURL>
   & RequiredRequestBody<Request, Method>
+
+/**
+ * {@link TypedFetchOptions} without the requiredness of `body`, which an interface cannot express.
+ *
+ * An interface so that its variance can be declared: inferring from one instantiation of the
+ * options to another otherwise measures it, by resolving the route accessors against placeholder
+ * types, at a cost that can exhaust the checker.
+ *
+ * @internal
+ */
+interface TypedFetchOptionsBase<in out Request, in out Method extends AnyServerRouteMethod, out BaseURL extends string> extends Omit<OFetchOptions, 'method' | 'body' | 'query' | 'params' | 'headers' | 'baseURL'>, TypedRequestShape<Request, Method> {
+  baseURL?: BaseURL
+  method?: AcceptedMethod<Request, Method>
+}
+
+/**
+ * Options for a request to a URL the app does not serve, where the caller names the response type.
+ * This is Nuxt's type, imported from `nuxt/app` (or `#app` in app code): ofetch's type of the same
+ * name types `method` as a plain `string`, which typed `$fetch` does not accept. Code that calls
+ * ofetch's own `$fetch` keeps ofetch's own options type.
+ *
+ * @example
+ * function fetchRegistry<T> (url: string, options: FetchOptions = {}) {
+ *   return $fetch<T>(url, options)
+ * }
+ */
+export type FetchOptions = TypedFetchOptions<string, AnyServerRouteMethod>
 
 /**
  * A request accepted by a client built for the route set `Schema` describes: one of its paths, a
@@ -274,8 +319,8 @@ export type DeclaredServerError<Schema, Request, Method extends AnyServerRouteMe
 
 /** As {@link TypedRequestShape}, resolved against a declared route set. */
 export type DeclaredRequestShape<Schema, Request, Method extends AnyServerRouteMethod> = {
-  body?: Declared<TypedFetchRequestBody<Schema, Request, Uppercase<Method>, never>, FetchOptions['body']>
-  query?: Declared<TypedFetchRequestQuery<Schema, Request, Uppercase<Method>, never>, FetchOptions['query']>
+  body?: Declared<TypedFetchRequestBody<Schema, Request, Uppercase<Method>, never>, OFetchOptions['body']>
+  query?: Declared<TypedFetchRequestQuery<Schema, Request, Uppercase<Method>, never>, OFetchOptions['query']>
   headers?: DeclaredHeaders<TypedFetchRequestHeaders<Schema, Request, Uppercase<Method>, never>>
 }
 
@@ -292,6 +337,18 @@ export type RequiredDeclaredBody<Schema, Request, Method extends AnyServerRouteM
 /** As {@link AcceptedMethod}, resolved against a declared route set. */
 export type AcceptedDeclaredMethod<Schema, Request, Method extends AnyServerRouteMethod> =
   unknown extends ValidDeclaredFetchPath<Schema, Request, Method> ? Method : never
+
+/**
+ * The method a call that passes none is resolved against: any method where the request is left at
+ * its default, which naming a type argument does, and otherwise GET unless the instance was created
+ * with a response type.
+ *
+ * @internal
+ */
+type DefaultFetchMethod<T, Request, DefaultRequest> =
+  (<G>() => G extends Request ? 1 : 0) extends (<G>() => G extends DefaultRequest ? 1 : 0)
+    ? AnyServerRouteMethod
+    : unknown extends T ? 'get' : AnyServerRouteMethod
 
 /**
  * A `fetch` implementation whose responses are typed from the routes the server serves.
@@ -312,29 +369,29 @@ export type AcceptedDeclaredMethod<Schema, Request, Method extends AnyServerRout
  * and returned from `useRequestFetch()`, both of which need a type with no schema parameter.
  */
 export interface TypedFetch<DefaultT = unknown, DefaultB extends string = ''> {
-  <T = DefaultT, R extends TypedFetchRequest = TypedFetchRequest, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod, const B extends string = '', _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
+  <T = DefaultT, R extends TypedFetchRequest = TypedFetchRequest, M extends AnyServerRouteMethod = DefaultFetchMethod<T, R, TypedFetchRequest>, const B extends string = FallbackBaseURL<R, TypedFetchRequest>, _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
     request: R,
     opts?: TypedFetchOptions<_R, M, B>,
     ...unmatched: UnmatchedRouteArgs<_R, M>
   ): Promise<TypedServerResponse<_R, T, M>>
-  <T = DefaultT, R extends AnyFetchPath = AnyFetchPath, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod, const B extends string = '', _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
+  <T = DefaultT, R extends AnyFetchRequest = AnyFetchRequest, M extends AnyServerRouteMethod = DefaultFetchMethod<T, R, AnyFetchRequest>, const B extends string = FallbackBaseURL<R, AnyFetchRequest>, _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
     request: R & ValidTypedFetchPath<_R, M>,
     opts?: TypedFetchOptions<_R, M, B>,
   ): Promise<TypedServerResponse<_R, T, M>>
 
   raw: {
-    <T = DefaultT, R extends TypedFetchRequest = TypedFetchRequest, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod, const B extends string = '', _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
+    <T = DefaultT, R extends TypedFetchRequest = TypedFetchRequest, M extends AnyServerRouteMethod = DefaultFetchMethod<T, R, TypedFetchRequest>, const B extends string = FallbackBaseURL<R, TypedFetchRequest>, _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
       request: R,
       opts?: TypedFetchOptions<_R, M, B>,
       ...unmatched: UnmatchedRouteArgs<_R, M>
     ): Promise<FetchResponse<TypedServerResponse<_R, T, M>>>
-    <T = DefaultT, R extends AnyFetchPath = AnyFetchPath, M extends AnyServerRouteMethod = unknown extends T ? 'get' : AnyServerRouteMethod, const B extends string = '', _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
+    <T = DefaultT, R extends AnyFetchRequest = AnyFetchRequest, M extends AnyServerRouteMethod = DefaultFetchMethod<T, R, AnyFetchRequest>, const B extends string = FallbackBaseURL<R, AnyFetchRequest>, _R = ResolvedFetchPath<R, EffectiveBaseURL<DefaultB, B>>>(
       request: R & ValidTypedFetchPath<_R, M>,
       opts?: TypedFetchOptions<_R, M, B>,
     ): Promise<FetchResponse<TypedServerResponse<_R, T, M>>>
   }
 
-  create: <T = DefaultT, const B extends string = DefaultB>(defaults: Omit<FetchOptions, 'baseURL'> & { baseURL?: B }) => TypedFetch<T, EffectiveBaseURL<DefaultB, B>>
+  create: <T = DefaultT, const B extends string = unknown extends T ? DefaultB : string>(defaults: Omit<OFetchOptions, 'baseURL'> & { baseURL?: B }) => TypedFetch<T, EffectiveBaseURL<DefaultB, B>>
 }
 
 export type { AnyHTTPMethod }

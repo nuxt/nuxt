@@ -25,21 +25,19 @@ Call `onPrehydrate` in the setup function of a Vue component (e.g., in `<script 
 ## Type
 
 ```ts [Signature]
-export function onPrehydrate (callback: (el: HTMLElement) => void): void
-export function onPrehydrate (callback: string | ((el: HTMLElement) => void), key?: string): undefined | string
+export function onPrehydrate (callback: (el: HTMLElement) => void): string | undefined
 ```
 
 ## Parameters
 
 | Parameter | Type | Required | Description |
 | ---- | --- | --- | --- |
-| `callback` | `((el: HTMLElement) => void) \| string` | Yes | A function (or stringified function) to run before Nuxt hydrates. It will be stringified and inlined in the HTML. Should not have external dependencies or reference variables outside the callback. Runs before Nuxt runtime initializes, so it should not rely on Nuxt or Vue context. |
-| `key` | `string` | No | (Advanced) A unique key to identify the prehydrate script, useful for advanced scenarios like multiple root nodes. |
+| `callback` | `(el: HTMLElement) => void` | Yes | A function to run before Nuxt hydrates. It will be stringified and inlined in the HTML. Should not have external dependencies or reference variables outside the callback. Runs before Nuxt runtime initializes, so it should not rely on Nuxt or Vue context. |
 
 ## Return Values
 
-- Returns `undefined` when called with only a callback function.
-- Returns a string (the prehydrate id) when called with a callback and a key, which can be used to set or access the `data-prehydrate-id` attribute for advanced use cases.
+- Returns `undefined` when the callback does not accept an `el` parameter.
+- Returns a string (the prehydrate id) when the callback accepts an `el` parameter, which can be used to set or access the `data-prehydrate-id` attribute for advanced use cases.
 
 ## Example
 

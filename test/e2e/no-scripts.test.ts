@@ -1,16 +1,9 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import { pageStyles } from './no-scripts-page-styles'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/no-scripts', import.meta.url))
+import { expect, fixtureDir, test } from './test-utils'
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('no-scripts'),
   },
 })
 
@@ -62,6 +55,7 @@ test.describe('noScripts route rules', () => {
     // that could reach non-idempotent server routes
     expect(html).toContain('"href_matches":"/report"')
     expect(html).toContain('"href_matches":"/products/:id"')
+    expect(html).toContain('"href_matches":"/aliased-alt"')
     expect(html).not.toContain('"href_matches":"/*"')
     expect(html).toContain('@view-transition{navigation:auto}')
   })

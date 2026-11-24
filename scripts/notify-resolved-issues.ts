@@ -1,5 +1,6 @@
 import process from 'node:process'
 import { execFileSync } from 'node:child_process'
+import { setTimeout as delay } from 'node:timers/promises'
 import { $fetch } from 'ofetch'
 import { consola } from 'consola'
 
@@ -18,10 +19,6 @@ interface Issue {
   url: string
   repository: { nameWithOwner: string }
   prs: Set<number>
-}
-
-function delay (ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 function git (...args: string[]) {

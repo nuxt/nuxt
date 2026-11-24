@@ -1,4 +1,5 @@
 import { extname } from 'pathe'
+import type { Plugin as VitePlugin } from 'vite'
 
 /**
  * Split a bundler module ID into its pathname and search (query) parts.
@@ -22,7 +23,8 @@ export function combineRE (patterns: RegExp[]): RegExp {
   return new RegExp(patterns.map(re => `(?:${re.source})`).join('|'))
 }
 
-const VUE_FILE_RE = /\.vue$/
+/** Matches the module of a whole `.vue` file, not its SFC block or macro requests. */
+export const VUE_FILE_RE = /\.vue$/
 const MACRO_QUERY_RE = /[?&]macro=/
 const EXACT_MACRO_QUERY_RE = /\?macro=true$/
 const VUE_QUERY_RE = /[?&]vue(?:&|$)/
@@ -67,6 +69,28 @@ export function isJS (id: string) {
   // JavaScript files
   const { pathname } = parseModuleId(id)
   return JS_RE.test(pathname)
+}
+
+type VitestCacheKeyGenerator = (context: { id: string }) => string | undefined
+
+interface VitestCacheKeyContext {
+  defineCacheKeyGenerator?: (generator: VitestCacheKeyGenerator) => void
+  // TODO: remove when dropping support for vitest v4
+  experimental_defineCacheKeyGenerator?: (generator: VitestCacheKeyGenerator) => void
+}
+
+/**
+ * Creates the Vite plugin hook that adds the string returned by `generator` to the key of each
+ * module in Vitest's persisted module cache.
+ */
+export function vitestCacheKey (generator: VitestCacheKeyGenerator) {
+  // `configureVitest` is only part of Vite's plugin type in programs that load Vitest's types
+  return {
+    configureVitest (context: VitestCacheKeyContext) {
+      const defineCacheKeyGenerator = context.defineCacheKeyGenerator ?? context.experimental_defineCacheKeyGenerator
+      defineCacheKeyGenerator?.(generator)
+    },
+  } as Partial<VitePlugin>
 }
 
 export function getLoader (id: string): 'vue' | 'ts' | 'tsx' | null {

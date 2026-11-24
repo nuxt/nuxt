@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div data-testid="default-layout">
     Default Layout:
     <slot />
   </div>

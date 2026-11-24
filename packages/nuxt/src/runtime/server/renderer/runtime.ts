@@ -1,6 +1,7 @@
 import type { NuxtRequestEvent, RequestEvent } from '@nuxt/schema'
 import type { DevErrorObserveOptions, DevErrorReport } from '../dev-error'
-import type { NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderHTMLContext, NuxtRenderRouteContext, NuxtSSRContext } from '#app/types'
+import type { NuxtSSRContext } from '#app/types'
+import type { NuxtServerRendererHooks, ServerHookable } from '../../../server/hooks'
 
 /**
  * The request event the renderer reads. A server runtime whose own event has another
@@ -41,13 +42,7 @@ export interface RendererRouteRules {
 }
 
 /** Hooks the renderer calls while rendering a route. */
-export interface RendererHooks {
-  callHook(name: 'render:route', context: NuxtRenderRouteContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
-  callHook(name: 'render:html', context: NuxtRenderHTMLContext, extra: { event: NuxtRequestEvent, streaming?: boolean }): void | Promise<void>
-  callHook(name: 'render:html:chunk', context: NuxtRenderChunkContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
-  callHook(name: 'render:html:close', context: NuxtRenderCloseContext, extra: { event: NuxtRequestEvent }): void | Promise<void>
-  callHook(name: 'render:island', response: NuxtIslandResponse, extra: { event: NuxtRequestEvent, islandContext: NuxtIslandContext }): void | Promise<void>
-}
+export type RendererHooks = Pick<ServerHookable<NuxtServerRendererHooks>, 'callHook'>
 
 /** Storage for the payloads rendered alongside a prerendered route. */
 export interface PayloadCache {
@@ -70,6 +65,11 @@ export interface NuxtRendererOptions {
   hooks: () => RendererHooks
   /** Response constructor, so a runtime can provide a faster implementation than the platform's `Response`. */
   createResponse: (body: BodyInit | null, init?: ResponseInit) => Response
+  /**
+   * Response constructor for a rendered document given as ordered chunks, so a runtime can
+   * encode them without concatenating. Without it the document is joined and passed to `createResponse`.
+   */
+  createDocumentResponse?: (chunks: string[], init?: ResponseInit) => Response
   /** Error carrying an HTTP status, thrown for requests the renderer refuses. */
   createError: (init: { status: number, statusText?: string, data?: unknown, headers?: Record<string, string> }) => Error
   /** Send `103 Early Hints`, when the runtime supports them. */
@@ -89,12 +89,17 @@ export interface NuxtRendererOptions {
    * or when the builder has no channel open.
    */
   onDevError?: (error: unknown, event: RendererEvent, options?: DevErrorObserveOptions) => Promise<DevErrorReport | undefined>
+  /**
+   * Dev-only: render the badge added to the head of every page, which shows the live error channel's
+   * errors and warnings. Its scripts carry `nonce`, the CSP nonce of the page, when it has one.
+   */
+  renderDevBadge?: (event: RendererEvent, nonce?: string) => Promise<string | undefined>
   /** Prerender-only capabilities, absent from a runtime build. */
   prerender?: {
     payloadCache: PayloadCache
     sharedDataCache?: NuxtSSRContext['~sharedPrerenderCache']
     /** Wrap a render so the runtime can track the URLs in flight. */
-    wrapRender?: <T>(event: RendererEvent, render: () => Promise<T>) => Promise<T>
+    wrapRender?: (event: RendererEvent, render: () => Promise<Response>) => Promise<Response>
   }
 }
 
@@ -109,6 +114,8 @@ export interface NuxtRequestState {
   '~devClientCss'?: string[]
   /** Dev-only: serialized cause of the error being rendered. */
   '~error-cause'?: unknown
+  /** Headers the failed render had set, for the server runtime to send with its error response. */
+  '~response-headers'?: Headers
 }
 
 export function getRequestState (event: RendererEvent): NuxtRequestState | undefined {

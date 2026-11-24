@@ -7,14 +7,25 @@ import type { DevErrorReport } from 'nuxt/internal/dev-error'
 import type { SerializedErrorCause } from '#app/types'
 import { serverFetch } from 'nitro'
 
-import type { SSRErrorInput } from 'nuxt/internal/renderer/error'
-import { SSR_ERROR_PARAM, appendVary, encodeSSRError, isJsonRequest } from 'nuxt/internal/renderer/error'
+import { appendVary, isJsonRequest } from 'nuxt/internal/renderer/error'
+import { NUXT_ERROR_SIGNATURE, errorPageQuery, toJSONErrorBody } from '#internal/nuxt/host'
+import type { SSRErrorInput } from '../host/nuxt4'
+import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
+import { arrivalRequest } from '../utils/arrival-request'
+import { errorCacheControl, ruleCacheControl } from '../utils/cache-control'
 import { toLegacyError } from '../compat/error-shape'
-import { legacyCompat } from '#nuxt-compat/flags'
+import { legacyCompat, legacyResponseHeaders } from '#nuxt-compat/flags'
 
-export default <NitroErrorHandler> async function errorhandler (_error, event, { defaultHandler }) {
+export default <NitroErrorHandler> async function errorhandler (error, event, options) {
+  const response = await renderError(error, event, options)
+  // a cacheable `cache-control`, such as that of a route rule or a public asset directory, is for what it serves
+  response.headers.set('cache-control', new Headers(error.headers).get('cache-control') || errorCacheControl(response.headers.get('cache-control') ?? ruleCacheControl(event as H3Event)))
+  return response
+}
+
+async function renderError (...[_error, event, { defaultHandler }]: Parameters<NitroErrorHandler>): Promise<Response> {
   // recovering an h3 v1 error by shape is only correct where v2 code exists: h3's scrubbing
   // of a foreign error is what stops a rethrown upstream payload from choosing this app's
   // status. The flag is baked in at build time, so this branch is not emitted otherwise.
@@ -43,16 +54,30 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
   const defaultRes = await defaultHandler(error, event, { json: true, silent: import.meta.dev && !!devError })
   // a cached module evaluation rethrows the same error, so it must still parse as a stack
   stacks?.restore()
+  // Nitro responds to an unhandled error with a 500; a thrown value wrapped by Nuxt keeps its status
+  if (error.unhandled && NUXT_ERROR_SIGNATURE in error && error.status >= 400 && error.status <= 599) {
+    defaultRes.status = error.status
+    if (defaultRes.body && typeof defaultRes.body === 'object') {
+      defaultRes.body.status = error.status
+    }
+  }
 
   // return Nitro response + our headers for redirects and JSON responses
   const status = error.status || 500
   const headers = new Headers(error.headers)
-  appendVary(headers, 'accept, sec-fetch-mode')
+  const setCookies = new Set(headers.getSetCookie())
+  const responseHeaders = (event as H3Event).context.nuxt?.['~response-headers']
+  if (responseHeaders) {
+    mergeHeaders(headers, responseHeaders, setCookies)
+  }
+  if (!NUXT_INLINE_ERROR_RENDERING) {
+    appendVary(headers, 'accept, sec-fetch-mode')
+  }
   if (import.meta.prerender && 'context' in event) {
     applyPrerenderHints(event as H3Event, headers)
   }
-  if (isJsonRequest(event.req as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
-    const setCookies = new Set(headers.getSetCookie())
+  // with inline error rendering, page errors never reach this handler
+  if (NUXT_INLINE_ERROR_RENDERING || isJsonRequest(arrivalRequest(event as H3Event) as Request, new FastURL(event.req.url).pathname) || (status === 404 && defaultRes.status === 302)) {
     const headerEntries = [
       new Headers(defaultRes.headers),
       ...('res' in event ? [(event.res as Response).headers.entries()] : []),
@@ -60,8 +85,14 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
     for (const entries of headerEntries) {
       mergeHeaders(headers, entries, setCookies)
     }
+    if (legacyResponseHeaders) {
+      for (const [name, value] of LEGACY_ERROR_HEADERS) {
+        headers.set(name, value)
+      }
+    }
 
-    return new Response(typeof defaultRes.body === 'string' ? defaultRes.body : JSON.stringify(defaultRes.body, null, 2), {
+    const body = legacyCompat ? toJSONErrorBody(defaultRes.body) : defaultRes.body
+    return new Response(typeof body === 'string' ? body : JSON.stringify(body, null, 2), {
       headers,
       status: defaultRes.status,
       statusText: defaultRes.statusText,
@@ -83,7 +114,10 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
 
   // Merge defaultRes headers, skipping content-type (would be application/json)
   // and content-security-policy (would disable JS execution in the error page)
-  mergeHeaders(headers, new Headers(defaultRes.headers), new Set(), IGNORED_ERROR_HEADERS)
+  mergeHeaders(headers, new Headers(defaultRes.headers), setCookies, IGNORED_ERROR_HEADERS)
+  if (legacyResponseHeaders) {
+    mergeHeaders(headers, LEGACY_ERROR_HEADERS, setCookies, IGNORED_ERROR_HEADERS)
+  }
 
   // Skip SSR error rendering if we're already inside one, to avoid recursion.
   if (!isRenderingError) {
@@ -94,7 +128,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery(withBaseURL('/__nuxt_error'), { [SSR_ERROR_PARAM]: encodeSSRError(errorObject) }),
+    withQuery(withBaseURL('/__nuxt_error'), errorPageQuery(errorObject, errorCause)),
     {
       headers: event.req.headers,
       redirect: 'manual',
@@ -151,8 +185,7 @@ export default <NitroErrorHandler> async function errorhandler (_error, event, {
     }
   }
 
-  const setCookies = new Set(headers.getSetCookie())
-  mergeHeaders(headers, res.headers, setCookies, INTERNAL_HEADERS)
+  mergeHeaders(headers, res.headers, setCookies, IGNORED_PAGE_HEADERS)
   if ('res' in event) {
     mergeHeaders(headers, (event as H3Event).res.headers, setCookies)
   }
@@ -192,7 +225,16 @@ const THROWN_VALUE = Symbol.for('nuxt:dev:thrown')
 
 /** Set when the app's own error page could not render. */
 const ERROR_PAGE_HEADER = 'x-nuxt-error-page'
-const INTERNAL_HEADERS = new Set([ERROR_PAGE_HEADER])
+// Headers of the rendered error page that should not be forwarded, as its body is rebuilt
+const IGNORED_PAGE_HEADERS = new Set(['content-length', ERROR_PAGE_HEADER])
+
+/** The headers Nitro v2 sent with an error response. */
+const LEGACY_ERROR_HEADERS: [string, string][] = [
+  ['x-content-type-options', 'nosniff'],
+  ['x-frame-options', 'DENY'],
+  ['referrer-policy', 'no-referrer'],
+  ['content-security-policy', 'script-src \'none\'; frame-ancestors \'none\';'],
+]
 
 // Headers that should not be forwarded from the default handler or SSR render to the error page
 const IGNORED_ERROR_HEADERS = new Set(['content-type', 'content-security-policy', ERROR_PAGE_HEADER])

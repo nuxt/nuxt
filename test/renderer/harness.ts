@@ -24,10 +24,10 @@ export const options: NuxtRendererOptions = {
   createError: init => Object.assign(new Error(init.statusText), init, { name: 'HTTPError' }),
 }
 
-export function createEvent (path: string): RendererEvent {
+export function createEvent (path: string, init?: RequestInit): RendererEvent {
   const url = new URL(path, 'http://localhost')
   return {
-    req: new Request(url),
+    req: new Request(url, init),
     url,
     res: { headers: new Headers() },
     context: {},

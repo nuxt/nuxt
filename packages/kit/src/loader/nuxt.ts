@@ -22,7 +22,6 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   opts.cwd = resolve(opts.cwd || (opts as any).rootDir /* backwards compat */ || '.')
   opts.overrides ||= (opts as any).config as NuxtConfig /* backwards compat */ || {}
 
-  // Apply dev as config override
   opts.overrides.dev = !!opts.dev
 
   const resolvedPath = ['nuxt-nightly', 'nuxt'].reduce((resolvedPath, pkg) => {
@@ -31,7 +30,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }, '')
 
   if (!resolvedPath) {
-    throw kitDiagnostics.NUXT_B8006({ cwd: opts.cwd!, installCommand: await getAddDependencyCommand('nuxt', opts.cwd!) })
+    throw kitDiagnostics.NUXT_B8006({ cwd: opts.cwd!, installCommand: await getAddDependencyCommand('nuxt', opts.cwd!) }, { method: 'error' })
   }
   const { loadNuxt } = await import(pathToFileURL(resolvedPath).href).then(r => interopDefault(r)) as typeof import('nuxt')
   const nuxt = await loadNuxt(opts)

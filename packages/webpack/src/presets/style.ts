@@ -24,7 +24,6 @@ function minimizer (ctx: WebpackConfigContext) {
 function extractCSS (ctx: WebpackConfigContext) {
   const config = ctx.userConfig.extractCSS
   if (!config) { return }
-  // CSS extraction
   const filename = fileName(ctx, 'css')
   ctx.config.plugins!.push(new MiniCssExtractPlugin({
     filename,
@@ -34,33 +33,27 @@ function extractCSS (ctx: WebpackConfigContext) {
 }
 
 async function loaders (ctx: WebpackConfigContext) {
-  // CSS
-  ctx.config.module!.rules!.push(await createdStyleRule('css', /\.css$/i, null, ctx))
-
-  // PostCSS
-  ctx.config.module!.rules!.push(await createdStyleRule('postcss', /\.p(ost)?css$/i, null, ctx))
-
-  // Less
-  const lessLoader = { loader: 'less-loader', options: ctx.userConfig.loaders.less }
-  ctx.config.module!.rules!.push(await createdStyleRule('less', /\.less$/i, lessLoader, ctx))
-
-  // Sass (TODO: optional dependency)
-  const sassLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.sass }
-  ctx.config.module!.rules!.push(await createdStyleRule('sass', /\.sass$/i, sassLoader, ctx))
-
-  const scssLoader = { loader: 'sass-loader', options: ctx.userConfig.loaders.scss }
-  ctx.config.module!.rules!.push(await createdStyleRule('scss', /\.scss$/i, scssLoader, ctx))
-
-  // Stylus
-  const stylusLoader = { loader: 'stylus-loader', options: ctx.userConfig.loaders.stylus }
-  ctx.config.module!.rules!.push(await createdStyleRule('stylus', /\.styl(us)?$/i, stylusLoader, ctx))
+  const { loaders } = ctx.userConfig
+  const rules = [
+    [/\.css$/i],
+    [/\.p(ost)?css$/i],
+    [/\.less$/i, { loader: 'less-loader', options: loaders.less }],
+    [/\.sass$/i, { loader: 'sass-loader', options: loaders.sass }],
+    [/\.scss$/i, { loader: 'sass-loader', options: loaders.scss }],
+    [/\.styl(us)?$/i, { loader: 'stylus-loader', options: loaders.stylus }],
+  ] as const
+  for (const [test, processorLoader] of rules) {
+    ctx.config.module!.rules!.push(await createStyleRule(test, processorLoader, ctx))
+  }
 }
 
-async function createdStyleRule (lang: string, test: RegExp, processorLoader: any, ctx: WebpackConfigContext) {
+interface Loader { loader: string, options?: any }
+
+async function createStyleRule (test: RegExp, processorLoader: Loader | undefined, ctx: WebpackConfigContext) {
   const styleLoaders = [
     await createPostcssLoadersRule(ctx),
     processorLoader,
-  ].filter(Boolean)
+  ].filter((loader): loader is Loader => !!loader)
 
   ctx.userConfig.loaders.css.importLoaders =
     ctx.userConfig.loaders.cssModules.importLoaders =
@@ -88,44 +81,22 @@ async function createdStyleRule (lang: string, test: RegExp, processorLoader: an
 function createCssLoadersRule (ctx: WebpackConfigContext, cssLoaderOptions: any) {
   const cssLoader = { loader: 'css-loader', options: cssLoaderOptions }
 
-  if (ctx.userConfig.extractCSS) {
-    if (ctx.isServer) {
-      // https://webpack.js.org/loaders/css-loader/#exportonlylocals
-      if (cssLoader.options.modules) {
-        cssLoader.options.modules.exportOnlyLocals ??= true
-      }
-      return [cssLoader]
-    }
-
-    return [
-      {
-        loader: MiniCssExtractPlugin.loader,
-      },
-      cssLoader,
-    ]
+  if (!ctx.userConfig.extractCSS) {
+    return [cssLoader]
   }
 
-  return [
-    // https://github.com/vuejs/vue-style-loader/issues/56
-    // {
-    //   loader: 'vue-style-loader',
-    //   options: options.webpack.loaders.vueStyle
-    // },
-    cssLoader,
-  ]
+  if (ctx.isServer) {
+    // https://webpack.js.org/loaders/css-loader/#exportonlylocals
+    if (cssLoader.options.modules) {
+      cssLoader.options.modules.exportOnlyLocals ??= true
+    }
+    return [cssLoader]
+  }
+
+  return [{ loader: MiniCssExtractPlugin.loader }, cssLoader]
 }
 
 async function createPostcssLoadersRule (ctx: WebpackConfigContext) {
-  if (!ctx.options.postcss) { return }
-
   const config = await getPostcssConfig(ctx.nuxt)
-
-  if (!config) {
-    return
-  }
-
-  return {
-    loader: 'postcss-loader',
-    options: config,
-  }
+  return config ? { loader: 'postcss-loader', options: config } : undefined
 }

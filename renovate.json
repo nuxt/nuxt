@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>nuxt/renovate-config-nuxt",
+    "github>nuxt/renovate-config-nuxt:core",
     ":pinDevDependencies",
     ":widenPeerDependencies"
   ],
@@ -15,57 +15,15 @@
   "minimumReleaseAge": "1 day",
   "packageRules": [
     {
-      "groupName": "webpack",
-      "matchPackageNames": [
-        "/webpack/",
-        "/-loader/"
-      ]
-    },
-    {
-      "groupName": "vitest",
-      "matchPackageNames": [
-        "vitest",
-        "/^@vitest//"
-      ]
-    },
-    {
-      "matchBaseBranches": [
-        "main",
-        "4.x"
-      ],
-      "ignoreDeps": [
-        "nuxt",
-        "nuxt3",
-        "@nuxt/kit"
-      ]
-    },
-    {
-      "matchBaseBranches": [
-        "4.x"
-      ],
-      "matchUpdateTypes": [
-        "patch",
-        "minor",
-        "pin",
-        "digest",
-        "lockFileMaintenance"
-      ],
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-non-major",
-      "matchPackageNames": [
-        "*"
-      ]
-    },
-    {
       "groupName": "vite and rolldown",
       "groupSlug": "rolldown",
       "matchPackageNames": [
         "vite",
         "rolldown",
         "rolldown-string",
-        "obuild",
         "tsdown",
         "oxc-parser",
+        "oxc-transform",
         "oxc-walker",
         "@oxc-project/types"
       ],
@@ -79,16 +37,43 @@
         "nitro",
         "h3",
         "ofetch",
+        "rou3",
         "srvx",
         "unenv",
         "unstorage"
       ]
     },
     {
-      "matchPackageNames": [
-        "@nuxt/**"
+      "description": "The `nitropack` catalog on 4.x keeps rou3 0.9, the pattern syntax Nuxt uses to match Nitro 2 route rules. rou3 0.10 and later follow URLPattern syntax.",
+      "matchBaseBranches": [
+        "4.x"
       ],
-      "minimumReleaseAge": "0"
+      "matchDepTypes": [
+        "pnpm.catalog.nitropack"
+      ],
+      "matchPackageNames": [
+        "rou3"
+      ],
+      "allowedVersions": "<0.10.0"
+    },
+    {
+      "description": "CI pins Node.js to the minimum version in `engines`, so it is bumped by hand.",
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchDepNames": [
+        "node"
+      ],
+      "enabled": false
+    },
+    {
+      "matchPackageNames": [
+        "@types/node"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
     }
   ],
   "vulnerabilityAlerts": {
