@@ -442,6 +442,7 @@ describe('addon extension objects', () => {
   })
 })
 
+// https://github.com/nuxt/nuxt/issues/37249
 describe('addon promise-method wrappers on Safari 26', () => {
   function emulateSafari26 () {
     const original = Promise.resolve
