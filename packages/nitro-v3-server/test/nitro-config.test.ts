@@ -584,6 +584,15 @@ describe('nitro config', () => {
     })
   }, 60_000)
 
+  it('lets the previous dev worker finish its requests for up to 10s on reload', async () => {
+    await withNitro({}, (nitro) => {
+      expect(nitro.options.devServer.drain).toEqual({ timeout: 10_000 })
+    })
+    await withNitro({ nitro: { devServer: { drain: false } } }, (nitro) => {
+      expect(nitro.options.devServer.drain).toBe(false)
+    })
+  })
+
   it('describes the deploy command of the preset, to run from the project root', async () => {
     await withNitro({ dev: false, nitro: { commands: { deploy: 'npx wrangler --cwd ./ pages deploy' }, output: { dir: 'my output' } } }, (_nitro, _nitroConfig, nuxt) => {
       expect(nuxt.serverBuild.deploy?.command?.()).toBe('npx wrangler --cwd "my output/" pages deploy')
