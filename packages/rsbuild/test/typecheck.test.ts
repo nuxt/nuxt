@@ -103,8 +103,9 @@ describe('resolveTypeCheckPlugin', () => {
 })
 
 describe('rsbuild type check environment', () => {
-  it('hands the project tsconfig to the type checker of each environment', async () => {
-    const nuxt = await loadNuxt({ cwd: fixtureDir, dev: false, ready: false, overrides: { builder: 'rsbuild', typescript: { typeCheck: true } } })
+  it('hands the resolved tsconfig to the type checker of each environment', async () => {
+    const rootDir = project(['.nuxt/tsconfig.app.json'])
+    const nuxt = await loadNuxt({ cwd: fixtureDir, dev: false, ready: false, overrides: { rootDir, builder: 'rsbuild', typescript: { typeCheck: true } } })
 
     try {
       const config = await resolveRsbuildConfig(nuxt)
@@ -119,9 +120,9 @@ describe('rsbuild type check environment', () => {
       }
       config.plugins = [...config.plugins ?? [], captureTsConfig]
 
-      await (await createRsbuild({ cwd: fixtureDir, config })).initConfigs()
+      await (await createRsbuild({ cwd: rootDir, config })).initConfigs()
 
-      expect(tsconfigPaths).toEqual({ client: join(fixtureDir, 'tsconfig.json'), ssr: join(fixtureDir, 'tsconfig.json') })
+      expect(tsconfigPaths).toEqual({ client: join(rootDir, '.nuxt/tsconfig.app.json'), ssr: join(rootDir, '.nuxt/tsconfig.app.json') })
     } finally {
       await nuxt.close()
     }
