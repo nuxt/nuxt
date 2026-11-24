@@ -372,11 +372,14 @@ describe('v2 event bridge', () => {
     const shared = new Set<Record<string, unknown>>()
     const app = new H3({ onRequest: event => void prepareLegacyEvent(event) })
     app.use((event) => { shared.add((event.context as any).matchedRoute) })
-    app.get('/api/proxy/**:path', defineLegacyEventHandler(event => (event.context as any).matchedRoute.path))
+    app.get('/api/proxy/**:path', defineLegacyEventHandler((event) => {
+      const route = (event.context as any).matchedRoute
+      return `${route.path} ${{ ...route }.path}`
+    }))
     app.get('/api/native', event => String((event.context as any).matchedRoute.path))
 
-    expect(await (await app.request('/api/proxy/a/b')).text()).toBe('/api/proxy/**:path')
-    expect(await (await app.request('/api/proxy/c')).text()).toBe('/api/proxy/**:path')
+    expect(await (await app.request('/api/proxy/a/b')).text()).toBe('/api/proxy/**:path /api/proxy/**:path')
+    expect(await (await app.request('/api/proxy/c')).text()).toBe('/api/proxy/**:path /api/proxy/**:path')
     expect(await (await app.request('/api/native')).text()).toBe('undefined')
     for (const data of shared) {
       expect(data.path).toBeUndefined()

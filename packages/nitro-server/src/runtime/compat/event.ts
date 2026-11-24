@@ -13,6 +13,10 @@ const legacyRoutes = new WeakMap<object, Record<string, any>>()
 const legacyRouteHandler: ProxyHandler<Record<string, any>> = {
   get: (target, key) => key === 'path' ? target.route : Reflect.get(target, key),
   has: (target, key) => key === 'path' || Reflect.has(target, key),
+  ownKeys: target => [...Reflect.ownKeys(target), 'path'],
+  getOwnPropertyDescriptor: (target, key) => key === 'path'
+    ? { value: target.route, writable: true, enumerable: true, configurable: true }
+    : Reflect.getOwnPropertyDescriptor(target, key),
 }
 
 /**
