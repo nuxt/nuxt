@@ -132,7 +132,6 @@
     "tinyglobby": "catalog:build",
     "ufo": "catalog:app-runtime",
     "ultrahtml": "catalog:build",
-    "uncrypto": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
     "unhead": "catalog:app-runtime",
     "unimport": "catalog:build",
