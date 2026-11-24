@@ -255,7 +255,9 @@ function removeVariableDeclarator (codeAst: ESTree.Program, name: string, magicS
       for (const declarator of node.declarations) {
         const toRemove = findMatchingPatternToRemove(declarator.id, node, name, removedNodes)
         if (toRemove) {
-          magicString.remove(toRemove.start, toRemove.end + 1)
+          // Array destructuring is positional, so a removed element leaves a hole (`[, b]`) instead of taking the following comma.
+          const end = toRemove.type === 'VariableDeclaration' || toRemove.type === 'Property' ? toRemove.end + 1 : toRemove.end
+          magicString.remove(toRemove.start, end)
           removedNodes.add(toRemove)
         }
       }
