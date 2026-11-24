@@ -232,7 +232,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
   }
 
   // the renderer reads the error off the query, as the error page's props
-  const data = (error as { data?: unknown })?.data
+  const data = described.data
   const stack = (error as { stack?: string })?.stack
   const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
     status: String(status),

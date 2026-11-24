@@ -63,6 +63,32 @@ describe('error response headers', () => {
   })
 })
 
+describe('error page', () => {
+  function errorPageInput (error: unknown) {
+    let data: string | null = null
+    const renderer: NuxtRenderer = {
+      fetch: (event) => {
+        if (event.url.pathname === '/__nuxt_error') {
+          data = event.url.searchParams.get('data')
+          return Promise.resolve(new Response('<div id="__nuxt">error</div>', { headers: { 'content-type': 'text/html' } }))
+        }
+        return Promise.reject(error)
+      },
+    }
+    return render(renderer).then(() => data === null ? undefined : JSON.parse(data) as unknown)
+  }
+
+  it('passes the data of an error the app raised', async () => {
+    expect(await errorPageInput(createError({ status: 401, data: { reason: 'expired' } }))).toEqual({ reason: 'expired' })
+  })
+
+  it('does not pass the data of an error the app did not raise', async () => {
+    const error = Object.assign(new Error('[GET] "/api/me": 401 Unauthorized'), { name: 'FetchError', status: 401, data: { token: 'secret' } })
+
+    expect(await errorPageInput(error)).toBeUndefined()
+  })
+})
+
 describe('error response for a JSON client', () => {
   it('answers with the error as JSON, keeping the cookies the failed render set', async () => {
     const error = createError({ status: 401, statusText: 'Unauthorized', data: { reason: 'expired' } })
