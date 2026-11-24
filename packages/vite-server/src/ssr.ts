@@ -97,6 +97,8 @@ function AppServerEnvironmentsPlugin (nuxt: Nuxt): Plugin {
  * output in front of it and listens when it is run as the main module.
  */
 function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender: boolean, routeRules: string): { entry: string, handler: string } {
+  const baseURL = () => JSON.stringify(nuxt.options.app.baseURL || '/')
+
   const { dst: handler } = addTemplate({
     filename: 'vite-server/server-handler.mjs',
     write: true,
@@ -108,8 +110,8 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
       ...prerender ? [`import { createPrerenderOptions } from ${JSON.stringify(resolve(distDir, 'runtime/prerender'))}`] : [],
       '',
       `useRuntimeConfig()`,
-      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig, matchRouteRules${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
-      `export const fetch = createFetchHandler(renderer, matchRouteRules)`,
+      `const renderer = createNuxtRenderer(createRendererOptions(useRuntimeConfig, matchRouteRules, ${baseURL()}${prerender ? `, createPrerenderOptions({ sharedData: ${!!nuxt.options.experimental.sharedPrerenderData} })` : ''}))`,
+      `export const fetch = createFetchHandler(renderer, matchRouteRules, ${baseURL()})`,
       `export default { fetch }`,
     ].join('\n'),
   })
@@ -124,7 +126,7 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
       '',
       `export * from 'nuxt/internal/server-default'`,
       '',
-      `const helpers = createServerHelpers(match, () => Promise.resolve(appFetch), ${JSON.stringify(nuxt.options.app.baseURL || '/')})`,
+      `const helpers = createServerHelpers(match, () => Promise.resolve(appFetch), ${baseURL()})`,
       `export const getRouteRules = helpers.getRouteRules`,
       `export const matchRouteRules = helpers.matchRouteRules`,
       `export const serverFetch = helpers.serverFetch`,
@@ -155,7 +157,7 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
       ...nuxt.options.dev
         ? [`export { setDevErrorContext } from ${JSON.stringify(resolve(distDir, 'runtime/dev-error'))}`, '']
         : [],
-      `const server = import.meta.dev ? undefined : createNodeServer({ fetch, publicDir: new URL('../public/', import.meta.url) })`,
+      `const server = import.meta.dev ? undefined : createNodeServer({ fetch, publicDir: new URL('../public/', import.meta.url), baseURL: ${baseURL()} })`,
       `export default server`,
       '',
       `if (server && import.meta.main) {`,
