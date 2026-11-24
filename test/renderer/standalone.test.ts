@@ -160,6 +160,17 @@ describe('renderer without a server builder', () => {
     expect(html).toContain('rel="preload" as="fetch" crossorigin="anonymous" href="/_payload.json?page=2"')
   })
 
+  it('renders a payload only for a `_payload.json` url', async () => {
+    const getRouteRules = () => ({ ssr: true, isr: 60 })
+    const payload = await render('/about/_payload.json', { getRouteRules })
+    expect(payload.response.headers.get('content-type')).toContain('application/json')
+
+    for (const path of ['/about/_payload-json', '/about/_payload/json', '/about/_payloadxjson?page=2']) {
+      const { response } = await render(path, { getRouteRules })
+      expect(response.headers.get('content-type')).toContain('text/html')
+    }
+  })
+
   it('serves the client-only shell for a route the rules opt out of ssr', async () => {
     const { html } = await render('/', { getRouteRules: () => ({ ssr: false }) })
 

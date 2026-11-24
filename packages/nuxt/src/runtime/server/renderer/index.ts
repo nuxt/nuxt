@@ -34,7 +34,7 @@ import { entryFileName } from 'nuxt/internal/entry-chunk'
 export type { NuxtRendererOptions, RendererEvent, RendererHooks, RendererRouteRules, CachedResponse, PayloadCache, NuxtRequestState } from './runtime'
 export { appEvent } from './runtime'
 
-const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
+const PAYLOAD_URL_RE = /^[^?]*\/_payload\.json(?:\?.*)?$/
 
 /**
  * Create a Nuxt SSR renderer, returning a web-standard handler for the requests a Nuxt
