@@ -9,6 +9,12 @@ export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
 const kEvent = Symbol.for('nuxt.compat.event')
 
+const legacyRoutes = new WeakMap<object, Record<string, any>>()
+const legacyRouteHandler: ProxyHandler<Record<string, any>> = {
+  get: (target, key) => key === 'path' ? target.route : Reflect.get(target, key),
+  has: (target, key) => key === 'path' || Reflect.has(target, key),
+}
+
 /**
  * v2 `useEvent`. Requires `experimental.asyncContext`, as it did in nitro v2. Returns the
  * event the compat wrapper prepared where there is one, so response mutations are not lost.
@@ -22,8 +28,8 @@ export function useEvent (): H3EventType {
 /**
  * Bring an h3 v2 event up to the shape v1 server code expects: a populated
  * `event.context.nitro`, the private `event.context._nitro.routeRules` slot nitro v2
- * populated from `getRouteRules(event)`, and an `event.node` whose response forwards header
- * and status writes onto the web response.
+ * populated from `getRouteRules(event)`, `event.context.matchedRoute.path`, and an
+ * `event.node` whose response forwards header and status writes onto the web response.
  */
 export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRulesResolver): H3EventType {
   const context = event.context as Record<string | symbol, any>
@@ -50,6 +56,18 @@ export function prepareLegacyEvent (event: H3EventType, getRouteRules?: RouteRul
       get: () => (slot ||= createLegacyNitroSlot(event, getRouteRules)),
       set: (value: Record<string, any>) => { slot = value },
     })
+  }
+
+  // h3 v2 names the matched pattern `route` where v1 named it `path`
+  const matched = context.matchedRoute
+  if (matched && matched.path === undefined && typeof matched.route === 'string') {
+    // h3 shares the route data across requests, so writing `path` onto it would show it to v3 handlers too
+    let legacy = legacyRoutes.get(matched)
+    if (!legacy) {
+      legacy = new Proxy<Record<string, any>>(matched, legacyRouteHandler)
+      legacyRoutes.set(matched, legacy)
+    }
+    context.matchedRoute = legacy
   }
 
   const node = event.req.runtime?.node
