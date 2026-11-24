@@ -131,22 +131,44 @@ export default defineNuxtModule({
 
     // Watch for schema changes in development mode
     if (nuxt.options.dev) {
-      const onChange = debounce(async () => {
-        schema = await resolveSchema()
-        await writeSchema(schema)
+      let closed = false
+      let pending: Promise<void> = Promise.resolve()
+      const onChange = debounce(() => {
+        if (closed) { return }
+        const run = pending.catch(() => {}).then(async () => {
+          if (closed) { return }
+          schema = await resolveSchema()
+          if (closed) { return }
+          await writeSchema(schema)
+        })
+        pending = run
+        return run
       })
+
+      const closeWatcher = async (stop: () => unknown) => {
+        closed = true
+        onChange.cancel()
+        await stop()
+        await pending.catch(() => {})
+      }
 
       if (nuxt.options.experimental.watcher === 'parcel') {
         try {
           const { subscribe } = await importModule<typeof import('@parcel/watcher')>('@parcel/watcher', {
             url: [nuxt.options.rootDir, ...nuxt.options.modulesDir].map(dir => directoryToURL(dir)),
           })
-          for (const dirs of layerDirs) {
-            const subscription = await subscribe(dirs.root, onChange, {
-              ignore: ['!nuxt.schema.*'],
-            })
-            nuxt.hook('close', () => subscription.unsubscribe())
+          const subscriptions: Array<{ unsubscribe: () => Promise<void> }> = []
+          try {
+            for (const dirs of layerDirs) {
+              subscriptions.push(await subscribe(dirs.root, onChange, {
+                ignore: ['!nuxt.schema.*'],
+              }))
+            }
+          } catch (error) {
+            await Promise.all(subscriptions.map(s => s.unsubscribe()))
+            throw error
           }
+          nuxt.hook('close', () => closeWatcher(() => Promise.all(subscriptions.map(s => s.unsubscribe()))))
           return
         } catch {
           configDiagnostics.NUXT_B5009({ installCommand: await getAddDependencyCommand('@parcel/watcher', nuxt.options.rootDir, { dev: true }) })
@@ -168,7 +190,7 @@ export default defineNuxtModule({
         ignoreInitial: true,
       })
       watcher.on('all', onChange)
-      nuxt.hook('close', () => watcher.close())
+      nuxt.hook('close', () => closeWatcher(() => watcher.close()))
     }
 
     // --- utils ---
