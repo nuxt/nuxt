@@ -288,6 +288,10 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     workspaceDir: nuxt.options.workspaceDir,
     serverDir: nuxt.options.serverDir,
     dev: nuxt.options.dev,
+    devServer: {
+      // long enough for in-flight renders to finish, short enough that open sockets reconnect to new code
+      drain: { timeout: 10_000 },
+    },
     buildDir: nuxt.options.buildDir,
     experimental: {
       asyncContext: nuxt.options.experimental.asyncContext,
