@@ -66,7 +66,6 @@
     "srvx": "catalog:nitro",
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
-    "unctx": "catalog:app-runtime",
     "unenv": "catalog:build",
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
