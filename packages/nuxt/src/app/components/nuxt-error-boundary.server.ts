@@ -20,14 +20,17 @@ interface NuxtErrorBoundaryProps {
   retryOnClient?: boolean
 }
 
+type BoundaryError = Error & Partial<Pick<NuxtError, 'status' | 'statusText' | 'data' | 'cause' | 'fatal'>>
+
 type NuxtErrorBoundaryEmits = {
-  error: (error: Error) => void
+  error: (error: BoundaryError) => void
 }
 
 type NuxtErrorBoundarySlots = SlotsType<{
   default?: () => VNode[]
   error?: (props: {
-    error: Error
+    /** The error that was caught. Errors created with `createError` also carry `status`, `statusText`, `data`, `cause` and `fatal`. */
+    error: BoundaryError
     /** Clears the boundary's error and re-renders the default slot. */
     clearBoundaryError: () => void
     /** @deprecated Use `clearBoundaryError` instead. */
@@ -50,7 +53,7 @@ const NuxtErrorBoundaryServer = defineComponent({
   name: 'NuxtErrorBoundary',
   inheritAttrs: false,
   emits: {
-    error (_error: Error) {
+    error (_error: BoundaryError) {
       return true
     },
   },
