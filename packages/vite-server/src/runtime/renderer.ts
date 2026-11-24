@@ -222,7 +222,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
       message,
       fatal: false,
       url: request.url,
-      data: (error as { data?: unknown })?.data,
+      data: described.data,
       ...(import.meta.dev && { stack: (error as { stack?: string })?.stack }),
     }),
   }), { headers: request.headers }), context)

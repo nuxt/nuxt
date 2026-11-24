@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { createError } from 'nuxt/server'
 import { rethrowWithResponseHeaders } from 'nuxt/internal/renderer/app'
+import { SSR_ERROR_PARAM, decodeSSRError } from 'nuxt/internal/renderer/error'
 
 import { createFetchHandler } from '../src/runtime/renderer.ts'
 import type { NuxtRenderer } from '../src/runtime/renderer.ts'
@@ -68,6 +69,32 @@ describe('error response headers', () => {
     }
 
     expect(await render(renderer)).toMatchObject({ status: 500, cookies: [cleared[0]], contentType: 'text/plain;charset=utf-8' })
+  })
+})
+
+describe('error page', () => {
+  function errorPageInput (error: unknown) {
+    let encoded: string | undefined
+    const renderer: NuxtRenderer = {
+      fetch: (event) => {
+        if (event.url.pathname === '/__nuxt_error') {
+          encoded = event.url.searchParams.get(SSR_ERROR_PARAM) ?? undefined
+          return Promise.resolve(new Response('<div id="__nuxt">error</div>', { headers: { 'content-type': 'text/html' } }))
+        }
+        return Promise.reject(error)
+      },
+    }
+    return render(renderer).then(() => decodeSSRError(encoded))
+  }
+
+  it('passes the data of an error the app raised', async () => {
+    expect((await errorPageInput(createError({ status: 401, data: { reason: 'expired' } })))?.data).toEqual({ reason: 'expired' })
+  })
+
+  it('does not pass the data of an error the app did not raise', async () => {
+    const error = Object.assign(new Error('[GET] "/api/me": 401 Unauthorized'), { name: 'FetchError', status: 401, data: { token: 'secret' } })
+
+    expect((await errorPageInput(error))?.data).toBeUndefined()
   })
 })
 
