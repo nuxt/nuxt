@@ -150,7 +150,8 @@ function attachAddonExtensions (setups: ReadonlyArray<AsyncDataAddonSetup<any>>,
     return result
   }
   const { then: _then, catch: _catch, finally: _finally, ...members } = result
-  const wrapped = WrappedAsyncDataPromise.resolve(result) as unknown as AsyncData<unknown, unknown>
+  // not `.resolve()`: on Safari 26 it returns `result` itself, whose `then`/`catch`/`finally` cannot be redefined
+  const wrapped = new WrappedAsyncDataPromise(resolve => resolve(result)) as unknown as AsyncData<unknown, unknown>
   Object.assign(wrapped, members)
   Object.defineProperties(wrapped, {
     then: { enumerable: true, value: wrapPromiseMethod(Promise.prototype.then.bind(wrapped) as PromiseMethodNext, wrappers.then) },
