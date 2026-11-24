@@ -7,7 +7,7 @@ import { defineEnv } from 'unenv'
 
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
-import { getDevtool, getGlobalCSSCacheGroup, shouldTypeCheck } from '../utils/options.ts'
+import { getDevtool, getGlobalCSSCacheGroup, resolveTypeCheckTsConfig, shouldTypeCheck } from '../utils/options.ts'
 import { nuxt } from '../presets/nuxt.ts'
 import { TsCheckerPlugin, builder, webpack } from '../builder.ts'
 
@@ -108,7 +108,7 @@ function clientOptimization (ctx: WebpackConfigContext) {
   }
 }
 
-function clientPlugins (ctx: WebpackConfigContext) {
+export async function clientPlugins (ctx: WebpackConfigContext) {
   // webpack Bundle Analyzer
   // https://github.com/webpack/webpack-bundle-analyzer
   if (!ctx.isDev && !ctx.nuxt.options.test && ctx.name === 'client' && ctx.userConfig.analyze && (ctx.userConfig.analyze === true || ctx.userConfig.analyze.enabled)) {
@@ -127,6 +127,9 @@ function clientPlugins (ctx: WebpackConfigContext) {
 
   // type checking runs once, in the server build when SSR is enabled
   if (!ctx.nuxt.options.ssr && shouldTypeCheck(ctx.nuxt)) {
-    ctx.config.plugins!.push(new TsCheckerPlugin({ logger }))
+    const tsconfigPath = await resolveTypeCheckTsConfig(ctx.nuxt)
+    if (tsconfigPath) {
+      ctx.config.plugins!.push(new TsCheckerPlugin({ logger, typescript: { configFile: tsconfigPath } }))
+    }
   }
 }
