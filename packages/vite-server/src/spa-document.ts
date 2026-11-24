@@ -55,7 +55,7 @@ export function SpaDocumentPlugins (nuxt: Nuxt): Plugin[] {
         config.resolve.external = []
       },
     },
-    ServerRuntimeModulesPlugin(serverRuntime),
+    ServerRuntimeModulesPlugin(nuxt, serverRuntime),
     {
       name: 'nuxt:vite-server:spa-document',
       applyToEnvironment: environment => environment.name === 'client',

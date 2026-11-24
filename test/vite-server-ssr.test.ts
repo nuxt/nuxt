@@ -69,6 +69,12 @@ describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
     expect(response.status).toBe(404)
     expect(response.headers.get('content-type')).toBe('text/html;charset=utf-8')
   })
+
+  it('reloads a module registered with `addServerTemplate()` when its contents change', async () => {
+    expect(await $fetch<string>('/')).toContain('<meta name="server-template"')
+    expect(await $fetch<string>('/__renderer-plugin/update-template')).toBe('updated')
+    expect(await $fetch<string>('/')).toContain('<meta name="server-template" content="from an updated server template">')
+  })
 })
 
 describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {

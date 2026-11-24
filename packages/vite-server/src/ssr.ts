@@ -5,7 +5,7 @@ import { getServerRuntime, isWithinDir, resolveSpaLoadingTemplate, useServerBuil
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
-import type { Plugin } from 'vite'
+import type { Plugin, ViteDevServer } from 'vite'
 
 import { distDir } from './dirs.ts'
 import { isPrerendering } from './prerender.ts'
@@ -57,7 +57,7 @@ export function setupSSR (nuxt: Nuxt, outputDir: string): { entry: string, handl
   nuxt.options.vite.plugins.push(
     AppServerEnvironmentsPlugin(nuxt),
     ServerEnvironmentPlugin(nuxt, serverRuntime, entry, serverDir, prerender),
-    ServerRuntimeModulesPlugin(serverRuntime),
+    ServerRuntimeModulesPlugin(nuxt, serverRuntime),
     StaticAssetsURLPlugin(nuxt),
   )
 
@@ -277,18 +277,43 @@ function StaticAssetsURLPlugin (nuxt: Nuxt): Plugin {
 }
 
 /**
- * Resolves the modules the renderer imports for the environment that renders.
+ * Resolves the modules of the server runtime for the environment that renders.
  *
  * Every specifier comes from the record, so this plugin never names one: the set is Nuxt's
  * to change. Each body is read when the environment loads it, so a body the renderer
  * derives from the client build is read once the client environment has built.
+ *
+ * In development, a module registered with `addServerTemplate()` is reloaded when the app
+ * templates are regenerated and its contents have changed.
  */
-export function ServerRuntimeModulesPlugin (serverRuntime: NuxtServerRuntime): Plugin {
+export function ServerRuntimeModulesPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime): Plugin {
   const prefix = '\0nuxt-server-runtime:'
+  const loadedTemplates = new Map<string, string>()
+  let server: ViteDevServer | undefined
+
+  if (nuxt.options.dev) {
+    nuxt.hook('app:templatesGenerated', async () => {
+      if (!server) { return }
+      for (const [specifier, loaded] of loadedTemplates) {
+        const code = await serverRuntime.modules[specifier]!.code()
+        if (code === loaded) { continue }
+        loadedTemplates.set(specifier, code)
+        for (const environment of Object.values(server.environments)) {
+          const module = environment.moduleGraph.getModuleById(prefix + specifier)
+          if (module) {
+            await environment.reloadModule(module)
+          }
+        }
+      }
+    })
+  }
 
   return {
     name: 'nuxt:vite-server:server-runtime',
     applyToEnvironment: environment => environment.config.consumer === 'server',
+    configureServer (devServer) {
+      server = devServer
+    },
     resolveId: {
       order: 'pre',
       handler: id => id in serverRuntime.modules ? prefix + id : undefined,
@@ -297,8 +322,14 @@ export function ServerRuntimeModulesPlugin (serverRuntime: NuxtServerRuntime): P
       order: 'pre',
       async handler (id) {
         if (!id.startsWith(prefix)) { return }
-        const module = serverRuntime.modules[id.slice(prefix.length)]
-        return module ? { code: await module.code(), map: null } : undefined
+        const specifier = id.slice(prefix.length)
+        const module = serverRuntime.modules[specifier]
+        if (!module) { return }
+        const code = await module.code()
+        if (nuxt.options.dev && Object.hasOwn(nuxt.options._serverTemplates, specifier)) {
+          loadedTemplates.set(specifier, code)
+        }
+        return { code, map: null }
       },
     },
   }
