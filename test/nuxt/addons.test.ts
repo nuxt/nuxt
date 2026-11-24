@@ -1,8 +1,8 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
-import { computed, toValue } from 'vue'
+import { computed, isRef, toValue } from 'vue'
 import { defineUseAsyncDataAddon, defineUseFetchAddon } from '#app/composables/addons'
 import type { AsyncDataAddonInstance, UseAsyncDataAddonOptions, UseFetchAddonOptions } from '#app/composables/addons'
 import { createUseFetch as _createUseFetch } from '#app/composables/fetch'
@@ -439,5 +439,74 @@ describe('addon extension objects', () => {
     expect(first.marker).toBe(true)
     expect(second.marker).toBe(true)
     expect('then' in second).toBe(false)
+  })
+})
+
+describe('addon promise-method wrappers when `Promise.resolve` on a subclass returns a native promise as-is (Safari 26)', () => {
+  function emulateSafari26 () {
+    const original = Promise.resolve
+    const spy = vi.spyOn(Promise, 'resolve').mockImplementation(function (this: PromiseConstructor, value?: unknown) {
+      if (this !== Promise && value instanceof Promise) { return value }
+      return original.call(this, value)
+    } as typeof Promise.resolve)
+    onTestFinished(() => spy.mockRestore())
+  }
+
+  it('applies `then`, `catch` and `finally` wrappers to useAsyncData', () => {
+    emulateSafari26()
+    const wrappers = { then: vi.fn(), catch: vi.fn(), finally: vi.fn() }
+    const addon = defineUseAsyncDataAddon({ setup: () => () => wrappers })
+
+    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
+    const result = useWrappedAsyncData('addons:safari26-wrappers', () => Promise.resolve('data'))
+    const [onFulfilled, onRejected, onFinally] = [() => {}, () => {}, () => {}]
+    result.then(onFulfilled)
+    result.catch(onRejected)
+    result.finally(onFinally)
+
+    expect(wrappers.then).toHaveBeenCalledWith(expect.any(Function), onFulfilled)
+    expect(wrappers.catch).toHaveBeenCalledWith(expect.any(Function), onRejected)
+    expect(wrappers.finally).toHaveBeenCalledWith(expect.any(Function), onFinally)
+    expect(isRef(result.data)).toBe(true)
+  })
+
+  it('resolves `await` with data when only `catch` and `finally` are wrapped', async () => {
+    emulateSafari26()
+    const addon = defineUseAsyncDataAddon({ setup: () => () => ({ catch: vi.fn(), finally: vi.fn() }) })
+
+    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
+    const { data } = await useWrappedAsyncData('addons:safari26-await', () => Promise.resolve('data'))
+
+    expect(data.value).toBe('data')
+  })
+
+  it('resolves `await` with data through a delegating `then` wrapper', async () => {
+    emulateSafari26()
+    const addon = defineUseAsyncDataAddon({
+      setup: () => () => ({ then: (next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args) }),
+    })
+
+    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
+    const { data } = await useWrappedAsyncData('addons:safari26-await-then', () => Promise.resolve('data'))
+
+    expect(data.value).toBe('data')
+  })
+
+  it('applies `then`, `catch` and `finally` wrappers to useFetch', () => {
+    emulateSafari26()
+    const wrappers = { then: vi.fn(), catch: vi.fn(), finally: vi.fn() }
+    const addon = defineUseFetchAddon({ setup: () => () => wrappers })
+
+    const useWrappedFetch = createUseFetch({ addons: [addon] })
+    const result = useWrappedFetch('/api/addons-test', { key: 'addons:safari26-fetch-wrappers' })
+    const [onFulfilled, onRejected, onFinally] = [() => {}, () => {}, () => {}]
+    result.then(onFulfilled)
+    result.catch(onRejected)
+    result.finally(onFinally)
+
+    expect(wrappers.then).toHaveBeenCalledWith(expect.any(Function), onFulfilled)
+    expect(wrappers.catch).toHaveBeenCalledWith(expect.any(Function), onRejected)
+    expect(wrappers.finally).toHaveBeenCalledWith(expect.any(Function), onFinally)
+    expect(isRef(result.data)).toBe(true)
   })
 })
