@@ -198,6 +198,10 @@ describe('renderer plugins', () => {
     expect((await res.text()).match(/<meta name="renderer-plugin">/g)).toHaveLength(1)
   })
 
+  it.skipIf(!oncePerServer)('should resolve a module registered with `addServerTemplate()`', async () => {
+    expect(await $fetch<string>('/')).toContain('<meta name="server-template" content="from a server template">')
+  })
+
   it.skipIf(!oncePerServer)('should run for a route with an `ssr: false` route rule', async () => {
     const html = await $fetch<string>('/route-rules/spa')
     expect(html).toContain('<div id="__nuxt"></div>')

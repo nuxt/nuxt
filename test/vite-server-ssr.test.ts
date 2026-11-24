@@ -59,6 +59,10 @@ describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
     expect(await $fetch<string>('/')).toContain('<meta name="renderer-document" content="true"></head>')
   })
 
+  it('resolves a module registered with `addServerTemplate()`', async () => {
+    expect(await $fetch<string>('/')).toContain('<meta name="server-template" content="from a server template">')
+  })
+
   it('renders the error page for a request that accepts JSON', async () => {
     const response = await fetch('/not-a-page', { headers: { accept: 'application/json' } })
 
@@ -167,6 +171,10 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
   it('calls `render:document` once every `render:html` hook has run', () => {
     expect(html).toContain('<meta name="renderer-document" content="true"></head>')
+  })
+
+  it('resolves a module registered with `addServerTemplate()`', () => {
+    expect(html).toContain('<meta name="server-template" content="from a server template">')
   })
 
   it('renders a route ruled `noScripts` without scripts', async () => {

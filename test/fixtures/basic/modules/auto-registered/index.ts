@@ -1,4 +1,4 @@
-import { addRendererPlugin, addServerImports, addServerImportsDir, createResolver, defineNuxtModule } from 'nuxt/kit'
+import { addRendererPlugin, addServerImports, addServerImportsDir, addServerTemplate, createResolver, defineNuxtModule } from 'nuxt/kit'
 
 export default defineNuxtModule({
   meta: {
@@ -17,6 +17,11 @@ export default defineNuxtModule({
     }])
 
     addServerImportsDir(resolver.resolve('./runtime/server/utils'))
+
+    addServerTemplate({
+      filename: '#auto-registered/template',
+      getContents: () => `export const mark = 'from a server template'`,
+    })
 
     addRendererPlugin(resolver.resolve('./runtime/renderer-plugin'))
   },

@@ -235,9 +235,10 @@ export interface NuxtServerRuntime {
   /** See {@link SERVER_RUNTIME_VERSION}. */
   version: number
   /**
-   * Modules the renderer imports and the builder must resolve, keyed by specifier. A builder
-   * registers each one however its bundler prefers (a virtual module, an alias, a file it
-   * writes) without knowing what any of them mean.
+   * Modules the builder must resolve, keyed by specifier: those the renderer imports, and
+   * those registered with `addServerTemplate()`. A builder registers each one however its
+   * bundler prefers (a virtual module, an alias, a file it writes) without knowing what any
+   * of them mean.
    */
   modules: Record<string, NuxtServerRuntimeModule>
   /**
@@ -263,8 +264,8 @@ export interface ServerRuntimeOptions extends Omit<RendererConfigOptions, 'overr
 
 /**
  * Everything core provides for a server builder to stand up the SSR renderer with: the
- * modules the renderer imports, the defines it must be compiled with, and the specifier
- * its server entry creates the renderer from.
+ * modules the renderer imports and those registered with `addServerTemplate()`, the defines
+ * it must be compiled with, and the specifier its server entry creates the renderer from.
  *
  * Core owns the set of modules, so a builder that iterates them keeps working when the set
  * changes; {@link SERVER_RUNTIME_VERSION} is what tells it when it cannot.
@@ -293,6 +294,10 @@ export function getServerRuntime (options: ServerRuntimeOptions = {}, nuxt: Nuxt
   modules[DEV_ERROR_SPECIFIER] = { code: () => nuxt.options.dev ? `export * from ${JSON.stringify(resolveNuxtModule(DEV_ERROR_SPECIFIER, nuxt))}` : 'export {}' }
   modules[SERVER_RUNTIME_CONFIG_SPECIFIER] = { code: () => `export { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}` }
   modules[RENDERER_PLUGINS_SPECIFIER] = { code: () => getRendererPlugins(nuxt) }
+
+  for (const [specifier, template] of Object.entries(nuxt.options._serverTemplates || {})) {
+    modules[specifier] = { code: () => typeof template === 'function' ? template() : template }
+  }
 
   return {
     version: SERVER_RUNTIME_VERSION,

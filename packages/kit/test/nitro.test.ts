@@ -36,6 +36,7 @@ function createMockNuxt (nitroVersion?: string) {
       devServerHandlers: [],
       _serverPlugins: [],
       _rendererPlugins: [],
+      _serverTemplates: {},
       extensions: ['.js', '.ts', '.mjs'],
       alias: {},
       build: { transpile: [] },
@@ -646,6 +647,15 @@ describe('addServerImports', () => {
 describe('addServerTemplate', () => {
   it('registers a virtual module for the server build', () => {
     const nuxt = createMockNuxt('3.0.1')
+    const getContents = () => ''
+    runWithNuxtContext(nuxt, () => addServerTemplate({ filename: '#module-template', getContents }))
+    expect(nuxt.options._serverTemplates).toEqual({ '#module-template': getContents })
+    expect(nuxt.options.nitro.virtual).toBeUndefined()
+  })
+
+  it('registers a Nitro virtual module on a host without server templates', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    delete (nuxt.options as { _serverTemplates?: unknown })._serverTemplates
     const getContents = () => ''
     runWithNuxtContext(nuxt, () => addServerTemplate({ filename: '#module-template', getContents }))
     expect(nuxt.options.nitro.virtual).toEqual({ '#module-template': getContents })

@@ -80,6 +80,17 @@
       },
       "ignoreUnresolved": ["#compat-virtual/nitro-dependent"]
     },
+    "test/fixtures/vite-server-ssr": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreUnresolved": ["#renderer-plugin/template"]
+    },
     "test/fixtures/basic": {
       "entry": [
         "**/*.{js,ts,tsx,mjs,mts,vue}!"
@@ -94,7 +105,8 @@
         "@babel/plugin-syntax-jsx",
         "@rsbuild/plugin-pug",
         "nested-dep"
-      ]
+      ],
+      "ignoreUnresolved": ["#auto-registered/template"]
     },
     "test/fixtures/lazy-hydration": {
       "entry": [

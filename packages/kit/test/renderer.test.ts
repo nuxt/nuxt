@@ -180,6 +180,24 @@ describe('getServerRuntime', () => {
     expect(modules['nuxt/internal/renderer-config']!.output).toBeUndefined()
   })
 
+  it('provides the modules registered with `addServerTemplate()`', async () => {
+    const { modules } = getServerRuntime({}, nuxt({
+      buildOutputs: buildOutputs(),
+      _serverTemplates: {
+        '#string': 'export const a = 1',
+        '#sync': () => 'export const b = 2',
+        '#async': () => Promise.resolve('export const c = 3'),
+        'nuxt/internal/styles': 'export default { replaced: true }',
+      },
+    }))
+
+    expect(await modules['#string']!.code()).toBe('export const a = 1')
+    expect(await modules['#sync']!.code()).toBe('export const b = 2')
+    expect(await modules['#async']!.code()).toBe('export const c = 3')
+    expect(modules['#string']!.output).toBeUndefined()
+    expect(await modules['nuxt/internal/styles']!.code()).toBe('export default { replaced: true }')
+  })
+
   it('resolves the renderer config overrides each time the module is read', async () => {
     let template = '""'
     const { modules } = getServerRuntime({ overrides: () => ({ spaTemplate: template }) }, nuxt({ buildOutputs: buildOutputs() }))
