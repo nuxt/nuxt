@@ -142,7 +142,7 @@ describe('treeshake client only in ssr', () => {
     expect(treeshaken).not.toContain('const { ObjectPattern } = await import(\'nuxt.com\')')
     expect(treeshaken).not.toContain('const { ObjectPattern: ObjectPatternDeclaration } = await import(\'nuxt.com\')')
     expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
-    expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
+    expect(treeshaken).toContain('const [, { Dont, }, That] = defineAsyncComponent(async () => {')
 
     // treeshake object that has an assignment pattern
     expect(treeshaken).toContain('const { woooooo, } = defineAsyncComponent(async () => {')
@@ -264,7 +264,7 @@ describe('treeshake client only in ssr with compiler component resolution', () =
     expect(treeshaken).toContain('const NotToBeTreeShaken = defineAsyncComponent(async () => {')
     expect(treeshaken).not.toContain('const { ObjectPattern } = await import(\'nuxt.com\')')
     expect(treeshaken).toContain('const {  ButShouldNotBeTreeShaken } = defineAsyncComponent(async () => {')
-    expect(treeshaken).toContain('const [ { Dont, }, That] = defineAsyncComponent(async () => {')
+    expect(treeshaken).toContain('const [, { Dont, }, That] = defineAsyncComponent(async () => {')
     expect(treeshaken).toContain('import DontRemoveThisSinceItIsUsedInSetup from \'./ComponentWithProps.vue\'')
     expect(treeshaken).not.toContain('ByeBye')
     expect(treeshaken).toContain('NotDotClientComponent')
@@ -272,6 +272,20 @@ describe('treeshake client only in ssr with compiler component resolution', () =
     expect(treeshaken).not.toContain('AreTreeshaken')
     expect(treeshaken).not.toContain('AutoImportedComponent')
     expect(treeshaken).toContain('AutoImportedNotTreeShakenComponent')
+  })
+
+  // https://github.com/nuxt/nuxt/issues/37251
+  it.each(stateToTest.flatMap(state => [
+    { state, pattern: 'last array element', script: 'const [First, Second] = usePair()', template: '<First /><ClientOnly><Second /></ClientOnly>', expected: 'const [First, ] = usePair()' },
+    { state, pattern: 'first array element', script: 'const [First, Second] = usePair()', template: '<ClientOnly><First /></ClientOnly><Second />', expected: 'const [, Second] = usePair()' },
+    { state, pattern: 'object property', script: 'const { First, Second } = usePair()', template: '<ClientOnly><First /></ClientOnly><Second />', expected: 'const {  Second } = usePair()' },
+  ]))('should remove a destructured $pattern without shifting other bindings in $state.name', async ({ state, pattern, script, template, expected }) => {
+    const name = `Destructured${pattern.replaceAll(' ', '')}${state.index}.vue`
+    const source = `<script setup>\n${script}\n</script>\n\n<template>\n  ${template}\n</template>\n`
+    const ssrResult = await SFCCompile(name, source, { ...state.options, template: { compilerOptions: { nodeTransforms: [resolver.nodeTransform] } } }, true)
+    const result = await ((plugin.transform as any).handler as (code: string, id: string) => Promise<{ code: string } | undefined>)(ssrResult, name)
+
+    expect(result?.code).toContain(expected)
   })
 
   it('should leave files without pruned bindings untouched', async () => {
