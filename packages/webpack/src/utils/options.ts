@@ -4,7 +4,7 @@ import { directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, res
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import escapeRegExp from 'escape-string-regexp'
 import { resolveModulePath } from 'exsolve'
-import { basename, dirname, join, normalize } from 'pathe'
+import { dirname, join, normalize } from 'pathe'
 
 /**
  * Compile-time constants of the Nuxt app for the client or server bundle.
@@ -92,13 +92,13 @@ export function shouldTypeCheck (nuxt: Nuxt): boolean {
 
 /** The nearest `tsconfig.json` above `dir`, ignoring those of installed packages. */
 function findProjectTsConfig (dir: string): string | undefined {
-  while (true) {
+  while (!/(?:^|[\\/])node_modules(?:[\\/]|$)/.test(dir)) {
     const tsconfigPath = join(dir, 'tsconfig.json')
     if (existsSync(tsconfigPath)) {
       return tsconfigPath
     }
     const parent = dirname(dir)
-    if (parent === dir || basename(parent) === 'node_modules') {
+    if (parent === dir) {
       return
     }
     dir = parent

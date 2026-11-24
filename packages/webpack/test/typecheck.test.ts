@@ -92,6 +92,13 @@ describe('resolveTypeCheckTsConfig', () => {
     expect(await resolveTypeCheckTsConfig(createContext(rootDir).nuxt)).toBe(join(rootDir, '.nuxt/tsconfig.app.json'))
   })
 
+  it('ignores the tsconfig of a package the project is nested in', async () => {
+    const dir = project(['node_modules/dep/tsconfig.json', 'node_modules/dep/.nuxt/tsconfig.app.json'])
+    const rootDir = join(dir, 'node_modules/dep')
+
+    expect(await resolveTypeCheckTsConfig(createContext(rootDir).nuxt)).toBe(join(rootDir, '.nuxt/tsconfig.app.json'))
+  })
+
   it('skips type checking when the tsconfig of the project and the generated one are missing', async () => {
     const rootDir = project([])
     const warn = vi.spyOn(bundlerDiagnostics, 'NUXT_B7041').mockReturnValue(undefined as never)
