@@ -19,10 +19,10 @@ function installPackageWithHoistedVue (rootDir: string) {
   const pkg = 'duplicate-vue-ui@0.0.0/node_modules/duplicate-vue-ui'
   const installed = join(store, pkg, 'index.js')
   const entry = readFileSync(join(rootDir, 'ui/index.js'), 'utf8')
-  const isStale = () => existsSync(installed) && readFileSync(installed, 'utf8') !== entry
+  const isInstalled = () => existsSync(installed) && readFileSync(installed, 'utf8') === entry
 
   // the matrix projects share the fixture, so each writes the store aside and the first to move it into place wins
-  if (!existsSync(installed) || isStale()) {
+  if (!isInstalled()) {
     const staging = mkdtempSync(join(rootDir, 'node_modules/.pnpm-'))
     const resolveDir = (id: string, from: string) => dirname(realpathSync(createRequire(join(from, 'package.json')).resolve(`${id}/package.json`)))
     const runtimeCore = resolveDir('@vue/runtime-core', resolveDir('@vue/runtime-dom', resolveDir('vue', rootDir)))
@@ -33,14 +33,14 @@ function installPackageWithHoistedVue (rootDir: string) {
     cpSync(join(rootDir, 'ui/package.json'), join(staging, pkg, 'package.json'))
     writeFileSync(join(staging, pkg, 'index.js'), entry)
 
-    if (isStale()) {
+    if (existsSync(store) && !isInstalled()) {
       rmSync(store, { recursive: true, force: true })
     }
     try {
       renameSync(staging, store)
     } catch (error) {
       rmSync(staging, { recursive: true, force: true })
-      if (!existsSync(installed)) {
+      if (!isInstalled()) {
         throw error
       }
     }
