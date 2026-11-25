@@ -2,6 +2,7 @@ import { joinURL } from 'ufo'
 import { resolveServerFetchInit } from 'nuxt/internal/server-default'
 import type { AppRouteRules, RequestEvent, ServerFetchInit } from 'nuxt/server'
 
+import { withBaseURL } from './base.ts'
 import type { MatchRouteRules } from './renderer.ts'
 
 type AppFetch = (request: Request) => Promise<Response>
@@ -9,7 +10,7 @@ type AppFetch = (request: Request) => Promise<Response>
 /** The `nuxt/server` helpers backed by the build's route rules and app handler. */
 export function createServerHelpers (match: MatchRouteRules, loadFetch: () => Promise<AppFetch>, baseURL: string) {
   return {
-    getRouteRules: (event: Pick<RequestEvent, 'url'> & Partial<Pick<RequestEvent, 'req'>>): AppRouteRules => match(event.url.pathname, event.req?.method) as AppRouteRules,
+    getRouteRules: (event: Pick<RequestEvent, 'url'> & Partial<Pick<RequestEvent, 'req'>>): AppRouteRules => match(withBaseURL(event.url.pathname, baseURL), event.req?.method) as AppRouteRules,
     matchRouteRules: (path: string, method?: string): AppRouteRules => match(joinURL(baseURL, path), method) as AppRouteRules,
     serverFetch: async (event: Pick<RequestEvent, 'req'>, path: string, init?: ServerFetchInit): Promise<Response> => {
       const fetch = await loadFetch()

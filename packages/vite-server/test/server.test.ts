@@ -20,13 +20,13 @@ describe('`nuxt/server` on the vite server', () => {
   })
 
   it('matches route rules for the request', () => {
-    expect(helpers().getRouteRules({ url: new URL('https://nuxt.com/base/about') })).toEqual({ headers: { 'x-about': '1' } })
+    expect(helpers().getRouteRules({ url: new URL('https://nuxt.com/about') })).toEqual({ headers: { 'x-about': '1' } })
   })
 
   it('matches route rules for the request method', () => {
     expect(helpers().matchRouteRules('/about', 'POST')).toEqual({ headers: { 'x-about': 'post' } })
     const req = new Request('https://nuxt.com/base/about', { method: 'POST' })
-    expect(helpers().getRouteRules({ req, url: new URL(req.url) })).toEqual({ headers: { 'x-about': 'post' } })
+    expect(helpers().getRouteRules({ req, url: new URL('https://nuxt.com/about') })).toEqual({ headers: { 'x-about': 'post' } })
   })
 
   it('fetches a route of the app through its handler', async () => {

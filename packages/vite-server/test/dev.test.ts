@@ -1,9 +1,13 @@
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { createServer } from 'node:http'
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import type { AddressInfo } from 'node:net'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { bundlerDiagnostics } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
+import type { Plugin } from 'vite'
 
 import { setupDevServer } from '../src/dev.ts'
 
@@ -11,24 +15,34 @@ type Handle = (req: IncomingMessage, res: ServerResponse, next: (error?: unknown
 
 const spyOnFailure = () => vi.spyOn(bundlerDiagnostics, 'NUXT_B7036').mockImplementation(() => undefined as never)
 
-async function serve (options: { ssrLoadModule?: () => Promise<unknown>, hasErrorLogged?: (error: unknown) => boolean, handle?: Handle, runnable?: boolean }) {
+async function serve (options: { ssrLoadModule?: () => Promise<unknown>, hasErrorLogged?: (error: unknown) => boolean, handle?: Handle, runnable?: boolean, rootDir?: string, baseURL?: string }) {
+  let devMiddleware: Handle | undefined
   const viteServer = {
-    middlewares: { handle: options.handle ?? ((_req, _res, next) => next()) satisfies Handle },
+    middlewares: {
+      handle: options.handle ?? ((req, res, next) => devMiddleware ? devMiddleware(req, res, next) : next()) satisfies Handle,
+      use: (handle: Handle) => { devMiddleware = handle },
+    },
     environments: { ssr: options.runnable === false ? {} : { runner: {} } },
-    config: { logger: { hasErrorLogged: options.hasErrorLogged ?? (() => false) } },
+    config: { logger: { hasErrorLogged: options.hasErrorLogged ?? (() => false) }, server: { fs: { allow: [] } } },
     ssrLoadModule: options.ssrLoadModule,
   }
   const nuxt = {
     options: {
-      rootDir: '/app',
-      _layers: [],
-      app: { baseURL: '/' },
+      rootDir: options.rootDir ?? '/app',
+      srcDir: options.rootDir ?? '/app',
+      alias: {},
+      _layers: options.rootDir ? [{ config: { rootDir: options.rootDir } }] : [],
+      app: { baseURL: options.baseURL ?? '/' },
       devServer: { errorChannel: '/__nuxt_dev__/error' },
       vite: {},
     },
     hook: (name: string, fn: (server: unknown) => void) => name === 'vite:serverCreated' && fn(viteServer),
   } as unknown as Nuxt
   setupDevServer(nuxt, '/app/.nuxt/vite-server/server-entry.mjs')
+  if (options.rootDir) {
+    const plugin = (nuxt.options.vite.plugins as Plugin[]).find(plugin => plugin.name === 'nuxt:vite-server:dev')!
+    ;(plugin.configureServer as { handler: (server: unknown) => () => void }).handler({ ...viteServer, environments: {} })()
+  }
 
   const server = createServer(nuxt.server!.handler as Parameters<typeof createServer>[1])
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
@@ -94,5 +108,20 @@ describe('the dev server', () => {
     expect((await server.fetch('/')).status).toBe(500)
     expect(fallthrough).toHaveBeenCalledOnce()
     await server.close()
+  })
+
+  it('serves the public directory under the base URL', async () => {
+    const rootDir = await mkdtemp(join(tmpdir(), 'nuxt-vite-server-dev-'))
+    await mkdir(join(rootDir, 'public'))
+    await writeFile(join(rootDir, 'public/static.txt'), 'static-asset')
+    const server = await serve({ rootDir, baseURL: '/app/', ssrLoadModule: () => Promise.resolve({ fetch: () => new Response('rendered') }) })
+
+    try {
+      expect(await (await server.fetch('/app/static.txt')).text()).toBe('static-asset')
+      expect(await (await server.fetch('/static.txt')).text()).toBe('rendered')
+    } finally {
+      await server.close()
+      await rm(rootDir, { recursive: true, force: true })
+    }
   })
 })
