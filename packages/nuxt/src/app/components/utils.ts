@@ -101,19 +101,7 @@ export function vforToArray (source: any): any[] {
     }
     return array
   } else if (isObject(source)) {
-    if (source[Symbol.iterator as any]) {
-      return Array.from(source as Iterable<any>, item =>
-        item,
-      )
-    } else {
-      const keys = Object.keys(source)
-      const array = new Array(keys.length)
-      for (let i = 0, l = keys.length; i < l; i++) {
-        const key = keys[i]!
-        array[i] = source[key]
-      }
-      return array
-    }
+    return source[Symbol.iterator as any] ? Array.from(source as Iterable<any>) : Object.keys(source).map(key => source[key])
   }
   return []
 }

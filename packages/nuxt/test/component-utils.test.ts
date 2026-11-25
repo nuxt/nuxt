@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { renderList } from 'vue'
+import { reactive, renderList } from 'vue'
 import { getFragmentHTML, vforToArray } from '../src/app/components/utils'
 
 describe('vforToArray', () => {
@@ -15,6 +15,18 @@ describe('vforToArray', () => {
     expect(vforToArray(['a', 'b'])).toEqual(renderList(['a', 'b'], (item: string) => item))
     expect(vforToArray(new Set(['a', 'b']))).toEqual(renderList(new Set(['a', 'b']), (item: string) => item))
     expect(vforToArray({ a: 1, b: 2 })).toEqual(renderList({ a: 1, b: 2 }, (item: number) => item))
+  })
+
+  it('matches renderList semantics for maps, generators, proxies and unusual object keys', () => {
+    function* generate () { yield 'a'; yield 'b' }
+    function createObject () {
+      const object = Object.create({ inherited: 0 }, { hidden: { value: 1, enumerable: false } })
+      return Object.assign(object, { b: 2, 10: 'ten', 2: 'two', [Symbol('s')]: 3 })
+    }
+    const factories = [() => new Map([['a', 1]]), generate, () => reactive({ a: 1, b: 2 }), createObject]
+    for (const create of factories) {
+      expect(vforToArray(create())).toEqual(renderList(create(), (item: any) => item))
+    }
   })
 })
 
