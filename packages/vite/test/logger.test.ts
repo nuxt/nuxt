@@ -5,6 +5,7 @@ import { createViteLogger } from '../src/utils/logger.ts'
 vi.mock('@nuxt/kit', () => ({
   logger: { level: 3, info: vi.fn(), warn: vi.fn(), error: vi.fn() },
   tryUseNitro: () => undefined,
+  tryUseNuxt: () => undefined,
 }))
 
 const { logger } = await import('@nuxt/kit')

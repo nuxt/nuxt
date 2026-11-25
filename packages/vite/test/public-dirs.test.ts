@@ -3,12 +3,25 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 
-const publicDir = join(tmpdir(), `nuxt-public-dirs-test-${Date.now()}`)
+const rootDir = join(tmpdir(), `nuxt-public-dirs-test-${Date.now()}`)
+const publicDir = join(rootDir, 'public')
+const layerDir = join(rootDir, 'layer')
 
-vi.mock('@nuxt/kit', () => ({
-  tryUseNitro: () => ({
+let hasNitro = true
+
+vi.mock('@nuxt/kit', async importOriginal => ({
+  ...await importOriginal<typeof import('@nuxt/kit')>(),
+  tryUseNitro: () => hasNitro
+    ? { options: { publicAssets: [{ baseURL: '/', dir: publicDir }] } }
+    : undefined,
+  tryUseNuxt: () => ({
     options: {
-      publicAssets: [{ baseURL: '/', dir: publicDir }],
+      rootDir,
+      alias: {},
+      _layers: [
+        { cwd: rootDir, config: { rootDir, srcDir: rootDir } },
+        { cwd: layerDir, config: { rootDir: layerDir, srcDir: layerDir } },
+      ],
     },
   }),
 }))
@@ -17,12 +30,14 @@ const { PublicDirsPlugin } = await import('../src/plugins/public-dirs')
 
 beforeAll(() => {
   mkdirSync(publicDir, { recursive: true })
+  mkdirSync(join(layerDir, 'public'), { recursive: true })
   writeFileSync(join(publicDir, 'logo.svg'), '<svg/>')
   writeFileSync(join(publicDir, 'icon.svg'), '<svg/>')
+  writeFileSync(join(layerDir, 'public/layer.svg'), '<svg/>')
 })
 
 afterAll(() => {
-  rmSync(publicDir, { recursive: true, force: true })
+  rmSync(rootDir, { recursive: true, force: true })
 })
 
 describe('PublicDirsPlugin dev transform', () => {
@@ -141,5 +156,44 @@ describe('PublicDirsPlugin', () => {
     ])('rewrites public asset urls in %s', (_, code, expected) => {
       expect(evaluate(code)).toBe(expected)
     })
+  })
+})
+
+describe('PublicDirsPlugin without a Nitro instance', () => {
+  hasNitro = false
+  const [devPlugin] = PublicDirsPlugin({ dev: true, baseURL: '/cdn' })
+  const [, plugin] = PublicDirsPlugin({})
+  hasNitro = true
+
+  const css = 'a{background:url(/logo.svg)}b{background:url(/layer.svg)}c{background:url(/missing.svg)}'
+
+  it('resolves files in the public directory of every layer', () => {
+    const resolveId = typeof plugin!.resolveId === 'function' ? plugin!.resolveId : plugin!.resolveId!.handler
+    expect((resolveId as any).call({}, '/logo.svg', undefined, {})).toBe('\0virtual:public?' + encodeURIComponent('/logo.svg'))
+    expect((resolveId as any).call({}, '/layer.svg', undefined, {})).toBe('\0virtual:public?' + encodeURIComponent('/layer.svg'))
+    expect((resolveId as any).call({}, '/missing.svg', undefined, {})).toBeUndefined()
+  })
+
+  it('prefixes public asset urls in css with the base URL in dev', () => {
+    const transform = typeof devPlugin!.transform === 'function' ? devPlugin!.transform : devPlugin!.transform!.handler
+    expect((transform as any).call({}, css, '/styles.css').code.toString())
+      .toBe('a{background:url(/cdn/logo.svg)}b{background:url(/cdn/layer.svg)}c{background:url(/missing.svg)}')
+  })
+
+  it('relativises public asset urls in an emitted stylesheet', () => {
+    const generateBundle = typeof plugin!.generateBundle === 'function' ? plugin!.generateBundle : plugin!.generateBundle!.handler
+    const bundle = { 'assets/styles.css': { type: 'asset', source: css } }
+    ;(generateBundle as any).call({}, {}, bundle)
+    expect(bundle['assets/styles.css'].source)
+      .toBe('a{background:url(../logo.svg)}b{background:url(../layer.svg)}c{background:url(/missing.svg)}')
+  })
+
+  it('rewrites public asset urls in inlined styles', () => {
+    const renderChunk = typeof plugin!.renderChunk === 'function' ? plugin!.renderChunk : plugin!.renderChunk!.handler
+    const chunk = { fileName: 'chunk.js', facadeModuleId: '/app.vue?inline&used' }
+    const output = (renderChunk as any).call({}, `const a = "${css}"`, chunk, {}, {}).code.toString()
+    expect(output).toContain('url(" + publicAssetsURL("/logo.svg") + ")')
+    expect(output).toContain('url(" + publicAssetsURL("/layer.svg") + ")')
+    expect(output).toContain('url(/missing.svg)')
   })
 })
