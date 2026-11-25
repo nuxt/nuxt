@@ -1,6 +1,10 @@
+import { execFile } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
+import process from 'node:process'
+import { pathToFileURL } from 'node:url'
+import { promisify } from 'node:util'
 import { describe, expect, it, vi } from 'vitest'
 import { basename, dirname, isAbsolute, join, resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
@@ -471,6 +475,153 @@ describe('nitro config', () => {
       await rm(rootDir, { recursive: true, force: true })
     }
   }, 60_000)
+
+  it('allows traced CommonJS dependencies to require bundled vue without require(esm)', async () => {
+    const execFileAsync = promisify(execFile)
+    const rootDir = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-vue-cjs-')))
+    const buildServer = async (name: string, version: string) => {
+      const appDir = join(rootDir, name)
+      const outDir = join(appDir, 'server')
+      const vueDir = join(appDir, 'node_modules/vue')
+      const runtimeDomDir = join(vueDir, 'node_modules/@vue/runtime-dom')
+      const runtimeCoreDir = join(runtimeDomDir, 'node_modules/@vue/runtime-core')
+      const reactivityDir = join(runtimeCoreDir, 'node_modules/@vue/reactivity')
+      await writePackage(vueDir, 'vue', version, `export * from '@vue/runtime-dom'\nexport let state = ${JSON.stringify(name)}\nexport function setState (v) { state = v }`)
+      await writePackage(runtimeDomDir, '@vue/runtime-dom', version, `export * from '@vue/runtime-core'`)
+      await writePackage(runtimeCoreDir, '@vue/runtime-core', version, `export * from '@vue/reactivity'`)
+      await writePackage(reactivityDir, '@vue/reactivity', version, `export const token = { name: ${JSON.stringify(name)} }`)
+
+      const nuxt = { options: { dev: false, rootDir: appDir, appDir: join(appDir, 'app'), vue: {}, experimental: { externalVue: true } } } as unknown as Nuxt
+      const nitro = { options: { node: true, externals: {}, rollupConfig: {} } } as unknown as Nitro
+      setupVuePackage(nuxt, nitro)
+
+      const bundle = await rollup({
+        input: 'entry',
+        external: ['esm-wrapper'],
+        plugins: [
+          ...nitro.options.rollupConfig!.plugins as Plugin[],
+          {
+            name: 'entry',
+            resolveId (id, importer) {
+              if (id === 'entry') { return id }
+              const from = importer === 'entry' ? join(appDir, 'entry.js') : importer
+              if (!from?.startsWith(appDir)) { return }
+              return resolveModulePath(id, { from, try: true }) ?? null
+            },
+            load: id => id === 'entry'
+              ? `import { getDep } from 'esm-wrapper'\nimport { setState, state, token } from 'vue'\nexport { getDep, setState, state, token }`
+              : undefined,
+          },
+        ],
+      })
+      await bundle.write({ dir: outDir, format: 'esm', entryFileNames: 'index.mjs' })
+      await bundle.close()
+
+      await mkdir(join(outDir, 'node_modules/esm-wrapper'), { recursive: true })
+      await writeFile(join(outDir, 'node_modules/esm-wrapper/package.json'), JSON.stringify({ name: 'esm-wrapper', type: 'module', main: './index.js' }))
+      await writeFile(join(outDir, 'node_modules/esm-wrapper/index.js'), `import dep from 'cjs-dep'\nimport { token } from 'vue'\nexport function getDep () { return { dep, esmToken: token } }\n`)
+
+      await mkdir(join(outDir, 'node_modules/cjs-dep'), { recursive: true })
+      await writeFile(join(outDir, 'node_modules/cjs-dep/package.json'), JSON.stringify({ name: 'cjs-dep', main: './index.js' }))
+      await writeFile(join(outDir, 'node_modules/cjs-dep/index.js'), `const vue = require('vue')\nconst reactivity = require('@vue/reactivity')\nmodule.exports = { vue, reactivity }\n`)
+
+      return outDir
+    }
+
+    try {
+      const serverA = await buildServer('app-a', '3.5.1')
+      const serverB = await buildServer('app-b', '3.5.2')
+
+      const script = `
+        import assert from 'node:assert/strict'
+        const a = await import(${JSON.stringify(pathToFileURL(join(serverA, 'index.mjs')).href)})
+        const b = await import(${JSON.stringify(pathToFileURL(join(serverB, 'index.mjs')).href)})
+
+        const resA = a.getDep()
+        const resB = b.getDep()
+
+        assert.equal(resA.dep.vue.__esModule, true)
+        assert.equal(Object.getPrototypeOf(resA.dep.vue), Object.prototype)
+        assert.equal(resA.dep.vue.token, a.token)
+        assert.equal(resA.dep.vue.token, resA.esmToken)
+        assert.equal(resA.dep.reactivity.token, a.token)
+
+        assert.equal(resB.dep.vue.token, b.token)
+        assert.equal(resB.dep.reactivity.token, b.token)
+        assert.notEqual(resA.dep.vue.token, resB.dep.vue.token)
+
+        assert.equal(resA.dep.vue.state, 'app-a')
+        a.setState('updated-a')
+        assert.equal(resA.dep.vue.state, 'updated-a')
+        assert.equal(resB.dep.vue.state, 'app-b')
+      `
+      await execFileAsync(process.execPath, ['--no-experimental-require-module', '--input-type=module', '-e', script])
+
+      const fallbackScript = `
+        import assert from 'node:assert/strict'
+        import { createRequire } from 'node:module'
+        const req = createRequire(${JSON.stringify(join(serverA, 'node_modules/cjs-dep/index.js'))})
+        assert.equal(globalThis[Symbol.for('nuxt.vue')], undefined)
+        assert.ok(req.resolve('vue').endsWith('index.cjs'))
+        const cjsVue = req('vue')
+        const esmVue = await import(${JSON.stringify(pathToFileURL(join(serverA, 'node_modules/vue/index.mjs')).href)})
+        assert.equal(cjsVue.token, esmVue.token)
+        assert.equal(globalThis[Symbol.for('nuxt.vue')], undefined)
+      `
+      await execFileAsync(process.execPath, ['--input-type=module', '-e', fallbackScript])
+    } finally {
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  }, 60_000)
+
+  it('strips unused nitro `_importMeta_` stubs from emitted vue packages and keeps shebangs first', async () => {
+    const rootDir = await realpath(await mkdtemp(join(tmpdir(), 'nuxt-vue-entry-')))
+    try {
+      await writePackage(join(rootDir, 'node_modules/vue'), 'vue', '3.5.4', `export const version = '3.5.4'`)
+
+      const nuxt = { options: { dev: false, rootDir, appDir: join(rootDir, 'app'), vue: {}, experimental: { externalVue: true } } } as unknown as Nuxt
+      const nitro = { options: { node: true, externals: {}, rollupConfig: {} } } as unknown as Nitro
+      setupVuePackage(nuxt, nitro)
+
+      const bundle = await rollup({
+        input: 'entry',
+        plugins: [
+          {
+            name: 'mock-nitro-import-meta',
+            renderChunk (code, chunk) {
+              if (!chunk.isEntry) { return }
+              const prefix = chunk.fileName === 'entry.js'
+                ? `#!/usr/bin/env node\nimport process from 'node:process';globalThis._importMeta_={url:import.meta.url,env:process.env};`
+                : `import process from 'node:process';globalThis._importMeta_={url:import.meta.url,env:process.env};`
+              return { code: prefix + code, map: null }
+            },
+          },
+          ...nitro.options.rollupConfig!.plugins as Plugin[],
+          {
+            name: 'entry',
+            resolveId (id, importer) {
+              if (id === 'entry') { return id }
+              const from = importer === 'entry' ? join(rootDir, 'entry.js') : importer
+              if (!from?.startsWith(rootDir)) { return }
+              return resolveModulePath(id, { from, try: true }) ?? null
+            },
+            load: id => id === 'entry' ? `export { version } from 'vue'` : undefined,
+          },
+        ],
+      })
+      const { output } = await bundle.generate({ format: 'esm' })
+      await bundle.close()
+
+      const entryChunk = output.find((file): file is OutputChunk => file.type === 'chunk' && file.fileName === 'entry.js')!
+      expect(entryChunk.code.startsWith('#!/usr/bin/env node\nimport "./chunks/_/vue-cjs.mjs";')).toBe(true)
+
+      const vueChunk = output.find((file): file is OutputChunk => file.type === 'chunk' && file.fileName === 'node_modules/vue/index.mjs')!
+      expect(vueChunk.code).not.toContain('_importMeta_')
+      expect(vueChunk.code).not.toContain('node:process')
+    } finally {
+      await rm(rootDir, { recursive: true, force: true })
+    }
+  })
 
   it('does not inline the dependencies of an absolute `build.transpile` directory', async () => {
     const moduleDir = resolve(fixtureDir, '../workspace-module')
