@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { relative, resolve } from 'pathe'
 import { resolvePath } from '@nuxt/kit'
-import { resolveSpaLoadingTemplate } from '@nuxt/kit/internal'
+import { buildClientAndServer, resolveSpaLoadingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import type { Plugin } from 'vite'
@@ -85,8 +85,9 @@ export function EntryImportMapPlugin (): Plugin {
 }
 
 /**
- * Builds the client environment, and marks the ssr environment as built when nothing
- * will render on the server, so that the orchestrator skips it.
+ * Builds the client and ssr environments, concurrently with `experimental.parallelBuild`,
+ * and marks the ssr environment as built when nothing will render on the server, so that
+ * the orchestrator skips it.
  *
  * A `buildApp` hook rather than a `builder.buildApp` config option, so that a plugin
  * bringing its own deploy target (`@cloudflare/vite-plugin`, for one) keeps its own
@@ -110,6 +111,10 @@ export function BuildEnvironmentsPlugin (nuxt: Nuxt): Plugin {
         if (ssr && nuxt.options.ssr === false && !rendersSpaDocument(nuxt)) {
           // nothing renders on the server, so the orchestrator can skip the environment
           ssr.isBuilt = true
+        }
+        if (nuxt.options.experimental.parallelBuild && !rendersSpaDocument(nuxt) && client && ssr && !client.isBuilt && !ssr.isBuilt) {
+          await buildClientAndServer(builder, client, ssr, nuxt)
+          return
         }
         // the document the client build emits is rendered with what the ssr environment builds
         for (const environment of rendersSpaDocument(nuxt) ? [ssr, client] : [client, ssr]) {
