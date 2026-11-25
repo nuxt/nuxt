@@ -2,7 +2,7 @@ import { relative } from 'pathe'
 import { joinURL } from 'ufo'
 import { vueRouterToRou3 } from 'unrouting'
 
-import { decodeRoutePath } from '../core/utils/index.ts'
+import { decodeRoutePath } from '@nuxt/kit/internal'
 import { toArray } from '../utils.ts'
 import type { NuxtPage } from 'nuxt/schema'
 

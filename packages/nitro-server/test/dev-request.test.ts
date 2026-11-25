@@ -47,6 +47,23 @@ describe('isLoopbackPeer', () => {
   })
 })
 
+describe('isLocalDevRequest', () => {
+  const allowedHosts = new Set(['localhost', '127.0.0.1', '[::1]', '::1', 'dev.example.com'])
+  const allows = (host: string | undefined) => isLocalDevRequest(event(host === undefined ? {} : { host }), allowedHosts)
+
+  it.for(['localhost', 'localhost:3000', '127.0.0.1:3000', '[::1]', '[::1]:3000', 'dev.example.com:3000'])('allows the `%s` host', (host) => {
+    expect(allows(host)).toBe(true)
+  })
+
+  it.for([undefined, '', 'evil.com', 'evil.com:3000', '[::2]:3000', '::1', '::1:3000', '[::1', 'localhost@evil.com', 'localhost:3000@evil.com', '[::1]@evil.com', 'evil.com@localhost', 'evil.com@[::1]:3000', 'evil.com#@localhost', 'localhost#@evil.com', 'evil.com\\localhost', 'localhost\\evil.com', 'localhost/evil.com', 'localhost?evil.com', 'local\thost', '%6cocalhost', 'dev.example.com.evil.com'])('rejects the `%s` host', (host) => {
+    expect(allows(host)).toBe(false)
+  })
+
+  it('allows a same-origin request to the IPv6 loopback', () => {
+    expect(isLocalDevRequest(event({ host: '[::1]:3000', origin: 'http://[::1]:3000' }), allowedHosts)).toBe(true)
+  })
+})
+
 // The devtools workspace endpoint discloses `workspace.root` / `uuid` only when both
 // gates pass; this mirrors the handler's condition.
 describe('devtools workspace disclosure gate', () => {

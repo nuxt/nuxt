@@ -4,12 +4,12 @@ import { performance } from 'node:perf_hooks'
 import { pathToFileURL } from 'node:url'
 import { createBuilder, createServer, mergeConfig, resolveConfig } from 'vite'
 import type * as vite from 'vite'
-import { basename, dirname, join, resolve } from 'pathe'
+import { basename, dirname, isAbsolute, join, relative, resolve } from 'pathe'
 import type { Nuxt, NuxtBuilder, ViteConfig } from '@nuxt/schema'
 import { createIsIgnored, getLayerDirectories, logger, recoverThrottledChanges, resolvePath, tryUseNitro } from '@nuxt/kit'
 import type { PreRenderedAsset } from 'rolldown'
 import vuePlugin from '@vitejs/plugin-vue'
-import { joinURL, withTrailingSlash, withoutLeadingSlash } from 'ufo'
+import { joinURL, withTrailingSlash, withoutLeadingSlash, withoutTrailingSlash } from 'ufo'
 import { filename } from 'pathe/utils'
 import { resolveModulePath } from 'exsolve'
 import type { Plugin as PostcssPlugin } from 'postcss'
@@ -19,7 +19,7 @@ import { ssr, ssrEnvironment } from './shared/server.ts'
 import { clientEnvironment } from './shared/client.ts'
 import { createViteLogger, logLevelMap } from './utils/logger.ts'
 import { DevErrorsDevToolsPlugin, DevErrorsPlugin, DevRequestErrorsPlugin, createDevErrorReporter, isTransformError } from './dev-errors.ts'
-import { getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
+import { createSourcemapIgnoreList, getAncestorModulesDirs, removeNestedDirs, sanitizeFilePath } from './utils/index.ts'
 import { OptimizeDepsHintPlugin, optimizerCallbacks, userOptimizeDepsInclude } from './plugins/optimize-deps-hint.ts'
 
 import { VueJsxPlugin } from './plugins/vue-jsx.ts'
@@ -49,6 +49,7 @@ import { ResolveDeepImportsPlugin } from './plugins/resolve-deep-imports.ts'
 import { ResolveExternalsPlugin } from './plugins/resolved-externals.ts'
 import { InlinedVuePlugin } from './plugins/inlined-vue.ts'
 import { PerfPlugin } from './plugins/perf.ts'
+import { BuildReportPlugin } from './plugins/build-report.ts'
 import { isNavigationRequest, warmupViteServer } from './utils/warmup.ts'
 
 export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
@@ -83,8 +84,8 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
   let fsDeny: string[] | undefined
   if (nuxt.options.dev) {
     // a configured `server.fs.deny` replaces Vite's defaults
-    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envFile: false, logLevel: 'silent' }, 'serve')).server.fs.deny
-    fsDeny = [...defaultDeny, '**/app-secret']
+    const defaultDeny = viteConfig.server?.fs?.deny ? [] : (await resolveConfig({ configFile: false, envDir: false, logLevel: 'silent' }, 'serve')).server.fs.deny
+    fsDeny = [...defaultDeny, '**/app-secret', ...getServerOutputDeny(nuxt, nitro?.options.output)]
   }
 
   const mockEmpty = resolveModulePath('mocked-exports/empty', { from: import.meta.url })
@@ -105,12 +106,16 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
     ? undefined
     : (chunk: PreRenderedAsset) => withoutLeadingSlash(join(nuxt.options.app.buildAssetsDir, `${sanitizeFilePath(filename(chunk.names[0]!))}.[hash].[ext]`))
 
+  // production bundles are reported through the `build:environment:*` hooks, so Vite only
+  // prints warnings and errors unless the project sets a level itself
+  const reportsBuild = !nuxt.options.dev && nuxt.options.logLevel !== 'silent' && !viteConfig.logLevel
+
   const config: vite.InlineConfig = mergeConfig(
     {
       base: nuxt.options.dev
         ? joinURL(nuxt.options.app.baseURL.replace(/^\.\//, '/') || '/', nuxt.options.app.buildAssetsDir)
         : undefined,
-      logLevel: logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
+      logLevel: reportsBuild ? 'warn' : logLevelMap[nuxt.options.logLevel] ?? logLevelMap.info,
       experimental: {
         renderBuiltUrl: (filename, { type, hostType, ssr }) => {
           if (hostType !== 'js') {
@@ -199,11 +204,10 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       },
       build: {
         copyPublicDir: false,
+        reportCompressedSize: reportsBuild ? false : undefined,
         rolldownOptions: {
           output: {
-            sourcemapIgnoreList: (relativeSourcePath) => {
-              return relativeSourcePath.includes('node_modules') || relativeSourcePath.includes(nuxt.options.buildDir)
-            },
+            sourcemapIgnoreList: createSourcemapIgnoreList(nuxt.options.buildDir),
             sanitizeFileName: sanitizeFilePath,
             assetFileNames,
           },
@@ -224,6 +228,7 @@ export const bundle: NuxtBuilder['bundle'] = async (nuxt) => {
       plugins: [
         // per-plugin timing when profiling is enabled
         PerfPlugin(nuxt),
+        BuildReportPlugin(nuxt),
         // add resolver for modules used in virtual files
         ResolveDeepImportsPlugin(nuxt),
         ResolveExternalsPlugin(nuxt),
@@ -421,6 +426,45 @@ function startWarmup (nuxt: Nuxt, server: vite.ViteDevServer, entry: string, ser
   } else {
     nuxt.hooks.hookOnce('build:done', () => { void run() })
   }
+}
+
+/**
+ * Globs matching server bundles written by Nitro, which can inline private runtime config.
+ */
+function getServerOutputDeny (nuxt: Nuxt, output?: { dir?: string, serverDir?: string }) {
+  const deny: string[] = []
+  const configured = nuxt.options.nitro.output
+  const dirs = [
+    '.output',
+    configured?.dir,
+    configured?.serverDir,
+    output?.dir,
+    output?.serverDir,
+    resolve(nuxt.options.buildDir, 'prerender'),
+    'node_modules/.cache/nuxt/.nuxt/prerender',
+  ]
+  const projectDirs = [nuxt.options.rootDir, nuxt.options.srcDir, nuxt.options.buildDir]
+  for (const dir of dirs) {
+    if (!dir || dir.includes('{{')) {
+      continue
+    }
+    const resolved = resolve(nuxt.options.rootDir, dir)
+    if (!projectDirs.some(d => isPathInside(d, resolved))) {
+      deny.push(`${escapeGlob(withoutTrailingSlash(resolved))}/**`)
+    }
+  }
+  return [...new Set(deny)]
+}
+
+function isPathInside (path: string, dir: string) {
+  const rel = relative(dir, path)
+  return !rel.startsWith('..') && !isAbsolute(rel)
+}
+
+const GLOB_SPECIAL_CHARS_RE = /[\\*?[\]{}()!+@|]/g
+
+function escapeGlob (path: string) {
+  return path.replace(GLOB_SPECIAL_CHARS_RE, '\\$&')
 }
 
 async function withLogs (fn: () => Promise<unknown>, message: string) {

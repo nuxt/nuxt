@@ -13,8 +13,8 @@ import { APP_ROOT_CLOSE_TAG, APP_ROOT_OPEN_TAG } from './build-files'
 import type { SSRError } from './error'
 import { captureError } from './error-page'
 import { returnRenderResponse } from './app'
-import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDevBadge, renderDocumentOpen } from './document'
-import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
+import { applyRenderOptions, joinTags, normalizeChunks, renderAppTeleports, renderDevBadge, renderDocumentOpen, stampDevBadgeNonce } from './document'
+import { inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript, renderDeferredPrefetchHints } from './head'
 import { renderInlineStyles } from './inline-styles'
 import { renderPayloadJsonScript } from './payload'
 import { renderStreamedIslandTeleports } from './islands'
@@ -79,9 +79,10 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   }
 
   const entryScriptHrefs = new Set(Object.values(entryScripts).map(resource => rendererContext.buildAssetsURL(resource.file)))
+  const prefetchHints = getPrefetchLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]
   const entryHints = [
     ...(getPreloadLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).filter(l => !(l.href && entryScriptHrefs.has(l.href))),
-    ...(getPrefetchLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).map(l => DEFER_PREFETCH ? inertPrefetchLink(l) : l),
+    ...DEFER_PREFETCH ? [] : prefetchHints,
   ]
   if (entryHints.length) {
     ssrContext.head.push({ link: entryHints })
@@ -98,9 +99,12 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
     })
   }
 
+  const writeCookies = () => ssrContext.nuxt?._cookieWriters?.forEach(write => write())
+
   // a response the app chose over the render needs none of the hints sent for the stream
   const renderResponse = (response: Response) => {
     event.res.headers.delete('link')
+    writeCookies()
     return returnRenderResponse(runtime, event, response)
   }
 
@@ -161,6 +165,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   if (ssrContext.payload?.error && !ssrError) {
     reader.cancel().catch(() => {})
     event.res.headers.delete('link')
+    writeCookies()
     throw ssrContext.payload.error
   }
 
@@ -186,9 +191,10 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
       ? `<script async${nonceAttr} src="${runtime.buildAssetsURL(iifeChunkFileName)}"></script>`
       : `<script${nonceAttr}>${streamingIifeCode}</script>`
   }
+  const devBadge = import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined
   const shellContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined]),
+    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, DEFER_PREFETCH ? renderDeferredPrefetchHints(prefetchHints) : undefined, devBadge]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
     body: [],
@@ -197,14 +203,30 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   const hooks = instance.hooks
   const renderHtmlResult = hooks.callHook('render:html', shellContext, { event: hookEvent, streaming: true })
   if (renderHtmlResult instanceof Promise) { await renderHtmlResult }
+  if (import.meta.dev) {
+    await stampDevBadgeNonce(runtime, event, shellContext, devBadge, cspNonce)
+  }
   if (import.meta.dev && (shellContext.body.length || shellContext.bodyAppend.length)) {
     rendererDiagnostics.NUXT_E8001({ path: event.url.pathname })
   }
 
   const shellHtml = renderDocumentOpen(shellContext)
 
+  try {
+    writeCookies()
+  } catch (error) {
+    reader.cancel().catch(() => {})
+    event.res.headers.delete('link')
+    throw error
+  }
+
+  ssrContext['~headersSent'] = true
+
+  event.res.headers.set('content-type', 'text/html;charset=utf-8')
+  event.res.headers.set('x-powered-by', 'Nuxt')
+
   // Snapshot status + headers before shell commit so we can warn in dev when
-  // composables like `useCookie`, `setResponseStatus`, or `useResponseHeader`
+  // composables like `setResponseStatus` or `useResponseHeader`
   // mutate the response after the wire is closed. These mutations are
   // silently lost in production - the warning is dev-only diagnostic.
   const committedSnapshot = import.meta.dev
@@ -353,7 +375,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
             lateMutations.push(`response statusText changed (e.g. \`setResponseStatus\`)`)
           }
           if (serializeHeaders(event.res.headers) !== committedSnapshot.headers) {
-            lateMutations.push(`response headers changed during render (e.g. \`useCookie\`, \`useResponseHeader\`, \`setHeader\`)`)
+            lateMutations.push(`response headers changed during render (e.g. \`useResponseHeader\`, \`setHeader\`)`)
           }
           if (lateMutations.length) {
             rendererDiagnostics.NUXT_E8002({ mutations: lateMutations.join('\n  - '), path: event.url.pathname })
@@ -414,9 +436,6 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
       reader.cancel(reason).catch(() => {})
     },
   })
-
-  event.res.headers.set('content-type', 'text/html;charset=utf-8')
-  event.res.headers.set('x-powered-by', 'Nuxt')
 
   return runtime.createResponse(outputStream, event.res)
 }

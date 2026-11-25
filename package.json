@@ -82,6 +82,7 @@
     "h3": "catalog:dev",
     "happy-dom": "catalog:dev",
     "hookable": "catalog:app-runtime",
+    "html-validate": "catalog:dev",
     "installed-check": "catalog:dev",
     "knip": "catalog:dev",
     "markdownlint-cli": "catalog:dev",
@@ -116,7 +117,7 @@
     "webpack": "catalog:webpack",
     "zod": "catalog:dev"
   },
-  "packageManager": "pnpm@12.18.0",
+  "packageManager": "pnpm@12.21.0",
   "simple-git-hooks": {
     "pre-commit": "pnpm nano-staged"
   },

@@ -285,7 +285,7 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     // Handle middleware
     nuxtApp._middleware ||= {
       global: [],
-      named: {},
+      named: Object.create(null),
     }
 
     const initialLayout = nuxtApp.payload.state._layout

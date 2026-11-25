@@ -1,5 +1,7 @@
 import type { Nuxt } from '@nuxt/schema'
 import type { RsbuildPlugin, Rspack } from '@rsbuild/core'
+import { startBuildEnvironment } from '@nuxt/kit/internal'
+import type { BuildEnvironmentReport } from '@nuxt/kit/internal'
 
 /**
  * Expose the Rsbuild lifecycle through Nuxt hooks.
@@ -31,17 +33,34 @@ export function NuxtHooksPlugin (nuxt: Nuxt): RsbuildPlugin {
         compilers = 'compilers' in compiler ? compiler.compilers : [compiler]
       })
 
+      const reports = new Map<string, Promise<BuildEnvironmentReport>>()
+
       // in development, the dev server replaces the output file system of the compilers before the first compilation
       api.onBeforeEnvironmentCompile(async ({ environment, isFirstCompile }) => {
         const compiler = compilers.find(compiler => compiler.options.name === environment.name)
         if (isFirstCompile && compiler) {
           await nuxt.callHook('rsbuild:compile', { name: environment.name, compiler })
         }
+        if (!nuxt.options.dev) {
+          const report = startBuildEnvironment({
+            name: environment.name,
+            consumer: environment.config.output.target === 'web' ? 'client' : 'server',
+            builder: 'rsbuild',
+          }, nuxt)
+          reports.set(environment.name, report)
+          await report
+        }
       })
 
       api.onAfterEnvironmentCompile(async ({ environment, stats }) => {
         if (stats) {
           await nuxt.callHook('rsbuild:compiled', { name: environment.name, compiler: stats.compilation.compiler, stats })
+        }
+        const report = reports.get(environment.name)
+        reports.delete(environment.name)
+        if (report && stats && !stats.hasErrors()) {
+          const { compilation } = stats
+          await (await report).done(compilation.outputOptions.path || environment.distPath, compilation.getAssets().map(asset => asset.name))
         }
       })
     },

@@ -106,5 +106,5 @@ async function loadParser (): Promise<Parser | Fallback> {
     }
   }
 
-  throw kitDiagnostics.NUXT_B8022({ specifiers: PARSER_SPECIFIERS.join('` or `') })
+  throw kitDiagnostics.NUXT_B8022({ specifiers: PARSER_SPECIFIERS.join('` or `') }, { method: 'error' })
 }

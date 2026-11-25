@@ -6,6 +6,7 @@ import { componentDiagnostics, waitForClientBuild } from '@nuxt/kit/internal'
 import { resolveModulePath } from 'exsolve'
 import picomatch from 'picomatch'
 import { withTrailingSlash } from 'ufo'
+import { hash } from 'ohash'
 import { distDir } from '../dirs.ts'
 import { DECLARATION_EXTENSIONS, isDirectorySync, linkToAlias, logger } from '../utils.ts'
 import { lazyHydrationMacroPreset } from '../imports/presets.ts'
@@ -13,6 +14,7 @@ import { componentNamesTemplate, componentsDeclarationTemplate, componentsIsland
 import { scanComponents } from './scan.ts'
 import { getAppStructureVersion } from '../core/app.ts'
 import { createScanProblems } from '../core/scan-problems.ts'
+import { vitestCacheKey } from '../core/utils/index.ts'
 
 import { LoaderPlugin } from './plugins/loader.ts'
 import { ComponentsChunkPlugin, IslandsTransformPlugin } from './plugins/islands-transform.ts'
@@ -185,6 +187,12 @@ export default defineNuxtModule<ComponentsOptions>({
 
     const serverPlaceholderPath = await resolveRuntimePath('app/components/server-placeholder')
 
+    let componentsHash: string | undefined
+    addVitePlugin({
+      ...vitestCacheKey(() => componentsHash ??= hash(context.components)),
+      name: 'nuxt:components:vitest-cache-key',
+    })
+
     // Scan components and add to plugin
     const scannedStructureVersions = new WeakMap<Nuxt, number>()
     const problems = createScanProblems(nuxt, 'nuxt:components', 'Components')
@@ -224,6 +232,7 @@ export default defineNuxtModule<ComponentsOptions>({
       }
       scan.done()
       context.components = newComponents
+      componentsHash = undefined
       scannedStructureVersions.set(nuxt, structureVersion)
     }
 
@@ -384,7 +393,7 @@ export default defineNuxtModule<ComponentsOptions>({
         return paths
       }
 
-      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient }), { client: false, prepend: true })
+      addBuildPlugin(IslandsTransformPlugin({ getComponents, getServerPages, selectiveClient, nuxt }), { client: false, prepend: true })
       addBuildPlugin(RenderListPlugin(), { client: false })
 
       if (selectiveClient && nuxt.options.builder === '@nuxt/vite-builder') {

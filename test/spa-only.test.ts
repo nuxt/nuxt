@@ -16,6 +16,19 @@ describe.skipIf(!runsOncePerEnvInMatrix)('pages served with `ssr: false`', () =>
     expect(html).toContain('<div id="__nuxt">')
   })
 
+  it('renders the static head of the app component into the SPA shell', async () => {
+    const html = await $fetch<string>('/admin')
+    expect(html).toContain('<title>SPA only</title>')
+    expect(html).toContain('<meta name="description" content="Static head of the app component">')
+  })
+
+  it('applies the static head of the app component after plugins on a server-rendered page', async () => {
+    const html = await $fetch<string>('/admin/ssr')
+    expect(html).toContain('<title>SPA only</title>')
+    expect(html).toContain('<meta name="description" content="Static head of the app component">')
+    expect(html).not.toContain('Set by a plugin')
+  })
+
   it('serves a client-only dynamic route', async () => {
     const html = await $fetch<string>('/products/123')
     expect(html).not.toContain('product-page')

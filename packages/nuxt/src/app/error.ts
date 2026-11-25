@@ -68,7 +68,7 @@ export class NuxtError<DataT = unknown> extends Error implements _NuxtErrorContr
     this.data = details.data
     this.body = details.body
     this.cause = details instanceof Error ? details : details.cause
-    this.fatal = details.fatal ?? !!this.unhandled
+    this.fatal = details.fatal ?? (cause?.fatal === true || !!this.unhandled)
   }
 
   /** @deprecated use `status` */

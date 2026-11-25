@@ -1,11 +1,9 @@
 import type { Nuxt, NuxtPage, RouteRuleConfig } from '@nuxt/schema'
 
-import { pageDiagnostics } from '@nuxt/kit/internal'
+import { normalizeAppMiddlewareRules, pageDiagnostics } from '@nuxt/kit/internal'
 import { defu } from 'defu'
 import { isEqual } from 'ohash'
 import { vueRouterToRou3 } from 'unrouting'
-
-import { normalizeAppMiddlewareRules } from '../core/utils/route-rules.ts'
 
 /**
  * Merge the rules extracted from `defineRouteRules` into the server's route rules, replacing the

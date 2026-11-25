@@ -1,7 +1,7 @@
 import { logger } from '@nuxt/kit'
 import type { WebpackConfigContext } from '../utils/config.ts'
 import { applyPresets } from '../utils/config.ts'
-import { getDevtool, shouldTypeCheck } from '../utils/options.ts'
+import { getDevtool, resolveTypeCheckTsConfig, shouldTypeCheck } from '../utils/options.ts'
 import { createServerExternals } from '../utils/server-externals.ts'
 import { nuxt } from '../presets/nuxt.ts'
 import { node } from '../presets/node.ts'
@@ -40,7 +40,7 @@ export function serverStandalone (ctx: WebpackConfigContext) {
   ctx.config.externals.push(createServerExternals(ctx.nuxt))
 }
 
-function serverPlugins (ctx: WebpackConfigContext) {
+export async function serverPlugins (ctx: WebpackConfigContext) {
   ctx.config.plugins ||= []
 
   if (ctx.userConfig.serverURLPolyfill) {
@@ -51,6 +51,9 @@ function serverPlugins (ctx: WebpackConfigContext) {
   }
 
   if (shouldTypeCheck(ctx.nuxt)) {
-    ctx.config.plugins.push(new TsCheckerPlugin({ logger }))
+    const tsconfigPath = await resolveTypeCheckTsConfig(ctx.nuxt)
+    if (tsconfigPath) {
+      ctx.config.plugins.push(new TsCheckerPlugin({ logger, typescript: { configFile: tsconfigPath } }))
+    }
   }
 }

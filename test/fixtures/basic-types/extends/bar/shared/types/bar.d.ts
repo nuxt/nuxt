@@ -1,0 +1,3 @@
+interface BarLayerSharedType {
+  layer: 'bar'
+}

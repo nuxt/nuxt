@@ -1,5 +1,4 @@
 import { joinURL, withoutFragment } from 'ufo'
-import type { ResolvableLink } from 'unhead/types'
 import type { RouteLocationNormalized } from 'vue-router'
 
 import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
@@ -8,7 +7,6 @@ import { _loadPayload, isCachedPayloadRoute, isOutdatedPayload } from '../compos
 import { reloadNuxtApp } from '../composables/chunk'
 import { onNuxtReady } from '../composables/ready'
 import { useRouter } from '../composables/router'
-import { injectHead } from '../composables/head'
 import { stateDiagnostics } from '../diagnostics/state'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import { prefetchGroup } from '../internal/prefetch-util'
@@ -16,18 +14,39 @@ import { documentURL } from '../internal/location'
 
 import { payloadExtraction, prefetchPreloadTags, purgeCachedData } from '#build/nuxt.config.mjs'
 
-interface ActiveHeadEntryLike { dispose: () => void }
+type HintLink = Record<string, string | boolean>
 
-const forwardedHintEntries = new Set<ActiveHeadEntryLike>()
+/** Forwarded hint elements, mapped to the function that settles their prefetch task. */
+const forwardedHints = new Map<HTMLLinkElement, () => void>()
 const forwardedHintHrefs = new Set<string>()
 
 const MAX_HINTS_PER_ROUTE = 2
 const FORWARDED_HINT_TIMEOUT_MS = 30_000
 
-function disposeHint (entry: ActiveHeadEntryLike) {
-  if (forwardedHintEntries.delete(entry)) {
-    entry.dispose()
+function removeHint (el: HTMLLinkElement, complete: () => void) {
+  complete()
+  el.onload = el.onerror = null
+  el.remove()
+}
+
+function disposeHint (el: HTMLLinkElement) {
+  const complete = forwardedHints.get(el)
+  if (complete) {
+    forwardedHints.delete(el)
+    removeHint(el, complete)
   }
+}
+
+function createHintElement (link: HintLink): HTMLLinkElement {
+  const el = document.createElement('link')
+  for (const [key, value] of Object.entries(link)) {
+    if (value !== false && key !== 'id') {
+      el.setAttribute(key, value === true ? '' : value)
+    }
+  }
+  // a unique hydration key stops unhead adopting the element for one of its own tags
+  el.setAttribute('data-hid', `nuxt-hint:${el.href}`)
+  return el
 }
 
 function documentHrefs (): Set<string> {
@@ -38,9 +57,9 @@ function documentHrefs (): Set<string> {
   return hrefs
 }
 
-interface SelectedHint { href: string, link: ResolvableLink }
+interface SelectedHint { href: string, link: HintLink }
 
-function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): SelectedHint[] {
+function selectHints (prefetchLinks: HintLink[]): SelectedHint[] {
   const existingHrefs = documentHrefs()
   const selected: SelectedHint[] = []
 
@@ -55,11 +74,11 @@ function selectHints (prefetchLinks: Array<Record<string, string | boolean>>): S
       // `rel="preload"`, with any `fetchpriority` dropped so that they
       // cannot outrank the current page
       const { fetchpriority: _fetchpriority, ...rest } = link
-      selected.push({ href, link: rest as ResolvableLink })
+      selected.push({ href, link: rest })
     } else {
       // Downgrade preload (and modulepreload) to prefetch.
       const { rel: _rel, ...rest } = link
-      selected.push({ href, link: { ...rest, rel: 'prefetch' } as ResolvableLink })
+      selected.push({ href, link: { ...rest, rel: 'prefetch' } })
     }
   }
 
@@ -80,12 +99,26 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     let pendingNavigation: RouteLocationNormalized | undefined
     router.beforeEach((to) => { pendingNavigation = to })
     if (prefetchPreloadTags) {
-      // Drop forwarded resource hints so they don't linger indefinitely.
-      router.afterEach(() => {
-        for (const entry of [...forwardedHintEntries]) {
-          disposeHint(entry)
-        }
+      // Drop forwarded resource hints so they don't linger indefinitely, once the destination
+      // page has rendered so that its own hints can reuse any in-flight requests.
+      router.afterEach((_to, _from, failure) => {
+        const stale = [...forwardedHints]
+        forwardedHints.clear()
         forwardedHintHrefs.clear()
+        if (!stale.length) { return }
+        const removeStale = () => {
+          for (const [el, complete] of stale) { removeHint(el, complete) }
+        }
+        if (failure) { return removeStale() }
+        const unhook = nuxtApp.hooks.hookOnce('page:finish', () => {
+          clearTimeout(timeout)
+          // after the head's debounced DOM update, so that the page's own links are inserted first
+          setTimeout(removeStale)
+        })
+        const timeout = setTimeout(() => {
+          unhook()
+          removeStale()
+        }, FORWARDED_HINT_TIMEOUT_MS)
       })
     }
     router.beforeResolve(async (to, from) => {
@@ -104,10 +137,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
         for (const key of staticKeysToRemove) {
           delete nuxtApp.static.data[key]
         }
+        staticKeysToRemove.clear()
       }
       for (const key in payload.data) {
         if (purgeCachedData) {
-          if (!(key in nuxtApp.static.data)) {
+          if (!Object.hasOwn(nuxtApp.static.data, key)) {
             staticKeysToRemove.add(key)
           }
         }
@@ -116,30 +150,25 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     })
 
     // Load payload into cache
-    const head = prefetchPreloadTags ? injectHead(nuxtApp) : null
-    const forwardHint = (link: ResolvableLink) => (signal: AbortSignal) => new Promise<void>((resolve) => {
+    const forwardHint = (link: HintLink) => (signal: AbortSignal) => new Promise<void>((resolve) => {
       if (signal.aborted) { return resolve() }
-      const hint: { entry?: ActiveHeadEntryLike, timeout?: ReturnType<typeof setTimeout> } = {}
-      const complete = (dispose: boolean) => {
-        clearTimeout(hint.timeout)
-        signal.removeEventListener('abort', onAbort)
-        if (dispose && hint.entry) {
-          disposeHint(hint.entry)
-        }
+      const el = createHintElement(link)
+      const complete = () => {
+        clearTimeout(timeout)
+        signal.removeEventListener('abort', complete)
         resolve()
       }
-      const onAbort = () => complete(true)
-      signal.addEventListener('abort', onAbort)
+      const fail = () => {
+        complete()
+        disposeHint(el)
+      }
+      signal.addEventListener('abort', complete)
+      el.onerror = fail
+      el.onload = complete
+      const timeout = setTimeout(fail, FORWARDED_HINT_TIMEOUT_MS)
 
-      hint.entry = head!.push({
-        link: [{
-          ...link,
-          onerror: () => complete(true),
-          onload: () => complete(false),
-        }],
-      })
-      forwardedHintEntries.add(hint.entry)
-      hint.timeout = setTimeout(() => complete(true), FORWARDED_HINT_TIMEOUT_MS)
+      forwardedHints.set(el, complete)
+      document.head.appendChild(el)
     })
 
     nuxtApp.hooks.hook('link:prefetch', (url) => {
@@ -166,7 +195,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
               return
             }
             // a retained payload resolves onto its own route, which renders these hints itself
-            if (signal.aborted || !head || !payload?.prefetchLinks?.length || group === prefetchGroup(router.currentRoute.value.fullPath)) { return }
+            if (signal.aborted || !prefetchPreloadTags || !payload?.prefetchLinks?.length || group === prefetchGroup(router.currentRoute.value.fullPath)) { return }
             schedule(selectHints(payload.prefetchLinks).map(({ href, link }) => ({
               key: `hint:${href}`,
               priority: 'hint',

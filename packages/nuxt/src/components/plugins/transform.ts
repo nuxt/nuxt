@@ -1,5 +1,5 @@
 import { isIgnored } from '@nuxt/kit'
-import { buildDiagnostics, hasOwnSubpathImport } from '@nuxt/kit/internal'
+import { buildDiagnostics, hasOwnSubpathImport, isWithinDir } from '@nuxt/kit/internal'
 import type { Import } from 'unimport'
 import { createUnimport } from 'unimport'
 import { createUnplugin } from 'unplugin'
@@ -57,19 +57,20 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
 
   function transformInclude (id: string) {
     id = normalize(id)
-    return id.startsWith('virtual:') || id.startsWith('\0virtual:') || id.startsWith(nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
+    return id.startsWith('virtual:') || id.startsWith('\0virtual:') || isWithinDir(id, nuxt.options.buildDir) || !isIgnored(id, undefined, nuxt)
   }
 
   return createUnplugin(() => [
     {
       name: 'nuxt:components:imports-wrapper',
       enforce: 'post',
-      transformInclude,
       transform: {
         filter: {
           id: COMPONENT_QUERY_RE,
         },
         handler (_code, id) {
+          if (!transformInclude(id)) { return }
+
           // Virtual component wrapper
           const { search } = parseModuleId(id)
           const params = new URLSearchParams(search)
@@ -77,7 +78,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
           const bare = id.replace(/\?.*/, '')
           const componentExport = params.get('nuxt_component_export') || 'default'
           if (!IDENTIFIER_RE.test(componentExport)) {
-            throw buildDiagnostics.NUXT_B1021({ export: componentExport })
+            throw buildDiagnostics.NUXT_B1021({ export: componentExport }, { method: 'error' })
           }
           const exportWording = componentExport === 'default' ? 'export default' : `export const ${componentExport} =`
           if (mode === 'async') {
@@ -116,7 +117,7 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
               map: null,
             }
           } else {
-            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) })
+            throw buildDiagnostics.NUXT_B1019({ mode: String(mode) }, { method: 'error' })
           }
         },
       },
@@ -124,12 +125,13 @@ export function TransformPlugin (nuxt: Nuxt, options: TransformPluginOptions) {
     {
       name: 'nuxt:components:imports-alias',
       enforce: 'post',
-      transformInclude,
       transform: {
         filter: {
           code: /#components/,
         },
         async handler (code, id) {
+          if (!transformInclude(id)) { return }
+
           // If package defines a "#components" import mapping, assume is used internally by the package.
           if (await hasOwnSubpathImport(id, '#components', nuxt.options.rootDir)) {
             return

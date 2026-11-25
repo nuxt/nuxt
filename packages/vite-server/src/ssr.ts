@@ -1,7 +1,7 @@
 import { resolve } from 'pathe'
-import { joinRelativeURL, withTrailingSlash } from 'ufo'
+import { joinRelativeURL } from 'ufo'
 import { addTemplate } from '@nuxt/kit'
-import { getServerRuntime, resolveSpaLoadingTemplate, useServerBuild } from '@nuxt/kit/internal'
+import { getServerRuntime, isWithinDir, resolveSpaLoadingTemplate, useServerBuild } from '@nuxt/kit/internal'
 import type { NuxtServerRuntime } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { defu } from 'defu'
@@ -120,10 +120,11 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     getContents: () => [
       `import match from ${JSON.stringify(routeRules)}`,
       `import { createServerHelpers } from ${JSON.stringify(resolve(distDir, 'runtime/server'))}`,
+      `import { fetch as appFetch } from ${JSON.stringify(handler)}`,
       '',
       `export * from 'nuxt/internal/server-default'`,
       '',
-      `const helpers = createServerHelpers(match, () => import(${JSON.stringify(handler)}).then(m => m.fetch), ${JSON.stringify(nuxt.options.app.baseURL || '/')})`,
+      `const helpers = createServerHelpers(match, () => Promise.resolve(appFetch), ${JSON.stringify(nuxt.options.app.baseURL || '/')})`,
       `export const getRouteRules = helpers.getRouteRules`,
       `export const matchRouteRules = helpers.matchRouteRules`,
       `export const serverFetch = helpers.serverFetch`,
@@ -135,8 +136,9 @@ function addServerEntry (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, prerender
     write: true,
     getContents: () => [
       `import { createAppFetch } from ${JSON.stringify(resolve(distDir, 'runtime/fetch'))}`,
+      `import { fetch as appFetch } from ${JSON.stringify(handler)}`,
       '',
-      `export const fetch = createAppFetch(() => import(${JSON.stringify(handler)}).then(m => m.fetch))`,
+      `export const fetch = createAppFetch(() => Promise.resolve(appFetch))`,
     ].join('\n'),
   })
 
@@ -195,9 +197,8 @@ function ServerEnvironmentPlugin (nuxt: Nuxt, serverRuntime: NuxtServerRuntime, 
       // the entry substituted below; anything else belongs to a target, whose input vite
       // merges with the app's
       const input = config.build?.rolldownOptions?.input
-      const appDir = withTrailingSlash(nuxt.options.appDir)
       const targetEntries = input && typeof input === 'object' && !Array.isArray(input)
-        ? Object.entries(input).filter(([, value]) => value !== entry && !value.startsWith(appDir))
+        ? Object.entries(input).filter(([, value]) => value !== entry && !isWithinDir(value, nuxt.options.appDir))
         : []
 
       // server runtimes provide `navigator`; the other browser globals stay `undefined`, which
@@ -313,7 +314,9 @@ function disableUnsupported (nuxt: Nuxt): string[] {
   // the renderer's module for it has been loaded in the same build
   if (nuxt.options.features.inlineStyles) {
     nuxt.options.features.inlineStyles = false
-    unsupported.push('inlined styles (stylesheets are linked instead)')
+    if (nuxt.options._layers?.some(layer => layer.config.features?.inlineStyles)) {
+      unsupported.push('inlined styles (stylesheets are linked instead)')
+    }
   }
   if (nuxt.options.experimental.componentIslands && nuxt.options.experimental.componentIslands !== 'auto') {
     unsupported.push('server components and islands')

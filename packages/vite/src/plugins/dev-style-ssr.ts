@@ -1,5 +1,6 @@
 import { joinURL } from 'ufo'
 import type { Plugin } from 'vite'
+import { isWithinDir } from '@nuxt/kit/internal'
 import { isCSS } from '../utils/index.ts'
 
 interface DevStyleSSRPluginOptions {
@@ -19,7 +20,7 @@ export function DevStyleSSRPlugin (options: DevStyleSSRPluginOptions): Plugin {
       }
 
       let moduleId = id
-      if (moduleId.startsWith(options.srcDir)) {
+      if (isWithinDir(moduleId, options.srcDir)) {
         moduleId = moduleId.slice(options.srcDir.length)
       }
 

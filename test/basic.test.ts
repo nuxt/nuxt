@@ -304,10 +304,17 @@ describe('route rules', () => {
   })
 
   it.skipIf(!once)('should apply route rules to a catch-all page when the path has encoded slashes', async () => {
-    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout']) {
+    for (const path of ['/catchall/route-rules/layout', '/catchall/route-rules%2Flayout', '/catchall/route-rules%2flayout', '/catchall//route-rules/layout', '/catchall/%2Froute-rules/layout']) {
       const res = await fetch(path)
       expect(res.headers.get('x-catchall-route-rules'), path).toEqual('applied')
       expect(await res.text(), path).toContain('Custom Layout')
+    }
+  })
+
+  it.skipIf(!once)('should not server-render a catch-all page with `ssr: false` when the path has encoded slashes', async () => {
+    for (const path of ['/catchall/client-only/page', '/catchall/client-only%2Fpage', '/catchall/client-only%2fpage', '/catchall//client-only/page', '/catchall/%2Fclient-only/page']) {
+      const { script } = parseData(await $fetch<string>(path))
+      expect(script.serverRendered, path).toEqual(false)
     }
   })
 
@@ -1385,6 +1392,46 @@ describe.skipIf(!errorProjects)('errors', () => {
     expect(res.headers.get('content-type')).toContain(legacyErrorRendering ? 'text/html' : 'application/json')
   })
 
+  it.skipIf(isDev)('should not let a missing build asset be cached', async () => {
+    const res = await fetch('/_nuxt/missing-chunk.js')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('cache-control')).toBe('no-store')
+  })
+
+  it('should not let an error from a cached route be cached', async () => {
+    const counts: number[] = []
+    for (let i = 0; i < 2; i++) {
+      const res = await fetch('/api/cached-error', { headers: { accept: 'application/json' } })
+      expect(res.status).toBe(404)
+      expect(res.headers.get('cache-control')).toBe('no-cache')
+      counts.push((await res.json()).data.count)
+    }
+    expect(counts[1]).toBe(counts[0]! + 1)
+  })
+
+  it('should not let a page error be cached', async () => {
+    for (const accept of ['text/html', 'application/json']) {
+      const res = await fetch('/error/not-found', { headers: { accept } })
+      expect(res.status).toBe(404)
+      expect(res.headers.get('cache-control')).toBe('no-cache')
+    }
+  })
+
+  it('should not let a page error outside a route rule be cached', async () => {
+    for (const path of ['/page-that-does-not-exist', '/error-cause']) {
+      for (const accept of ['text/html', 'application/json']) {
+        const res = await fetch(path, { headers: { accept } })
+        expect([res.status, res.headers.get('cache-control')]).toEqual([path === '/error-cause' ? 500 : 404, 'no-cache'])
+      }
+    }
+  })
+
+  it('should keep the route rule cache-control on an error response a handler returns', async () => {
+    const res = await fetch('/api/returned-error')
+    expect(res.status).toBe(404)
+    expect(res.headers.get('cache-control')).toBe('public, max-age=60')
+  })
+
   it.skipIf(!legacyErrorRendering)('should render a JSON error page', async () => {
     const res = await fetch('/error', {
       headers: {
@@ -2100,6 +2147,30 @@ describe.skipIf(isDev || isWindows)('prefetching', () => {
     await expectNoClientErrors('/prefetch/server-components')
   })
 
+  it.skipIf(!once)('should fetch deferred prefetch hints only once the app is ready', async () => {
+    const html = await $fetch<string>('/')
+    const deferred = html.match(/<template data-nuxt-prefetch>(.*?)<\/template>/s)?.[1] ?? ''
+    const hints = [...deferred.matchAll(/ href="([^"]+)"/g)].map(m => m[1]!)
+    expect(hints.length).toBeGreaterThan(0)
+
+    const staticPage = await createPage(undefined, { javaScriptEnabled: false })
+    const staticRequests: string[] = []
+    staticPage.on('request', req => staticRequests.push(new URL(req.url()).pathname))
+    await staticPage.goto(url('/'), { waitUntil: 'networkidle' })
+    expect(staticRequests).toContain('/')
+    expect(staticRequests.filter(path => hints.includes(path))).toEqual([])
+    await staticPage.close()
+
+    const page = await createPage('/')
+    await page.waitForFunction(hints => hints.every(href => performance.getEntriesByName(new URL(href, location.href).href).length), hints)
+    const timings = await page.evaluate(hints => ({
+      entryLoaded: (performance.getEntriesByName(document.querySelector<HTMLScriptElement>('script[type="module"][src]')!.src)[0] as PerformanceResourceTiming).responseEnd,
+      hintsStarted: Math.min(...hints.map(href => performance.getEntriesByName(new URL(href, location.href).href)[0]!.startTime)),
+    }), hints)
+    expect(timings.hintsStarted).toBeGreaterThanOrEqual(timings.entryLoaded)
+    await page.close()
+  })
+
   it.skipIf(!once)('should prefetch everything needed when NuxtLink is used', async () => {
     const { page, requests } = await renderPage()
 
@@ -2526,6 +2597,23 @@ describe.skipIf(isWindows)('payload rendering', () => {
     const data = parsePayload(payload)
     expect(data.data).toBeDefined()
     expect(data.data['swr-in-spa-data']).toEqual({ ok: true })
+  })
+
+  it.skipIf(!once)('should apply the redirect, proxy and headers rules of a page to its payload url', async () => {
+    for (const path of ['/payload-rules/redirect', '/payload-rules/redirect/_payload.json']) {
+      const res = await fetch(path, { redirect: 'manual' })
+      expect(res.status, path).toBe(307)
+      expect(res.headers.get('location'), path).toBe('/')
+    }
+    for (const path of ['/payload-rules/proxy', '/payload-rules/proxy/_payload.json']) {
+      expect(await $fetch<string>(path), path).toBe('Hello API')
+    }
+    for (const path of ['/payload-rules/headers', '/payload-rules/headers/_payload.json']) {
+      const res = await fetch(path)
+      expect(res.status, path).toBe(200)
+      expect(res.headers.get('x-payload-rules'), path).toBe('applied')
+      expect(await res.text(), path).toContain('payload-rules-headers')
+    }
   })
 })
 

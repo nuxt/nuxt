@@ -505,7 +505,7 @@ export function _createUseAsyncData<
       const initialFetch = createInitialFetch()
       const asyncData = nuxtApp._asyncData[key.value]!
 
-      asyncData._deps++
+      registerAsyncData(asyncData)
 
       const fetchOnServer = opts.server !== false && nuxtApp.payload.serverRendered
 
@@ -552,7 +552,7 @@ export function _createUseAsyncData<
 
         const isWithinClientOnly = inComponentSetup && (instance?._nuxtClientOnly || inject(clientOnlySymbol, false))
 
-        const hasServerData = key.value in nuxtApp.payload.data
+        const hasServerData = Object.hasOwn(nuxtApp.payload.data, key.value)
 
         if (fetchOnServer && nuxtApp.isHydrating && (asyncData.error.value || (asyncData.data.value !== undefined && (hasServerData || asyncData._initialCachedData !== undefined)))) {
           // 1. Hydration (server: true): no fetch
@@ -612,7 +612,7 @@ export function _createUseAsyncData<
                   nuxtApp._asyncData[newKey]!._initialCachedData = cachedData
                 }
 
-                nuxtApp._asyncData[newKey]._deps++
+                registerAsyncData(nuxtApp._asyncData[newKey])
                 lastEntry = nuxtApp._asyncData[newKey]
 
                 // Now it's safe to drop the old container.
@@ -762,14 +762,9 @@ export function _isAutoKeyNeeded (keyOrFetcher: string | MaybeRefOrGetter<string
 export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | undefined> } {
   const nuxtApp = useNuxtApp()
 
-  // Initialize value when key is not already set
-  if (!(key in nuxtApp.payload.data)) {
-    nuxtApp.payload.data[key] = undefined
-  }
-
   if (nuxtApp._asyncData[key]) {
     const data = nuxtApp._asyncData[key]
-    data._deps++
+    registerAsyncData(data)
     if (getCurrentScope()) {
       onScopeDispose(() => {
         data._deps--
@@ -784,7 +779,9 @@ export function useNuxtData<DataT = any> (key: string): { data: Ref<DataT | unde
   return {
     data: computed({
       get () {
-        return nuxtApp._asyncData[key]?.data.value ?? nuxtApp.payload.data[key]
+        const data = nuxtApp._asyncData[key]?.data.value
+        const payloadData = nuxtApp.payload.data[key]
+        return data ?? (Object.hasOwn(nuxtApp.payload.data, key) ? payloadData : undefined)
       },
       set (value) {
         if (nuxtApp._asyncData[key]) {
@@ -827,6 +824,12 @@ export function clearNuxtData (keys?: string | string[] | ((key: string) => bool
   }
 }
 
+function registerAsyncData (data: NonNullable<NuxtApp['_asyncData'][string]>): void {
+  if (data._deps++ === 0 && data._init) {
+    data._on()
+  }
+}
+
 function clearNuxtDataByKey (nuxtApp: NuxtApp, key: string): void {
   delete nuxtApp.payload.data[key]
   delete nuxtApp.payload._errors[key]
@@ -852,7 +855,7 @@ function pick (obj: Record<string, any>, keys: string[]) {
   return newObj
 }
 
-export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
+export type CreatedAsyncData<ResT, NuxtErrorDataT = unknown, DataT = ResT, DefaultT = undefined> = Omit<_AsyncData<DataT | DefaultT, (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)>, 'clear' | 'refresh'> & { _on: () => void, _off: () => void, _hash?: Record<string, string | undefined>, _default: () => unknown, _init: boolean, _deps: number, _execute: (opts?: AsyncDataExecuteOptions) => Promise<void>, _abortController?: AbortController }
 
 function buildAsyncData<
   ResT,
@@ -861,7 +864,9 @@ function buildAsyncData<
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
 > (nuxtApp: NuxtApp, key: string, _handler: AsyncDataHandler<ResT>, options: AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, initialCachedData?: NoInfer<DataT>): CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> {
-  nuxtApp.payload._errors[key] ??= undefined
+  if (!Object.hasOwn(nuxtApp.payload._errors, key)) {
+    nuxtApp.payload._errors[key] = undefined
+  }
 
   const hasCustomGetCachedData = options.getCachedData !== getDefaultCachedData
 
@@ -889,11 +894,7 @@ function buildAsyncData<
 
   const _ref = options.deep ? ref : shallowRef
   const hasCachedData = initialCachedData !== undefined
-  const unsubRefreshAsyncData = nuxtApp.hook('app:data:refresh', async (keys) => {
-    if (!keys || keys.includes(key)) {
-      await asyncData.execute({ cause: 'refresh:hook' })
-    }
-  })
+  let unsubRefreshAsyncData: (() => void) | undefined
   const asyncData: CreatedAsyncData<ResT, NuxtErrorDataT, DataT, DefaultT> = {
     data: _ref(hasCachedData ? initialCachedData : options.default!()) as any,
     pending: pendingWhenIdle ? shallowRef(!hasCachedData) : computed(() => asyncData.status.value === 'pending'),
@@ -915,6 +916,15 @@ function buildAsyncData<
       if (granularCachedData || opts.cause === 'initial' || nuxtApp.isHydrating) {
         const cachedData = 'cachedData' in opts ? opts.cachedData : options.getCachedData!(key, nuxtApp, { cause: opts.cause ?? 'refresh:manual' })
         if (cachedData !== undefined) {
+          // a subscriber's initial lookup does not supersede a request already in flight
+          if (opts.cause !== 'initial' && nuxtApp._asyncDataPromises[key]) {
+            asyncData._abortController?.abort(new DOMException('AsyncData request cancelled by cache hit', 'AbortError'))
+            asyncData._abortController = undefined
+            delete nuxtApp._asyncDataPromises[key]
+            if (pendingWhenIdle) {
+              asyncData.pending.value = false
+            }
+          }
           if (options.serialize !== false) {
             nuxtApp.payload.data[key] = cachedData
           }
@@ -981,6 +991,9 @@ function buildAsyncData<
           let result = _result as unknown as DataT
           if (options.transform) {
             result = await options.transform(_result)
+            if (nuxtApp._asyncDataPromises[key] !== promise) {
+              return
+            }
           }
           if (options.pick) {
             result = pick(result as any, options.pick) as DataT
@@ -1017,7 +1030,11 @@ function buildAsyncData<
             return
           }
 
-          asyncData.error.value = (import.meta.server && !import.meta.dev && isUntrustedError(error)
+          const masked = import.meta.server && !import.meta.dev && isUntrustedError(error)
+          if (masked && !hasStatus(error)) {
+            nuxtApp.ssrContext?.['~captureError']?.(error)
+          }
+          asyncData.error.value = (masked
             ? createError({ status: 500, statusText: 'Internal Server Error' })
             : createError<NuxtErrorDataT>(error)) as (NuxtErrorDataT extends Error | NuxtError ? NuxtErrorDataT : NuxtError<NuxtErrorDataT>)
           asyncData.data.value = unref(options.default!())
@@ -1042,8 +1059,16 @@ function buildAsyncData<
     _deps: 0,
     _init: true,
     _hash: import.meta.dev ? createHash(_handler, options) : undefined,
+    _on: () => {
+      unsubRefreshAsyncData ??= nuxtApp.hook('app:data:refresh', async (keys) => {
+        if (!keys || keys.includes(key)) {
+          await asyncData.execute({ cause: 'refresh:hook' })
+        }
+      })
+    },
     _off: () => {
-      unsubRefreshAsyncData()
+      unsubRefreshAsyncData?.()
+      unsubRefreshAsyncData = undefined
       // a newer entry may already own this key, for example when `useNuxtData` kept this one
       // alive until after the next page registered the key again - leave that entry alone
       if (nuxtApp._asyncData[key] !== asyncData) {
@@ -1084,13 +1109,19 @@ function buildAsyncData<
 
 // Used to get default values
 const getDefault = () => undefined
+
+function hasStatus (error: unknown): boolean {
+  const { status, statusCode } = (error ?? {}) as { status?: unknown, statusCode?: unknown }
+  return typeof status === 'number' || typeof statusCode === 'number'
+}
+
 const getDefaultCachedData: AsyncDataOptions<any>['getCachedData'] = (key, nuxtApp, ctx) => {
   if (nuxtApp.isHydrating) {
-    return nuxtApp.payload.data[key]
+    return Object.hasOwn(nuxtApp.payload.data, key) ? nuxtApp.payload.data[key] : undefined
   }
 
   if (ctx.cause === 'initial') {
-    return nuxtApp.static.data[key]
+    return Object.hasOwn(nuxtApp.static.data, key) ? nuxtApp.static.data[key] : undefined
   }
 }
 

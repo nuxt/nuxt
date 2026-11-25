@@ -136,4 +136,6 @@ export default withMatrix({
       const _: number = payload.value
     },
   },
+  // `config` only, which is enough to auto-import the nitro v2 cached handler helpers
+  nitroLegacy: { imports: false, h3: false, specifiers: false, runtimeConfig: false },
 })

@@ -1,5 +1,6 @@
 import { createConsoleReporter, defineDiagnostics } from 'nostics'
 import { ansiFormatter } from 'nostics/formatters/ansi'
+import { docsVersion } from '#internal/nuxt/host'
 
 const ansi = (open: number, close: number) => (s: string) => `\x1B[${open}m${s}\x1B[${close}m`
 const colors = {
@@ -17,7 +18,7 @@ const colors = {
  * SSR renderer.
  */
 const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+  `https://nuxt.com/docs/${docsVersion}/errors/${code.replace('NUXT_', '').toLowerCase()}`
 
 export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
@@ -26,7 +27,7 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
   codes: {
     NUXT_E8003: {
       why: (p: { error?: string }) => `Failed to stringify dev server logs.${p.error ? ` Received \`${p.error}\`.` : ''}`,
-      fix: 'You can define your own reducer/reviver for rich types following the instructions in `https://nuxt.com/docs/5.x/api/composables/use-nuxt-app#payload`.',
+      fix: `You can define your own reducer/reviver for rich types following the instructions in \`https://nuxt.com/docs/${docsVersion}/api/composables/use-nuxt-app#payload\`.`,
       docs: false,
     },
     NUXT_E8005: {
@@ -55,13 +56,18 @@ export const serverDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_E8013: {
-      why: (p: { hook: string, location?: string }) => `A \`${p.hook}\` listener was registered${p.location ? ` by \`${p.location}\`` : ''}, but Nuxt 5 does not emit this Nitro v2 hook, so the listener never runs.`,
+      why: (p: { hook: string, location?: string }) => `A \`${p.hook}\` listener was registered${p.location ? ` by \`${p.location}\`` : ''}, but this Nitro v2 hook is not emitted on Nitro v3, so the listener never runs.`,
       fix: (p: { fix: string }) => p.fix,
       docs: false,
     },
     NUXT_E8016: {
       why: (p: { received: string }) => `\`defineHandler\` from \`nuxt/server\` accepts a handler function, but received ${p.received}. The object form is specific to h3.`,
       fix: 'Pass the handler function directly, or import `defineHandler` from `nitro/h3` in this file to use the object form (`{ handler, middleware, meta }`). h3 v2 does not run h3 v1 `onRequest` or `onBeforeResponse` hooks, so move them into `middleware` or the handler first.',
+      docs: false,
+    },
+    NUXT_E8017: {
+      why: (p: { plugin: string }) => `The Nitro v2 plugin \`${p.plugin}\` registered a \`close\` listener while prerendering, which does not run when prerendering ends on Nitro v3, so anything the listener writes or flushes (for example to \`useStorage('build:...')\`) is lost.`,
+      fix: 'A module author can write the data as each route is prerendered (for example from a `render:html` listener, to `useStorage(\'build:...\')`) and read it back in a build-time hook such as `prerender:done`, instead of writing it on `close`. A listener that only releases resources loses nothing. Report it to the module author if the plugin is not your own.',
       docs: false,
     },
   },

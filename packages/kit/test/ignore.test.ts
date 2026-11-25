@@ -21,6 +21,24 @@ describe('isIgnored', () => {
 
     expect(isIgnored('.wrangler/state/v3/cache/miniflare-CacheObject/db.sqlite-wal')).toBe(true)
   })
+
+  it('should match the root of a nested layer against the parent layer patterns', () => {
+    const mockNuxt = {
+      options: {
+        rootDir: '/project',
+        srcDir: '/project',
+        alias: {},
+        ignore: ['layers/private'],
+        _layers: [
+          { cwd: '/project', config: { rootDir: '/project', srcDir: '/project' } },
+          { cwd: '/project/layers/private', config: { rootDir: '/project/layers/private', srcDir: '/project/layers/private' } },
+        ],
+      },
+    } as unknown as Nuxt
+    vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
+
+    expect(isIgnored('/project/layers/private')).toBe(true)
+  })
 })
 
 describe('resolveGroupSyntax', () => {

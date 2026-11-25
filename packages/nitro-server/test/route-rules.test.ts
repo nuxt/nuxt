@@ -7,18 +7,18 @@ import { resolveModulePath } from 'exsolve'
 import { createMatcherFromFind } from 'h3/rules'
 import { compileRouteRules } from 'h3/rules/compiler'
 import type { Nitro, NitroConfig } from 'nitro/types'
-import { keepCachedIslandQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
+import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from '../src/route-rules.ts'
 
-vi.mock('@nuxt/kit/internal', () => ({
+vi.mock('@nuxt/kit/internal', async importOriginal => ({
+  ...await importOriginal<typeof import('@nuxt/kit/internal')>(),
   bundlerDiagnostics: { NUXT_B7026: vi.fn() },
-  pageDiagnostics: { NUXT_B4022: vi.fn((p: { route: string, part: string }) => new Error(`NUXT_B4022 ${p.route} ${p.part}`)) },
 }))
 
 const { bundlerDiagnostics } = await import('@nuxt/kit/internal')
 
-function normalize (routeRules: NitroConfig['routeRules']) {
+function normalize (routeRules: NitroConfig['routeRules'], options?: Parameters<typeof normalizeLegacyRouteRules>[1]) {
   vi.mocked(bundlerDiagnostics.NUXT_B7026).mockClear()
-  normalizeLegacyRouteRules(routeRules)
+  normalizeLegacyRouteRules(routeRules, options)
   return { routeRules, warnings: vi.mocked(bundlerDiagnostics.NUXT_B7026).mock.calls.map(c => c[0]) }
 }
 
@@ -27,7 +27,7 @@ describe('normalizeLegacyRouteRules', () => {
     const { routeRules, warnings } = normalize({ '/old': { redirect: { to: '/new', statusCode: 302 } as any } })
 
     expect(routeRules!['/old']!.redirect).toEqual({ to: '/new', status: 302 })
-    expect(warnings).toEqual([{ route: '/old' }])
+    expect(warnings).toEqual([{ count: 1, routes: '`/old`', nitro2: false }])
   })
 
   it('leaves a rule that already uses `status` alone', () => {
@@ -50,14 +50,33 @@ describe('normalizeLegacyRouteRules', () => {
     expect(routeRules!['/both']!.redirect).toEqual({ to: '/x', status: 307 })
   })
 
-  it('warns once per affected route', () => {
+  it('warns once, listing every affected route', () => {
     const { warnings } = normalize({
       '/a': { redirect: { to: '/1', statusCode: 302 } as any },
       '/b': { redirect: { to: '/2', statusCode: 301 } as any },
       '/c': { redirect: { to: '/3', status: 302 } },
     })
 
-    expect(warnings).toEqual([{ route: '/a' }, { route: '/b' }])
+    expect(warnings).toEqual([{ count: 2, routes: '`/a`\n  - `/b`', nitro2: false }])
+  })
+
+  it('rewrites without a warning on a Nuxt 4 host while `nitroLegacy.config` is on', () => {
+    const { routeRules, warnings } = normalize({ '/old': { redirect: { to: '/new', statusCode: 302 } as any } }, { nuxt4Host: true, legacyConfig: true })
+
+    expect(routeRules!['/old']!.redirect).toEqual({ to: '/new', status: 302 })
+    expect(warnings).toEqual([])
+  })
+
+  it('warns that Nitro v2 ignores `status` on a Nuxt 4 host with `nitroLegacy.config` off', async () => {
+    const { routeRules, warnings } = normalize({ '/old': { redirect: { to: '/new', statusCode: 302 } as any } }, { nuxt4Host: true, legacyConfig: false })
+
+    expect(routeRules!['/old']!.redirect).toEqual({ to: '/new', status: 302 })
+    expect(warnings).toEqual([{ count: 1, routes: '`/old`', nitro2: true }])
+
+    const actual = await vi.importActual<typeof import('@nuxt/kit/internal')>('@nuxt/kit/internal')
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+    expect(actual.bundlerDiagnostics.NUXT_B7026(warnings[0]!).fix).toContain('Nitro v2 ignores `redirect.status`')
+    expect(actual.bundlerDiagnostics.NUXT_B7026({ ...warnings[0]!, nitro2: false }).fix).toMatch(/^Rename /)
   })
 
   it('tolerates absent or empty route rules', () => {
@@ -96,15 +115,33 @@ describe('keepCachedIslandQuery', () => {
   })
 })
 
+describe('keepCachedQuery', () => {
+  it('keys cached responses on their query by default', () => {
+    const config: Pick<NitroConfig, 'cache'> = {}
+    keepCachedQuery(config)
+    expect(config.cache?.defaults?.allowQuery).toBe(true)
+  })
+
+  it.each<[NonNullable<NonNullable<NitroConfig['cache']>['defaults']>['allowQuery']]>([
+    [false],
+    [[]],
+    [['page']],
+  ])('keeps a configured default (%j)', (allowQuery) => {
+    const config: Pick<NitroConfig, 'cache'> = { cache: { driver: 'memory', defaults: { allowQuery, maxAge: 60 } } }
+    keepCachedQuery(config)
+    expect(config.cache).toEqual({ driver: 'memory', defaults: { allowQuery, maxAge: 60 } })
+  })
+})
+
 describe('routeRulesCaseFoldPlugin', () => {
   const nitroPackage = resolveModulePath('nitro/package.json', { from: import.meta.url })
 
   async function loadMatcher (routeRules: NonNullable<NitroConfig['routeRules']>, baseURL = '/', middleware = false) {
     const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL, preMerge: true }
     const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL } }) as Nitro)
-    const code = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    const { code } = (await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing'))!
     const file = join(await mkdtemp(join(tmpdir(), 'nuxt-route-rules-')), 'routing.mjs')
-    await writeFile(file, code!.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
+    await writeFile(file, code.replace(/from "(h3[^"]*)"/g, (_, id) => `from ${JSON.stringify(pathToFileURL(resolveModulePath(id, { from: nitroPackage })).href)}`))
     const { findRouteRules } = await import(pathToFileURL(file).href)
     const match = createMatcherFromFind(findRouteRules)
     return (path: string, method = 'GET') => {
@@ -218,8 +255,8 @@ describe('routeRulesCaseFoldPlugin', () => {
   })
 
   it('rejects constraints that depend on letter case', async () => {
-    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id((?:FOO|bar)) F')
-    await expect(loadMatcher({ '/x/:id([a-zς]+)': { headers: { 'x-id': '1' } } })).rejects.toThrow('NUXT_B4022 /x/:id([a-zς]+) [a-zς]')
+    await expect(loadMatcher({ '/x/:id((?:FOO|bar))': { headers: { 'x-id': '1' } } })).rejects.toThrow('The route rule `/x/:id((?:FOO|bar))` has a regex constraint that depends on letter case (`F`)')
+    await expect(loadMatcher({ '/x/:id([a-zς]+)': { headers: { 'x-id': '1' } } })).rejects.toThrow('The route rule `/x/:id([a-zς]+)` has a regex constraint that depends on letter case (`[a-zς]`)')
   })
 
   it('matches rules under a base URL regardless of casing', async () => {
@@ -227,6 +264,14 @@ describe('routeRulesCaseFoldPlugin', () => {
 
     expect(match('/App/admin').headers).toEqual({ 'x-admin': '1' })
     expect(match('/app/Admin').headers).toEqual({ 'x-admin': '1' })
+  })
+
+  it('returns an empty sourcemap for the module it rewrites', async () => {
+    const routeRules: NonNullable<NitroConfig['routeRules']> = { '/admin': { headers: { 'x-a': 'admin' } } }
+    const options = { runtimeRules: { cache: '#nitro/runtime/route-rule-handlers' }, baseURL: '/', preMerge: true }
+    const plugin = routeRulesCaseFoldPlugin(() => ({ options: { routeRules, baseURL: '/' } }) as Nitro)
+    const result = await plugin.transform.handler(compileRouteRules(routeRules, options).toString(), '#nitro/virtual/routing')
+    expect(result?.map).toEqual({ mappings: '' })
   })
 
   it('leaves other modules alone', async () => {

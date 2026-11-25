@@ -154,8 +154,8 @@ export class SSRStylesPlugin {
   }
 
   private buildAssetPath (url: string) {
-    const buildDir = withTrailingSlash(this.nuxt.options.app.buildAssetsDir || '/_nuxt/')
-    return url.startsWith(buildDir) ? url.slice(buildDir.length) : null
+    const assetsBase = withTrailingSlash(this.nuxt.options.app.buildAssetsDir || '/_nuxt/')
+    return url.startsWith(assetsBase) ? url.slice(assetsBase.length) : null
   }
 
   private isPublicAsset (url: string, nitro: ReturnType<typeof useNitro>) {

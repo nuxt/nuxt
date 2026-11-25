@@ -7,13 +7,12 @@ import { hash } from 'ohash'
 import { camelCase } from 'scule'
 import { filename, reverseResolveAlias } from 'pathe/utils'
 import { tryUseNitro } from '@nuxt/kit'
-import { bundlerDiagnostics, getRuntimeConfigSchema, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, bundlerDiagnostics, createNormalizedRouteRulesRouter, genNormalizePathCode, getRuntimeConfigSchema, isWildcardRedirect, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes, resolveWildcardRedirect, runtimeConfigSchemaToType, useServerBuild } from '@nuxt/kit/internal'
 
 import { annotatePlugins, breakCircularDependencies, filterPluginDependencies, hasPluginCapability, sortPluginsByDependsOn } from './app.ts'
 import type { PluginCapability } from './app.ts'
 import { setPluginDependenciesForMode } from './plugins/plugin-metadata.ts'
 import { EXTENSION_RE } from './utils/index.ts'
-import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, createNormalizedRouteRulesRouter, genNormalizePathCode, isWildcardRedirect, mergeMethodRouteRulesRoutes, resolveRouteRulesRoutes, resolveWildcardRedirect } from './utils/route-rules.ts'
 import type { Nuxt, NuxtApp, NuxtOptions, NuxtTemplate } from 'nuxt/schema'
 import type { Nitro } from 'nitro/types'
 
@@ -154,7 +153,7 @@ export const pluginsDeclaration: NuxtTemplate = {
       return app.templates.some(t => t.write && path === t.dst) || existsSync(path)
     }
 
-    for (const plugin of await annotatePlugins(nuxt, app.plugins)) {
+    for (const plugin of await annotatePlugins(nuxt, app.plugins.filter(plugin => !plugin._skipTypes))) {
       if (plugin.name) {
         pluginNames.push(`'${plugin.name}'`)
       }
@@ -736,6 +735,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const nuxtLinkDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.nuxtLink)}`,
       `export const asyncDataDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useAsyncData)}`,
       `export const useStateDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.useState)}`,
+      `export const navigateToDefaults = ${JSON.stringify(ctx.nuxt.options.experimental.defaults.navigateTo)}`,
       `export const fetchDefaults = ${JSON.stringify(fetchDefaults)}`,
       `export const vueAppRootContainer = ${ctx.nuxt.options.app.rootAttrs.id ? `'#${ctx.nuxt.options.app.rootAttrs.id}'` : `'body > ${ctx.nuxt.options.app.rootTag}'`}`,
       `export const viewTransition = ${ctx.nuxt.options.experimental.viewTransition}`,

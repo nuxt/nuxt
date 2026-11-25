@@ -11,12 +11,13 @@ import { isGreaterThan, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
 import { interopDefault } from '../internal/interop.ts'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from '../internal/node-module.ts'
+import { isWithinDir } from '../internal/paths.ts'
 import { useNuxt } from '../context.ts'
 import { logger } from '../logger.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
-import { describeNativeImportFailure, getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
+import { describeMissingPackage, describeNativeImportFailure, getMissingCjsGlobal, getMissingPackage, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
@@ -338,7 +339,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
+    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` }, { method: 'error' })
   }
 
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
@@ -356,7 +357,7 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
       module: nuxtModule,
       installCommand: isAbsolute(nuxtModule) ? undefined : await getAddDependencyCommand(nuxtModule, nuxt.options.rootDir),
       cause: error,
-    })
+    }, { method: 'error' })
   }
 
   // module is resolved on disk, so import failures are real load errors, not a missing install
@@ -366,13 +367,24 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     resolvedNuxtModule = await import(src).then(r => interopDefault(r))
   } catch (nativeError: unknown) {
     const missingGlobal = getMissingCjsGlobal(nativeError)
-    // Whether jiti is the answer, or the module simply has a bug a second loader will repeat
-    const jitiCanHelp = isLoaderError(nativeError) || !!missingGlobal
+    const missingPackage = getMissingPackage(nativeError, nuxt.options.alias)
+    // Whether jiti is the answer, or the module simply has a bug a second loader will repeat.
+    // jiti may find a package the module does not depend on, which only hides the problem.
+    const jitiCanHelp = !missingPackage && (isLoaderError(nativeError) || !!missingGlobal)
+    const missingPackageError = async (missing: NonNullable<typeof missingPackage>) => kitDiagnostics.NUXT_B8020({
+      module: nuxtModule,
+      error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+      hint: await describeMissingPackage(missing, nuxt.options.rootDir),
+      cause: nativeError,
+    }, { method: 'error' })
     // A module is a function Nuxt calls later, so evaluating one twice repeats no work of its own
     const jiti = await getSharedJiti(nuxt, jitiCanHelp)
     if (!jiti) {
+      if (missingPackage) {
+        throw await missingPackageError(missingPackage)
+      }
       if (!jitiCanHelp) {
-        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError })
+        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError }, { method: 'error' })
       }
       throw kitDiagnostics.NUXT_B8020({
         module: nuxtModule,
@@ -380,30 +392,34 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         hint: describeNativeImportFailure(nativeError),
         installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
         cause: nativeError,
-      })
+      }, { method: 'error' })
     }
     try {
       resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
     } catch (error: unknown) {
+      if (missingPackage) {
+        throw await missingPackageError(missingPackage)
+      }
       // jiti's error is only the better one where jiti was expected to get further; a repeat of the
       // same failure keeps the native error and its untransformed stack
       const repeated = missingGlobal && getMissingCjsGlobal(error) === missingGlobal
       const reported = jitiCanHelp && !repeated ? error : nativeError
-      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported })
+      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported }, { method: 'error' })
     }
-    if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4)) {
+    if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4, !!missingPackage)) {
       kitDiagnostics.NUXT_B8023({
         module: nuxtModule,
         error: nativeError instanceof Error ? nativeError.message : String(nativeError),
-        hint: describeNativeImportFailure(nativeError),
-        installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
-        local: !normalize(resolvedModulePath).includes('/node_modules/'),
+        hint: missingPackage ? await describeMissingPackage(missingPackage, nuxt.options.rootDir) : describeNativeImportFailure(nativeError),
+        installCommand: missingPackage ? undefined : await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+        // the hint for a missing package already names whoever has to fix it
+        local: !!missingPackage || !normalize(resolvedModulePath).includes('/node_modules/'),
       })
     }
   }
 
   if (typeof resolvedNuxtModule !== 'function') {
-    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule })
+    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule }, { method: 'error' })
   }
 
   // nuxt-module-builder generates a module.json with metadata including the version
@@ -525,8 +541,7 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
         ? parsed.dir + parsed.name
         : resolvePackageDir(modulePath, { try: true }) || modulePath
       nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-      const directory = moduleRoot.replace(/\/?$/, '/')
-      if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
+      if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => isWithinDir(moduleRoot, dir))) {
         nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
       }
     }

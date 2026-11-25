@@ -68,6 +68,8 @@ export interface NuxtServerApp {
   payload: NuxtPayload
   ssrContext?: NuxtSSRContext
   [key: string]: unknown
+  /** @internal */
+  _cookieWriters?: Set<() => void>
 }
 
 /**
@@ -163,10 +165,14 @@ export interface NuxtSSRContext extends SSRContext {
   islandContext?: NuxtIslandContext
   /** @internal */
   ['~renderResponse']?: Response
+  /** @internal */
+  ['~headersSent']?: boolean
   /** The app markup as rendered chunks, wrapped in the app root tags. @internal */
   ['~htmlChunks']?: string[]
   /** @internal */
   ['~payloadReducers']: Record<string, (data: any) => any>
+  /** Report an error that is kept out of the response to the server runtime. @internal */
+  ['~captureError']?: (error: unknown) => void
   /** @internal */
   ['~sharedPrerenderCache']?: {
     get<T = unknown> (key: string): Promise<T> | undefined

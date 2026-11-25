@@ -100,6 +100,16 @@ describe.skipIf(!runsOncePerEnvInMatrix)('nitro v2 module compatibility without 
     expect(response.headers.get('x-route-header')).toBe(null)
   })
 
+  it('starts an API stream while a v2 `beforeResponse` hook is registered', async () => {
+    const response = await fetch('/api/stream', { signal: AbortSignal.timeout(10_000) })
+    const reader = response.body!.getReader()
+
+    const { value } = await reader.read()
+    expect(new TextDecoder().decode(value)).toBe('first')
+    expect(response.headers.get('x-before-response')).toBe('applied')
+    await reader.cancel()
+  })
+
   it('decorates events reaching module utilities from an unwrapped user route', async () => {
     expect(await $fetch<Record<string, unknown>>('/api/via-util')).toEqual({
       pong: 'pong',

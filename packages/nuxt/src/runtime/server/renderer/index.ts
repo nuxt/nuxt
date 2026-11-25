@@ -23,18 +23,18 @@ import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
 import type { NuxtRendererOptions, RendererEvent } from './runtime'
 import { getPrerenderedErrorPage, isPrerenderedErrorPage, renderErrorResponse } from './error-page'
-import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument, renderHTMLDocumentChunks } from './document'
+import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument, renderHTMLDocumentChunks, stampDevBadgeNonce } from './document'
 import { extractCspNonce } from './csp-nonce'
-import { inertPrefetchLink, inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript } from './head'
+import { inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript, renderDeferredPrefetchHints } from './head'
 import { renderStreamedResponse } from './stream'
-import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appComponentHead, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
 export type { NuxtRendererOptions, RendererEvent, RendererHooks, RendererRouteRules, CachedResponse, PayloadCache, NuxtRequestState } from './runtime'
 export { appEvent } from './runtime'
 
-const PAYLOAD_URL_RE = /^[^?]*\/_payload.json(?:\?.*)?$/
+const PAYLOAD_URL_RE = /^[^?]*\/_payload\.json(?:\?.*)?$/
 
 /**
  * Create a Nuxt SSR renderer, returning a web-standard handler for the requests a Nuxt
@@ -119,6 +119,13 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // an error page rendered as an empty SPA shell shows the visitor nothing
   if (!routeOptions.ssr && !ssrError) {
     ssrContext.noSSR = true
+  }
+
+  // the app component is not rendered into an SPA shell, so its hoisted head is pushed here
+  if (ssrContext.noSSR) {
+    for (const input of appComponentHead) {
+      ssrContext.head.push(input)
+    }
   }
 
   // Fail fast for paths that cannot match any page route, before the app (and
@@ -332,6 +339,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
     }
   }
   const hints: Link[] = []
+  const deferredHints: Link[] = []
   let preloadContext: Pick<NuxtSSRContext, 'modules'> = ssrContext
   if (NUXT_SPA_PAGE_MATCHER && ssrContext.noSSR && !ssrError && !NO_SCRIPTS && !(import.meta.prerender && NUXT_PRERENDER_NO_SSR_ROUTES.includes(event.url.pathname))) {
     const spaPageSources = NUXT_SPA_PAGE_MATCHER('', toPageMatcherPath(event.url.pathname))?.data
@@ -352,7 +360,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   }
   for (const l of getPrefetchLinks(preloadContext, rendererContext, dependencyOptions) as Link[]) {
     if (!excludeHrefs.has(l.href)) {
-      hints.push(DEFER_PREFETCH ? inertPrefetchLink(l) : l)
+      (DEFER_PREFETCH ? deferredHints : hints).push(l)
     }
   }
   if (hints.length) {
@@ -368,9 +376,11 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderSSRHead(ssrContext.head, renderSSRHeadOptions)
 
+  const headNonce = import.meta.dev ? extractCspNonce(headTags) : undefined
+  const devBadge = import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, headNonce) : undefined
   const htmlContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([headTags, import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, extractCspNonce(headTags)) : undefined]),
+    head: normalizeChunks([headTags, renderDeferredPrefetchHints(deferredHints), devBadge]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([bodyTagsOpen, ssrContext.teleports?.body]),
     body: [
@@ -382,6 +392,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   const renderHtmlResult = hooks.callHook('render:html', htmlContext, { event: hookEvent })
   if (renderHtmlResult instanceof Promise) { await renderHtmlResult }
+  if (import.meta.dev) {
+    await stampDevBadgeNonce(runtime, event, htmlContext, devBadge, headNonce)
+  }
 
   // the document is only serialised here if a listener reads it
   let documentHtml: string | undefined

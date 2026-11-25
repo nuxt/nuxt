@@ -1,40 +1,47 @@
-import type { createHead as createClientHead } from '@unhead/vue/client'
 import type { ActiveHeadEntry } from '@unhead/vue'
+import { headSymbol } from '@unhead/vue'
+import type { VueHeadClient } from '@unhead/vue/types'
 import type { NuxtApp } from '#app/nuxt'
+import { getClientHeadState } from './client-head-state'
 
 import { appHead } from '#build/nuxt.config.mjs'
+import { appComponentHead, createClientHead } from '#build/unhead-client.mjs'
 
-type ClientHead = ReturnType<typeof createClientHead>
+export function useClientHead (nuxtApp: NuxtApp): VueHeadClient {
+  const state = getClientHeadState(nuxtApp)
+  if (!state.head) {
+    installClientHead(nuxtApp, createClientHead())
+  }
+  return state.head!
+}
 
-export function installClientHead (nuxtApp: NuxtApp, head: ClientHead): void {
+export function installClientHead (nuxtApp: NuxtApp, head: VueHeadClient): void {
+  const state = getClientHeadState(nuxtApp)
+  state.head = head
+
   // pause dom updates until page is ready and between page transitions
-  let pauseDOMUpdates = true
   const render = head.render
+  state.render = render
   head.render = () => {
-    if (pauseDOMUpdates) { return false }
+    if (state.paused) { return false }
     return render()
   }
 
   // re-push server-only `app.head` so `titleTemplate` survives hydration (#35468)
   head.push(appHead)
+  state.pushAppComponentHead = () => {
+    for (const input of appComponentHead) {
+      head.push(input)
+    }
+  }
+  if (state.rootSetup) {
+    state.pushAppComponentHead()
+  }
 
+  delete nuxtApp.vueApp._context?.provides[headSymbol]
   nuxtApp.vueApp.use(head)
 
-  const syncHead = () => {
-    pauseDOMUpdates = false
-    render()
-  }
-  head.hooks?.hook('dom:beforeRender', (context) => { context.shouldRender = !pauseDOMUpdates })
-  nuxtApp.hooks.hook('page:start', () => { pauseDOMUpdates = true })
-  // wait for new page before unpausing dom updates (triggered after suspense resolved)
-  nuxtApp.hooks.hook('page:finish', () => {
-    // app:suspense:resolve hook will unpause the DOM
-    if (!nuxtApp.isHydrating) { syncHead() }
-  })
-  // unpause on error
-  nuxtApp.hooks.hook('app:error', syncHead)
-  // unpause the DOM once the mount suspense is resolved
-  nuxtApp.hooks.hook('app:suspense:resolve', syncHead)
+  head.hooks?.hook('dom:beforeRender', (context) => { context.shouldRender = !state.paused })
 
   // Defer head-entry disposal during a page transition.
   const originalPush = head.push.bind(head)

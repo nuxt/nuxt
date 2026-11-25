@@ -295,16 +295,21 @@ export function resolveErrorPaths (error: unknown, resolve: (path: string) => st
   }
 }
 
+/** An error, including one from another realm that fails `instanceof Error`. */
+function isErrorLike (value: unknown): value is Error {
+  return typeof value === 'object' && value !== null && typeof (value as Error).message === 'string'
+}
+
 /** Flatten an error's `cause` chain into something the payload can carry. */
-export function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<Error>()): SerializedErrorCause | undefined {
-  if (depth >= 10 || (cause instanceof Error && seen.has(cause))) { return }
-  if (cause instanceof Error) {
+export function serializeErrorCause (cause: unknown, depth = 0, seen = new WeakSet<object>()): SerializedErrorCause | undefined {
+  if (depth >= 10 || (isErrorLike(cause) && seen.has(cause))) { return }
+  if (isErrorLike(cause)) {
     seen.add(cause)
     const nestedCause = serializeErrorCause(cause.cause, depth + 1, seen)
     return {
-      name: cause.name,
+      name: typeof cause.name === 'string' ? cause.name : 'Error',
       message: cause.message,
-      ...(cause.stack && { stack: cause.stack }),
+      ...(typeof cause.stack === 'string' && cause.stack && { stack: cause.stack }),
       ...(nestedCause !== undefined && { cause: nestedCause }),
     }
   }

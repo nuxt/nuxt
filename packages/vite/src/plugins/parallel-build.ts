@@ -1,5 +1,5 @@
-import { logger } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
+import { buildClientAndServer } from '@nuxt/kit/internal'
 import type { BuildEnvironment, Plugin } from 'vite'
 
 /**
@@ -18,19 +18,7 @@ export function ParallelBuildPlugin (nuxt: Nuxt): Plugin {
         const { client, ssr } = builder.environments
         if (!client || !ssr || !needsBuild(client) || !needsBuild(ssr)) { return }
 
-        logger.start('Building client and server')
-        const clientBuild = builder.build(client)
-        const clientBuilt = clientBuild.then(() => {})
-        clientBuilt.catch(() => {})
-        nuxt._clientBuild = clientBuilt
-        try {
-          const results = await Promise.allSettled([clientBuild, builder.build(ssr)])
-          for (const result of results) {
-            if (result.status === 'rejected') { throw result.reason }
-          }
-        } finally {
-          nuxt._clientBuild = undefined
-        }
+        await buildClientAndServer(builder, client, ssr, nuxt)
       },
     },
   }

@@ -81,3 +81,5 @@ export const unheadOptions: CreateServerHeadOptions = {}
 export const renderSSRHeadOptions: { omitLineBreaks?: boolean } = {}
 /** File name of the streaming bootstrap chunk, when SSR streaming is enabled. */
 export const iifeChunkFileName: string | undefined = undefined
+/** Head entries hoisted out of the app component, which an SPA shell renders after `appHead`. */
+export const appComponentHead: SerializableHead[] = []

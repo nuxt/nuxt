@@ -212,7 +212,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
                 enter: (node, parent) => {
                   if (node.type === 'AwaitExpression') {
                     const codeSnippet = code.slice(node.start, Math.min(node.end, node.start + 80))
-                    throw pageDiagnostics.NUXT_B4002({ codeSnippet, offset: node.start })
+                    throw pageDiagnostics.NUXT_B4002({ codeSnippet, offset: node.start }, { method: 'error' })
                   }
                   if (
                     !isReferenceIdentifier(node, parent)
@@ -409,7 +409,7 @@ export const PageMetaPlugin = (options: PageMetaPluginOptions = {}) => createUnp
         })
 
         if (instances > 1) {
-          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: linkToAlias(id) })
+          throw pageDiagnostics.NUXT_B4003({ callCount: instances, file: linkToAlias(id) }, { method: 'error' })
         }
 
         if (!s.hasChanged() && !code.includes('__nuxt_page_meta')) {

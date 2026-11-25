@@ -1,5 +1,6 @@
 import { existsSync, readFileSync, readdirSync, realpathSync, statSync } from 'node:fs'
 import type { Dirent } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import MagicString from 'magic-string'
@@ -10,8 +11,8 @@ import type { Unimport } from 'unimport'
 import { resolveModulePath } from 'exsolve'
 import type { ResolverOptions } from 'exsolve'
 import escapeRE from 'escape-string-regexp'
-import { getLayerDirectories, resolveAlias } from '@nuxt/kit'
-import { trackPendingTemplate } from '@nuxt/kit/internal'
+import { getLayerDirectories, isNuxtMajorVersion, resolveAlias } from '@nuxt/kit'
+import { isWithinDir, parseNodeModulePath, trackPendingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt, ServerApi } from '@nuxt/schema'
 import type { Nitro, NitroConfig, NitroOptions } from 'nitro/types'
 
@@ -27,17 +28,24 @@ import { migratedPlugins, serverApiOf } from './registrations.ts'
  */
 export interface NitroLegacyOptions {
   /**
-   * Register the Nitro v2 auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …)
-   * and auto-import from subdirectories of `server/utils/`.
+   * Turn on the server auto-imports (as `experimental.nitroAutoImports` does), register the Nitro v2
+   * auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …) and auto-import from
+   * subdirectories of `server/utils/`.
    */
   imports?: boolean
-  /** Resolve `h3` to the bundled h3 v1 helper shim. */
+  /**
+   * Resolve `h3` to the bundled h3 v1 helpers in server code and, on Nuxt 4, in the server build of
+   * the app, and remove server aliases that point `h3` at h3 v1.
+   */
   h3?: boolean
   /** Resolve `nitropack`, `nitropack/runtime` and `#internal/nitro` to their Nitro v3 equivalents. */
   specifiers?: boolean
   /** Support the `useRuntimeConfig(event)` signature and its per-request semantics. */
   runtimeConfig?: boolean
-  /** Accept Nitro v2 config shapes (handlers without a `route`) and warn about removed options. */
+  /**
+   * Accept Nitro v2 config shapes (handlers without a `route`) and keep dotted suffixes in
+   * server file names that Nitro v3 rejects.
+   */
   config?: boolean
 }
 
@@ -285,6 +293,62 @@ function resolveH3V1Version (dir: string, versions: Map<string, string | undefin
   return versions.get(manifest)
 }
 
+/** The version of h3 v1 that `file` belongs to, read from the `package.json` of its package. */
+function resolveH3V1PackageVersion (file: string, versions: Map<string, string | undefined>): string | undefined {
+  const { dir, name } = parseNodeModulePath(file)
+  if (!dir || !name) {
+    return
+  }
+  const manifest = join(dir, name, 'package.json')
+  if (!versions.has(manifest)) {
+    let pkg: { name?: string, version?: string } | undefined
+    try {
+      pkg = JSON.parse(readFileSync(manifest, 'utf8'))
+    } catch {
+      pkg = undefined
+    }
+    versions.set(manifest, pkg?.name === 'h3' && pkg.version?.startsWith('1.') ? pkg.version : undefined)
+  }
+  return versions.get(manifest)
+}
+
+const H3_ALIAS_RE = /^h3(?:\/|$)/
+
+/**
+ * Remove the `h3` aliases that lead into an h3 v1 package. The bundler applies an alias
+ * without calling plugins, so a specifier aliased to `h3` outside the scope would bundle
+ * h3 v1 itself.
+ */
+function dropH3V1Aliases (nuxt: Nuxt, nitroConfig: NitroConfig): string[] {
+  const aliases = { ...nitroConfig.alias } as Record<string, string>
+  const versions = new Map<string, string | undefined>()
+  const dropped: string[] = []
+  const reported: string[] = []
+  for (const key in aliases) {
+    const target = aliases[key]
+    if (!H3_ALIAS_RE.test(key) || typeof target !== 'string') {
+      continue
+    }
+    const { [key]: _, ...others } = aliases
+    const resolved = normalize(resolveAlias(target, others))
+    const file = isAbsolute(resolved) ? resolved : resolveModulePath(resolved, { from: withTrailingSlash(nuxt.options.rootDir), try: true })
+    const version = file ? resolveH3V1PackageVersion(file, versions) : undefined
+    if (!version) {
+      continue
+    }
+    dropped.push(key)
+    const source = nuxt.options.nitro.alias?.[key] === target ? '`nitro.alias`' : nuxt.options.alias[key] === target ? '`alias`' : 'a `nitro:config` hook'
+    reported.push(`\`${key}\` to \`h3@${version}\`, set in ${source}`)
+  }
+  for (const key of dropped) {
+    delete nitroConfig.alias![key]
+  }
+  if (reported.length > 0) {
+    nitroBuildDiagnostics.NUXT_B9015({ count: reported.length, aliases: reported.join('\n  - ') })
+  }
+  return dropped
+}
+
 async function reportUserLegacyCode (dirs: string[], rootDir: string, legacy: ResolvedNitroLegacyOptions): Promise<void> {
   const files = listFiles(dirs.map(dir => normalize(dir)))
   if (files.length === 0) {
@@ -440,7 +504,7 @@ function isMigrated (compatibility: ServerApi | undefined): boolean {
 
 export interface LegacyImportsPreset {
   from: string
-  imports: Array<string | { name: string, as?: string }>
+  imports: Array<string | { name: string, as?: string, typeFrom?: string }>
 }
 
 /** Render a set of auto-import presets as explicit re-exports for a barrel module. */
@@ -522,6 +586,12 @@ export function getLegacyNitroAliases (): Record<string, string> {
   return Object.fromEntries(NITRO_V2_ENTRIES.map(entry => [entry, barrel]))
 }
 
+/** The declaration the Nitro v2 specifiers that only carry types resolve to in the server tsconfig. */
+export function getLegacyNitroTypesDeclaration (): string {
+  const base = resolve(distDir, 'runtime/compat/nitro-v2-types')
+  return existsSync(base + '.d.ts') ? base + '.d.ts' : base + '.ts'
+}
+
 /** A package's root, and its real path where the two differ, for a prefix comparison. */
 function getPackageDirs (manifest: string, rootDir: string): string[] {
   const resolved = resolveModulePath(manifest, { from: [rootDir, import.meta.url], try: true })
@@ -598,16 +668,34 @@ function getLegacyH3ShimPath (): string {
   return compatRuntimePath('h3-v1')
 }
 
+/** The h3 v1 helpers without the handler wrapper, which load none of Nitro's runtime. */
+export function getLegacyAppH3ShimPath (): string {
+  return compatRuntimePath('h3-v1-app')
+}
+
 export function getLegacyRuntimeConfigPath (): string {
   return compatRuntimePath('runtime-config')
 }
 
 /** The Nitro v2 auto-import names implemented by the compat runtime rather than by Nitro v3. */
-function getLegacyImportsPreset (): Array<{ from: string, imports: string[], priority?: number }> {
+function getLegacyImportsPreset (): Array<LegacyImportsPreset & { priority?: number }> {
   return [
     { from: compatRuntimePath('render'), imports: ['defineRenderHandler'] },
     { from: compatRuntimePath('event'), imports: ['useEvent'] },
-    { from: resolve(distDir, 'runtime/utils/app-config'), imports: ['useAppConfig'], priority: -1 },
+    { from: resolve(distDir, 'runtime/utils/app-config'), imports: [{ name: 'useAppConfig', typeFrom: 'nuxt/server' }], priority: -1 },
+  ]
+}
+
+const LEGACY_CACHED_HANDLER_NAMES = ['defineCachedEventHandler', 'cachedEventHandler']
+
+/** The Nitro v2 names, with the cached handler helpers from the compat runtime. */
+function getV2ImportsPreset (): LegacyImportsPreset[] {
+  return [
+    ...v2ImportsPreset.map(preset => ({
+      from: preset.from,
+      imports: preset.imports.filter(entry => typeof entry === 'string' || !LEGACY_CACHED_HANDLER_NAMES.includes(entry.as ?? entry.name)),
+    })),
+    { from: compatRuntimePath('cache'), imports: LEGACY_CACHED_HANDLER_NAMES },
   ]
 }
 
@@ -633,10 +721,10 @@ async function getLegacyImportOverrides (legacy: Pick<ResolvedNitroLegacyOptions
  * The server auto-import presets, with the names the `nitroLegacy` toggles affect
  * redirected to their Nitro v2 implementations. With every toggle off, the default list.
  */
-export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOptions): Promise<Array<{ from: string, imports: Array<string | { name: string, as?: string }>, priority?: number }>> {
+export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOptions): Promise<Array<LegacyImportsPreset & { priority?: number }>> {
   return [
     ...getNuxtServerImportsPreset(await getLegacyImportOverrides(legacy)),
-    ...v2ImportsPreset,
+    ...legacy.h3 || legacy.config ? getV2ImportsPreset() : v2ImportsPreset,
     ...legacy.imports ? getLegacyImportsPreset() : [],
     await getH3ImportsPreset(legacy.h3 ? getLegacyH3ShimPath() : undefined),
   ]
@@ -644,23 +732,27 @@ export async function getServerImportsPresets (legacy: ResolvedNitroLegacyOption
 
 /**
  * Set up Nitro v2 compatibility: a resolution transform scoped to nitro v2 code, plus a
- * runtime wrapper on declared v2 handler entries for what resolution cannot fix.
+ * runtime wrapper on declared v2 handler entries and v2 plugins for what resolution cannot fix.
  *
  * Transitional, and removed in Nuxt 6. Installed only when the scope holds code importing
  * from `h3`, `nitropack` or `#imports`.
  *
- * Not covered, and expected to break: live storage and task introspection, handing the
+ * Not covered, and expected to break: watching build-time storage, task introspection, the
+ * runtime `close` hook in the prerenderer (reported with `NUXT_E8017`), handing the
  * node request/response to an external framework beyond the `event.node` bridge, imports
  * of copied nitro internals, `useStorage` cache key layout, render-hook body replacement.
  *
  * Removal checklist: this module and `runtime/compat/*`; the `nitroLegacy` option
  * (`augments.ts`, `schema/config/nitro.ts`); the aliases `getLegacyNitroAliases` adds; the
- * `#nuxt-compat/*` virtuals and their `tsdown` externals; the `render:response` hook,
- * `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
- * check in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
+ * `#nuxt-compat/*` virtuals and their `tsdown` externals; the declarations `tsdown` builds
+ * for `runtime/compat`; the `render:before` and `render:response` hooks, their types in `augments.ts`
+ * and `templates.ts`, `rememberRenderBody` in `utils/renderer/options.ts` and the `hasLegacyHookListener`
+ * checks in `handlers/renderer.ts`; the `legacyCompat` branches in `handlers/error.ts`,
  * `handlers/renderer.ts` and `utils/renderer/options.ts`; the `NUXT_B9001`-`B9005` and
- * `NUXT_E8008`-`E8010` diagnostics; `runtime/plugins/dev-hooks.ts`, which reads the
- * `legacyCompat` flag; the `nitro-legacy` and `nitro-module-compat` fixtures.
+ * `NUXT_E8008`-`E8010` diagnostics; the `keep` argument of `setupScanSuffixes` and
+ * `NUXT_B9013`; `storage.ts` and `NUXT_B9016`, the plugin name and `NUXT_E8017` in
+ * `runtime/compat/legacy-plugin.ts`; `runtime/plugins/dev-hooks.ts`, which reads the `legacyCompat` flag; the
+ * `nitro-legacy` and `nitro-module-compat` fixtures.
  *
  * Returns a callback that absorbs registrations made after the build config was assembled;
  * call it once the nitro instance exists.
@@ -676,9 +768,14 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     })
   }
 
+  const droppedAliases = legacy.h3 ? dropH3V1Aliases(nuxt, nitroConfig) : []
+
   // resolved as the server build resolves them: a module may add an alias for the server
   // build only, or point an app alias at different code there
   const aliases: Record<string, string> = { ...nuxt.options.alias, ...nitroConfig.alias as Record<string, string> }
+  for (const key of droppedAliases) {
+    delete aliases[key]
+  }
   const files = new Map<string, CompatScope>()
   const dirs: Array<[prefix: string, scope: CompatScope]> = []
   // every file in these is a server entry, unlike a module runtime directory, which also
@@ -720,9 +817,9 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // declaration rather than by the accident of how core modules are installed. Nitro's
   // own runtime is v3 by definition, and the bare `h3` its internal routes import is h3 v2.
   const protectedDirs = [ownRuntime, withTrailingSlash(normalize(nuxt.options.buildDir)), ...getPackageDirs('nuxt/package.json', nuxt.options.rootDir), ...getPackageDirs('nitro/package.json', nuxt.options.rootDir)]
-  const isProtected = (path: string) => protectedDirs.some(dir => path.startsWith(dir))
+  const isProtected = (path: string) => protectedDirs.some(dir => isWithinDir(path, dir))
   const userDirs = [...layerServerDirs, ...getLayerDirectories(nuxt).map(layer => withTrailingSlash(normalize(layer.shared)))]
-  const isUserCode = (path: string) => userDirs.some(dir => path.startsWith(dir))
+  const isUserCode = (path: string) => userDirs.some(dir => isWithinDir(path, dir))
 
   /** The most specific module holding the real path, else one of the given paths. */
   const ownerOf = (real: string, paths: string[]) => {
@@ -1261,8 +1358,12 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   // baked in at build time, so that an app with no v2 code keeps Nitro's error semantics
   // with the recovery branch tree-shaken out. One flag for the whole app, decided by what
   // the scoped code imports rather than by which modules are installed.
+  const legacyResponseHeaders = legacy.config && isNuxtMajorVersion(4, nuxt)
+  if (legacyResponseHeaders) {
+    (nitroConfig.plugins as string[]).push(compatRuntimePath('cache-control-plugin'))
+  }
   nitroConfig.virtual['#nuxt-compat/flags'] = () =>
-    `export const legacyCompat = ${active}\n`
+    `export const legacyCompat = ${active}\nexport const legacyResponseHeaders = ${legacyResponseHeaders}\n`
 
   // module dists built for nitro v2 dereference `globalThis._importMeta_`
   nitroConfig.virtual['#nuxt-compat/import-meta'] = () => {
@@ -1298,6 +1399,8 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
     importsBarrel,
     unimport,
     nuxt.options.rootDir,
+    id => [...v3Plugins].some(plugin => registrationPaths(plugin).includes(normalize(id.replace(/\?.*$/, '')))),
+    id => virtualSources.get(id),
   )
 
   const withNitro = nuxt as Nuxt & { _nitro?: { options: NitroOptions } }
@@ -1353,6 +1456,9 @@ interface ResolvePluginContext {
 }
 
 const NITRO_SPECIFIER_RE = /^nitro(?:\/|$)/
+const NITRO_PLUGINS_ID = '#nitro/virtual/plugins'
+const LEGACY_PLUGIN_PREFIX = '\0nuxt-compat/plugin:'
+const LEGACY_PLUGIN_RE = /^\0nuxt-compat\/plugin:/
 const NITRO_IMPLICIT_DEPENDENCY_RE = new RegExp(`^(?:${nitroImplicitDependencies.map(escapeRE).join('|')})(?:/|$)`)
 
 /**
@@ -1389,9 +1495,12 @@ function createLegacyResolvePlugin (
   importsBarrel: string,
   unimport: Unimport,
   rootDir: string,
+  isV3PluginFile: (id: string) => boolean,
+  virtualSource: (id: string) => string | undefined,
 ) {
   const h3Shim = compatRuntimePath('h3-v1')
   const nitroShim = compatRuntimePath('nitro-v2')
+  const pluginWrapper = compatRuntimePath('legacy-plugin')
   const migratedFiles = new Map<string, boolean>()
 
   /**
@@ -1407,6 +1516,15 @@ function createLegacyResolvePlugin (
       migratedFiles.set(id, migrated)
     }
     return migrated
+  }
+
+  /** A plugin in scope that keeps v2 semantics. A module virtual whose source is not known counts as v2. */
+  const isLegacyPlugin = async (id: string) => {
+    if (!scopeFor(id) || isV3PluginFile(id)) {
+      return false
+    }
+    const code = virtualSource(id) ?? await readFile(id.replace(/\?.*$/, ''), 'utf8').catch(() => undefined)
+    return code === undefined || !isMigrated(id, findImportSpecifiers(code, id))
   }
 
   const mapSpecifier = (source: string, scope: CompatScope) => {
@@ -1447,9 +1565,18 @@ function createLegacyResolvePlugin (
       if (NITRO_V2_SPECIFIER_RE.test(source) && !NITRO_V2_ENTRIES.includes(source)) {
         const resolved = await this.resolve(source, importer, { skipSelf: true })
         if (!resolved || resolved.id.startsWith(`${nitroShim}/`)) {
-          throw nitroBuildDiagnostics.NUXT_B9010({ specifier: source, file: importer ? displayPath(normalize(importer), rootDir) : 'server code' })
+          throw nitroBuildDiagnostics.NUXT_B9010({ specifier: source, file: importer ? displayPath(normalize(importer), rootDir) : 'server code' }, { method: 'error' })
         }
         return resolved
+      }
+
+      // a v2 plugin is wrapped where nitro imports it, so that it receives the v2 `nitroApp`
+      if (importer === NITRO_PLUGINS_ID) {
+        const resolved = await this.resolve(source, importer, { skipSelf: true })
+        if (resolved && !resolved.external && await isLegacyPlugin(resolved.id)) {
+          return LEGACY_PLUGIN_PREFIX + resolved.id
+        }
+        return
       }
 
       if (!scope) {
@@ -1465,6 +1592,21 @@ function createLegacyResolvePlugin (
         return resolved
       }
     } },
+    load: {
+      order: 'pre' as const,
+      filter: { id: LEGACY_PLUGIN_RE },
+      handler (id: string) {
+        if (!id.startsWith(LEGACY_PLUGIN_PREFIX)) {
+          return
+        }
+        const pluginId = id.slice(LEGACY_PLUGIN_PREFIX.length)
+        return [
+          `import { wrapLegacyPlugin } from ${JSON.stringify(pluginWrapper)}`,
+          `import plugin from ${JSON.stringify(pluginId)}`,
+          `export default wrapLegacyPlugin(plugin, ${JSON.stringify(displayPath(normalize(pluginId.replace(/\?.*$/, '')), rootDir))})`,
+        ].join('\n')
+      },
+    },
     // the bundler resolves nitro v2 specifiers itself (`nitropack` is often installed, and
     // `resolveId` order is not guaranteed once Nitro hands the plugin to Vite), so they are
     // rewritten in the source too

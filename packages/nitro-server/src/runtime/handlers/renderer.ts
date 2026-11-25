@@ -7,10 +7,12 @@ import { createNuxtRenderer } from 'nuxt/internal/renderer'
 import { NUXT_ASYNC_CONTEXT } from '#internal/nuxt/nitro-config.mjs'
 import { createEvent } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
-import { rendererInstance } from '../utils/renderer/options'
+import { rendererInstance, rendererOptions } from '../utils/renderer/options'
+import { renderPage } from '#internal/nuxt/host'
 import { hasLegacyHookListener } from '../compat/hook-registry'
 import { decorateLegacyEvent } from '../compat/decorate'
 import { applyLegacyRenderResponseTo } from '../compat/render-response'
+import { applyLegacyRenderBefore } from '../compat/render-before'
 import { legacyCompat } from '#nuxt-compat/flags'
 
 // Polyfill for unctx (https://github.com/unjs/unctx#native-async-context)
@@ -30,7 +32,9 @@ export default {
       decorateLegacyEvent(event, useNitroApp())
     }
 
-    let response = await renderer.fetch(event)
+    let response = legacyCompat && hasLegacyHookListener(useNitroHooks(), 'render:before')
+      ? await applyLegacyRenderBefore(event, useNitroHooks(), renderEvent => renderPage(renderer, renderEvent), rendererOptions.createResponse)
+      : await renderPage(renderer, event)
 
     if (legacyCompat) {
       const hooks = useNitroHooks()

@@ -40,6 +40,17 @@ test.describe('SSR Streaming', () => {
     }
   })
 
+  test('dev logs are attached to streamed and buffered renders', async ({ fetch, isDev }) => {
+    test.skip(!isDev, 'the dev-server-logs plugin only runs in development')
+
+    for (const path of ['/dev-logs', '/dev-logs?no-stream']) {
+      const html = await fetch(path).then(r => r.text())
+
+      expect(html.match(/data-nuxt-logs=/g)).toHaveLength(1)
+      expect(html).toContain('logged during streamed render')
+    }
+  })
+
   test('sends prefetch hints in the shell rather than the link header', async ({ fetch, isDev }) => {
     test.skip(isDev, 'dev sends no resource hints in the link header')
     const res = await fetch('/')
@@ -47,7 +58,7 @@ test.describe('SSR Streaming', () => {
 
     expect(res.headers.get('link')).toContain('rel="modulepreload"')
     expect(res.headers.get('link')).not.toContain('rel="prefetch"')
-    expect(html).toMatch(/<link rel="prefetch"[^>]* data-href="[^"]+\.js"/)
+    expect(html).toMatch(/<template data-nuxt-prefetch>(?:<link [^>]+>)*<link rel="prefetch"[^>]* href="[^"]+\.js"/)
   })
 
   test('synchronous head tags land in the shell <head>', async ({ fetch }) => {
@@ -195,15 +206,17 @@ test.describe('SSR Streaming', () => {
     expect(html).not.toContain('window.__unhead__.push(')
   })
 
-  test('navigateTo() from a page is honored as a redirect', async ({ baseURL }) => {
-    const res = await fetchRaw(baseURL, '/redirect', { redirect: 'manual' })
-    expect(res.status).toBe(307)
-    expect(res.headers.get('location')).toBe('/')
+  for (const [source, path] of [['page middleware', '/redirect'], ['page setup', '/redirect-setup']] as const) {
+    test(`navigateTo() from ${source} is honored as a redirect`, async ({ baseURL }) => {
+      const res = await fetchRaw(baseURL, path, { redirect: 'manual' })
+      expect(res.status).toBe(307)
+      expect(res.headers.get('location')).toBe('/')
 
-    const body = await res.text()
-    expect(body).not.toContain('window.__unhead__={_q:[]')
-    expect(body).not.toMatch(/<body[^>]*>this content must never reach the client/)
-  })
+      const body = await res.text()
+      expect(body).not.toContain('window.__unhead__={_q:[]')
+      expect(body).not.toMatch(/<body[^>]*>this content must never reach the client/)
+    })
+  }
 
   test('bot user-agent falls back to buffered response', async ({ baseURL }) => {
     const html = await fetchRaw(baseURL, '/', { headers: { 'user-agent': 'Googlebot/2.1' } }).then(r => r.text())

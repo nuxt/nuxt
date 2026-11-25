@@ -68,9 +68,11 @@ describe('NuxtPerfProfiler', () => {
   })
 
   it('only shows hooks as phases when not covered by a phase of the same name, until disposed', async () => {
+    const now = vi.spyOn(performance, 'now').mockReturnValue(0)
+    onTestFinished(() => now.mockRestore())
     const profiler = new NuxtPerfProfiler()
     const hooks = createHooks<Record<string, () => void>>()
-    hooks.hook('build', () => busyWait(10))
+    hooks.hook('build', () => { now.mockReturnValue(performance.now() + 10) })
     hooks.hook('fast', () => {})
     profiler.installHookInterceptors(hooks as any)
     profiler.startPhase('build')

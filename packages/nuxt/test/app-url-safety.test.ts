@@ -57,6 +57,14 @@ describe('isAbsoluteHref', () => {
     '\u0001javascript:alert(1)',
     'java\tscript:alert(1)',
     'c:\\windows',
+    'https:evil.com',
+    'https:/evil.com',
+    'https:\\evil.com',
+    'HTTPS:evil.com',
+    'http:evil.com',
+    'http:/evil.com',
+    'http:a.invalid',
+    'https:b.invalid',
   ])('should treat %j as absolute', (value) => {
     expect(isAbsoluteHref(value)).toBe(true)
   })

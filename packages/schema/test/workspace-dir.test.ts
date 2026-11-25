@@ -38,6 +38,9 @@ describe('workspaceDir', () => {
   it('does not resolve to a parent directory with a workspace file that declares no workspace', async () => {
     expect(await resolveWorkspaceDir({ 'pnpm-workspace.yaml': 'onlyBuiltDependencies:\n  - esbuild\n' }, { 'package.json': '{}' })).toBe('project')
     expect(await resolveWorkspaceDir({ 'deno.json': '{"tasks":{}}' }, { 'package.json': '{}' })).toBe('project')
+    expect(await resolveWorkspaceDir({ 'deno.json': '{"tasks":{"workspace":"deno task build"}}' }, { 'package.json': '{}' })).toBe('project')
+    expect(await resolveWorkspaceDir({ 'deno.json': '{"imports":{"workspace":"./x.ts"}}' }, { 'package.json': '{}' })).toBe('project')
+    expect(await resolveWorkspaceDir({ 'deno.jsonc': '{\n  // "workspace": ["./project"]\n  "tasks": {}\n}' }, { 'package.json': '{}' })).toBe('project')
     expect(await resolveWorkspaceDir({ 'pnpm-workspace.yaml': 'onlyBuiltDependencies:\n  - esbuild\n' }, { '.git/config': '', 'package.json': '{}' })).toBe('project')
   })
 
@@ -45,6 +48,7 @@ describe('workspaceDir', () => {
     expect(await resolveWorkspaceDir({ 'pnpm-workspace.yaml': 'packages:\n  - project\n' }, { 'package.json': '{}' })).toBe('parent')
     expect(await resolveWorkspaceDir({ 'package.json': '{"workspaces":["project"]}' }, { 'package.json': '{}' })).toBe('parent')
     expect(await resolveWorkspaceDir({ 'deno.json': '{"workspace":["./project"]}' }, { 'package.json': '{}' })).toBe('parent')
+    expect(await resolveWorkspaceDir({ 'deno.jsonc': '{\n  // members\n  "workspace": ["./project"],\n  /* "x" */ "imports": { "std": "https://jsr.io/@std", },\n}' }, { 'package.json': '{}' })).toBe('parent')
     expect(await resolveWorkspaceDir({ 'turbo.json': '{}' }, { 'package.json': '{}' })).toBe('parent')
   })
 

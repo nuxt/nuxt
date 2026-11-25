@@ -20,6 +20,17 @@ export function vouchForLoopbackPeer (event: H3Event, channelPaths: string[], to
   }
 }
 
+function parseHostname (host: string): string | undefined {
+  if (/[\s%/?#@\\]/.test(host)) {
+    return undefined
+  }
+  try {
+    return new URL(`http://${host}`).hostname
+  } catch {
+    return undefined
+  }
+}
+
 /**
  * Header-based same-origin/allowed-host gate shared by dev-only handlers.
  *
@@ -33,7 +44,7 @@ export function vouchForLoopbackPeer (event: H3Event, channelPaths: string[], to
 export function isLocalDevRequest (event: H3Event, allowedHosts: ReadonlySet<string> | true): boolean {
   const hostHeader = event.req.headers.get('host')
   if (allowedHosts !== true) {
-    const host = hostHeader?.split(':')[0]
+    const host = hostHeader && parseHostname(hostHeader)
     if (!host || !allowedHosts.has(host)) {
       return false
     }

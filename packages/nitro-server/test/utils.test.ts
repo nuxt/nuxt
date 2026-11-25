@@ -3,7 +3,7 @@ import { lstat, mkdir, mkdtemp, readdir, readlink, rm, symlink, writeFile } from
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'pathe'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, timePluginHooks, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal } from '../src/utils.ts'
+import { NON_JS_FILE_RE, getLayerNodeModulesExcludePattern, getSsrResolveConditions, linkStaticDist, timePluginHooks, toFsDriverIgnorePatterns, toModulePackageDir, toTranspileNoExternal, withoutWasmConditions } from '../src/utils.ts'
 
 describe('linkStaticDist', () => {
   let rootDir: string
@@ -199,6 +199,21 @@ describe('toTranspileNoExternal', () => {
     const re = toTranspileNoExternal('/code/nuxt/image') as RegExp
     expect(re.test('/code/nuxt/image/node_modules/.pnpm/sharp@0.34.5/node_modules/sharp/lib/index.js')).toBe(false)
     expect(re.test('/code/nuxt/image/playground/node_modules/ipx/dist/index.mjs')).toBe(false)
+    expect(re.test('/code/nuxt/image/node_modules/sharp/lib/index.js')).toBe(false)
+  })
+
+  it('does not match siblings that share a name prefix with an absolute directory', () => {
+    for (const entry of ['/x/node_modules/my-layer', '/x/node_modules/my-layer/']) {
+      const re = toTranspileNoExternal(entry) as RegExp
+      expect(re.test('/x/node_modules/my-layer/server/api/hello.ts')).toBe(true)
+      expect(re.test('/x/node_modules/my-layer-utils/dist/index.mjs')).toBe(false)
+    }
+  })
+
+  it('matches an absolute file entry', () => {
+    const re = toTranspileNoExternal('/code/nuxt/image/src/module.ts') as RegExp
+    expect(re.test('/code/nuxt/image/src/module.ts')).toBe(true)
+    expect(re.test('/code/nuxt/image/src/module.tsx')).toBe(false)
   })
 
   it('matches windows paths with either separator', () => {
@@ -209,9 +224,50 @@ describe('toTranspileNoExternal', () => {
   })
 })
 
+describe('NON_JS_FILE_RE', () => {
+  it('matches resolved files Node cannot import as they are', () => {
+    for (const path of [
+      '/proj/node_modules/spdx-license-list/spdx-simple.json',
+      '/proj/node_modules/pkg/templates/note.txt',
+      'C:\\proj\\node_modules\\pkg\\data.json',
+      'C:/proj/node_modules/pkg/data.json',
+    ]) {
+      expect(NON_JS_FILE_RE.test(path), path).toBe(true)
+    }
+  })
+
+  it('leaves JavaScript, native addons, WebAssembly and bare specifiers alone', () => {
+    for (const id of [
+      '/proj/node_modules/pkg/dist/index.mjs',
+      '/proj/node_modules/pkg/dist/index.cjs',
+      '/proj/node_modules/pkg/index.js',
+      '/proj/node_modules/pkg/build/Release/addon.node',
+      '/proj/node_modules/pkg/dist/module.wasm',
+      '/proj/node_modules/pkg.json/bin/cli',
+      'C:\\proj\\node_modules\\pkg\\index.js',
+      'spdx-license-list/spdx-simple.json',
+      'lodash.merge',
+    ]) {
+      expect(NON_JS_FILE_RE.test(id), id).toBe(false)
+    }
+  })
+})
+
 describe('getSsrResolveConditions', () => {
   it('merges conditions without duplicates', () => {
     expect(getSsrResolveConditions(['custom', 'node'], ['development', 'node', 'import'])).toEqual(['custom', 'node', 'development', 'import'])
+  })
+
+  it('keeps conditions set explicitly', () => {
+    expect(getSsrResolveConditions(['custom', 'wasm'], withoutWasmConditions(['production', 'wasm', 'unwasm', 'node']))).toEqual(['custom', 'wasm', 'production', 'node', 'import'])
+  })
+})
+
+describe('withoutWasmConditions', () => {
+  it('leaves out the conditions only Nitro\'s unwasm plugin can honour', () => {
+    expect(withoutWasmConditions(['production', 'wasm', 'unwasm', 'node'])).toEqual(['production', 'node'])
+    expect(withoutWasmConditions(['workerd', 'wasm', 'unwasm'])).toEqual(['workerd'])
+    expect(withoutWasmConditions(undefined)).toBeUndefined()
   })
 })
 

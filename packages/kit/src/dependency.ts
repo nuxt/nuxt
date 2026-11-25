@@ -11,6 +11,7 @@ import { useTerminal } from './terminal.ts'
 import { tryUseNuxt } from './context.ts'
 import { buildDiagnostics } from './diagnostics/build.ts'
 import { configDiagnostics } from './diagnostics/config.ts'
+import { describeMissingTypeStripping } from './internal/node-support.ts'
 
 const isStackblitz = provider === 'stackblitz'
 
@@ -64,14 +65,18 @@ export async function ensureDependencyInstalled (names: string | string[], optio
   }
 
   // an installed package that lacks a subpath cannot be fixed by reinstalling it
-  const installable = [...new Set(missing.map(toPackageName))].filter(name => !isPackageInstalled(name, searchPaths))
+  const installable = [...new Set(missing.filter(isPackageSpecifier).map(toPackageName))].filter(name => !isPackageInstalled(name, searchPaths))
   if (installable.length === 0) {
     return Array.isArray(names) ? missing : false
   }
 
   const formattedNames = installable.map(n => `\`${n}\``).join(', ')
   const dev = options.dev ?? true
-  configDiagnostics.NUXT_B5010({ names: formattedNames, installCommand: await getAddDependencyCommand(installable, rootDir, { dev }) })
+  configDiagnostics.NUXT_B5010({
+    names: formattedNames,
+    installCommand: await getAddDependencyCommand(installable, rootDir, { dev }),
+    hint: installable.includes('jiti') ? describeMissingTypeStripping() : undefined,
+  })
 
   if (isCI) {
     return Array.isArray(names) ? missing : false
@@ -177,6 +182,15 @@ const PACKAGE_NAME_RE = /^(?:@[a-z0-9][\w.-]*\/)?[a-z0-9][\w.-]*(?=\/|$)/i
  */
 export function toPackageName (specifier: string): string {
   return specifier.match(PACKAGE_NAME_RE)?.[0] || specifier
+}
+
+/**
+ * Whether `specifier` names a package (or a subpath of one), rather than a path or an alias.
+ *
+ * @internal
+ */
+export function isPackageSpecifier (specifier: string): boolean {
+  return PACKAGE_NAME_RE.test(specifier)
 }
 
 /**

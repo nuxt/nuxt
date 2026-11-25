@@ -4,6 +4,8 @@ import { join } from 'node:path'
 import { defineConfig } from 'tsdown'
 import { vueSfcPlugin } from 'vue-sfc-transformer/rolldown'
 
+import { failOnInvalidAnnotation } from '../../scripts/tsdown-plugins.ts'
+
 let distCleaned: Promise<void> | undefined
 function cleanDist (outDir: string) {
   distCleaned ??= rm(outDir, { recursive: true, force: true })
@@ -16,6 +18,7 @@ const RUNTIME_TREES = [
   'src/components/runtime',
   'src/pages/runtime',
   'src/compiler/runtime',
+  'src/webmcp/runtime',
   'src/runtime/server',
   'src/server',
 ]
@@ -47,6 +50,7 @@ export default defineConfig([
   {
     dts: { generator: 'oxc' },
     entry: 'src/index.ts',
+    plugins: [failOnInvalidAnnotation()],
     deps: {
       // `untyped` is inlined because its package pulls in `jiti` for a loader entry point Nuxt
       // never imports.
@@ -86,6 +90,7 @@ export default defineConfig([
     entry: RUNTIME_ENTRY_GLOBS,
     outDir: 'dist',
     plugins: [
+      failOnInvalidAnnotation(),
       vueSfcPlugin({
         srcDir: 'src',
         cwd: import.meta.dirname,

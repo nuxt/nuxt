@@ -11,7 +11,7 @@ import { linkToAlias, logger } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
 import type { ExtractedPluginMeta, PluginBuildMode } from './plugins/plugin-metadata.ts'
-import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
+import { extractMetadata, orderMap, reportMetadataFallback } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
@@ -179,14 +179,14 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err })
+      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err }, { method: 'error' })
     }
   }
   if (template.getContents) {
     return template.getContents({ ...ctx, options: template.options! })
   }
 
-  throw buildDiagnostics.NUXT_B1003()
+  throw buildDiagnostics.NUXT_B1003({}, { method: 'error' })
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
@@ -307,18 +307,18 @@ const IS_TSX = /\.[jt]sx$/
 
 export type AnnotatedPlugin = NuxtPlugin & ExtractedPluginMeta
 
-const SELF_REPORTING_METADATA_ERRORS = new Set(['NUXT_B2001', 'NUXT_B2002'])
+const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
 const reportedMetadataFallbacks = new WeakMap<Nuxt, Map<string, unknown>>()
 
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promise<AnnotatedPlugin[]> {
   const _plugins: AnnotatedPlugin[] = []
   const reported = reportedMetadataFallbacks.get(nuxt) || new Map<string, unknown>()
   reportedMetadataFallbacks.set(nuxt, reported)
-  const reportFallback = (plugin: NuxtPlugin, reason: unknown, cause?: unknown) => {
+  const reportFallback = async (plugin: NuxtPlugin, reason: unknown) => {
     if (reported.get(plugin.src) === reason) { return }
     reported.set(plugin.src, reason)
-    const src = linkToAlias(plugin.src, nuxt)
-    pluginDiagnostics.NUXT_B2010(cause === undefined ? { src } : { src, cause })
+    if (!(nuxt.options.debug && nuxt.options.debug.modules) && NODE_MODULES_RE.test(await fsp.realpath(plugin.src).catch(() => plugin.src))) { return }
+    reportMetadataFallback(linkToAlias(plugin.src, nuxt), reason)
   }
   for (const plugin of plugins) {
     try {
@@ -326,11 +326,11 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promi
       const meta = await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts')
       _plugins.push({ ...meta, ...plugin })
       if (meta._metaUnknown) {
-        reportFallback(plugin, meta)
+        await reportFallback(plugin, meta)
       }
     } catch (e) {
       _plugins.push({ ...plugin, _metaUnknown: true })
-      reportFallback(plugin, e, e instanceof Error && SELF_REPORTING_METADATA_ERRORS.has(e.name) ? undefined : e)
+      await reportFallback(plugin, e)
     }
   }
 
@@ -344,7 +344,7 @@ export async function assertNoCircularPluginDependencies (nuxt: Nuxt, plugins: N
   const annotated = await annotatePlugins(nuxt, plugins)
   for (const excludedMode of ['client', 'server'] as const) {
     breakCircularDependencies(annotated.filter(plugin => plugin.mode !== excludedMode), (cycle) => {
-      throw pluginDiagnostics.NUXT_B2009(cycle)
+      throw pluginDiagnostics.NUXT_B2009(cycle, { method: 'error' })
     })
   }
 }

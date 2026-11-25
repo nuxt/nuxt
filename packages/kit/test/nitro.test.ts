@@ -2,6 +2,8 @@ import { createHooks } from 'hookable'
 import type { Nuxt } from 'nuxt/schema'
 import { describe, expect, it, vi } from 'vitest'
 import { findWorkspaceDir } from 'pkg-types'
+import { createRouter as createRadix3Router } from 'radix3'
+import { addRoute, createRouter as createRou3Router, findRoute } from 'rou3'
 
 import { checkNuxtCompatibility, getNitroVersion, isNuxtMajorVersion } from '../src/compatibility.ts'
 import { runWithNuxtContext } from '../src/context.ts'
@@ -63,6 +65,20 @@ describe('getNitroVersion', () => {
     nuxt5.options.rootDir = repoRoot
     ;(nuxt5 as any)._version = '5.0.0'
     expect(getNitroVersion(nuxt5)).toBe(3)
+  })
+
+  it('resolves the package without reporting a missing nuxt version', () => {
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const nuxt = createMockNuxt()
+    nuxt.options.rootDir = repoRoot
+    delete (nuxt as any)._version
+
+    expect(getNitroVersion(nuxt)).toBe(3)
+    expect(error).not.toHaveBeenCalled()
+    expect(warn).not.toHaveBeenCalled()
+    error.mockRestore()
+    warn.mockRestore()
   })
 
   it('prefers the host-stamped `_nitroMajor` marker over anything else', () => {
@@ -190,6 +206,34 @@ describe('getHostServerApis', () => {
   })
 })
 
+describe('wildcard base route matchers', () => {
+  function radix3Matches (route: string, path: string) {
+    const router = createRadix3Router()
+    router.insert(route, { route })
+    return router.lookup(path) !== null
+  }
+
+  function rou3Matches (route: string, path: string) {
+    const router = createRou3Router()
+    addRoute(router, 'GET', route, { route })
+    return findRoute(router, 'GET', path) !== undefined
+  }
+
+  const cases = [
+    { path: '/fonts', radix3: false, rou3: true, route: '/fonts/**' },
+    { path: '/fonts/', radix3: false, rou3: true, route: '/fonts/**' },
+    { path: '/fonts/roboto.css', radix3: true, rou3: true, route: '/fonts/**' },
+    { path: '/raw', radix3: false, rou3: false, route: '/raw/**:slug' },
+    { path: '/raw/', radix3: false, rou3: false, route: '/raw/**:slug' },
+    { path: '/raw/recipe', radix3: true, rou3: true, route: '/raw/**:slug' },
+  ]
+
+  it.each(cases)('$route matches $path: radix3 $radix3, rou3 $rou3', ({ route, path, radix3, rou3 }) => {
+    expect(radix3Matches(route, path)).toBe(radix3)
+    expect(rou3Matches(route, path)).toBe(rou3)
+  })
+})
+
 describe('addServerHandler', () => {
   it('registers a handler with the method its filename implies', () => {
     const nuxt = createMockNuxt('3.0.1')
@@ -261,6 +305,18 @@ describe('addServerHandler', () => {
     const nuxt = createMockNuxt('3.0.1')
     runWithNuxtContext(nuxt, () => addServerHandler({ route: '/_fonts/**', handler: '/handlers/fonts.ts' }))
     expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/_fonts/**'])
+  })
+
+  it('does not add a base route for a named catch-all on a nitro v2 host', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/_raw/**:slug', handler: { nitro2: '/handlers/raw.v2.ts', nuxt: '/handlers/raw.ts' } }))
+    expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/_raw/**:slug'])
+  })
+
+  it('does not add a base route for a named catch-all on a nitro v3 host', () => {
+    const nuxt = createMockNuxt('3.0.1')
+    runWithNuxtContext(nuxt, () => addServerHandler({ route: '/_raw/**:slug', handler: '/handlers/raw.ts' }))
+    expect(nuxt.options.serverHandlers.map(handler => handler.route)).toEqual(['/_raw/**:slug'])
   })
 
   it('does not add a base route that would shadow another handler', () => {
@@ -380,6 +436,19 @@ describe('addDevServerHandler', () => {
     expect(nuxt.options.devServerHandlers).toEqual([
       { route: '/_fonts/**', handler: v2 },
       { route: '/_fonts', handler: v2 },
+    ])
+    expect(serverApiOf(nuxt.options.devServerHandlers[1]!)).toBe('nitro2')
+    expect(unusedVariantsOf(nuxt.options.devServerHandlers[1]!)).toEqual([portable])
+  })
+
+  it('registers the base path of a named catch-all on a nitro v2 host', () => {
+    const nuxt = createMockNuxt('2.11.0')
+    const v2 = () => {}
+    const portable = () => {}
+    runWithNuxtContext(nuxt, () => addDevServerHandler({ route: '/_raw/**:slug', handler: { nitro2: v2, nuxt: portable } }))
+    expect(nuxt.options.devServerHandlers).toEqual([
+      { route: '/_raw/**:slug', handler: v2 },
+      { route: '/_raw', handler: v2 },
     ])
     expect(serverApiOf(nuxt.options.devServerHandlers[1]!)).toBe('nitro2')
     expect(unusedVariantsOf(nuxt.options.devServerHandlers[1]!)).toEqual([portable])

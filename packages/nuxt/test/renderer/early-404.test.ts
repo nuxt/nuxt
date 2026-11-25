@@ -8,8 +8,7 @@ import type { H3Event } from 'nitro/h3'
 import type { NuxtPage } from 'nuxt/schema'
 
 import { collectRou3PagePatterns } from '../../src/pages/route-patterns.ts'
-import { normalizeRouteRulePath } from '../../src/core/utils/route-rules.ts'
-import { encodeRoutePath, foldRouteCase } from '../../src/core/utils/index.ts'
+import { encodeRoutePath, foldRouteCase, normalizeRouteRulePath } from '@nuxt/kit/internal'
 import { throwIfUnmatchedPagePath } from '../../src/runtime/server/renderer/early-404.ts'
 import type { NuxtRendererOptions } from '../../src/runtime/server/renderer/runtime.ts'
 

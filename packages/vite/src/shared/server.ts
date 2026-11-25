@@ -1,8 +1,6 @@
 import type { Nuxt } from 'nuxt/schema'
 import { resolve } from 'pathe'
 import type { EnvironmentOptions } from 'vite'
-import escapeStringRegexp from 'escape-string-regexp'
-import { withTrailingSlash } from 'ufo'
 
 import { getTranspilePatterns, getTranspileStrings } from '../utils/transpile.ts'
 import { useServerBuild } from '@nuxt/kit/internal'
@@ -31,7 +29,6 @@ export function ssr (nuxt: Nuxt) {
 
 export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
   const isEnvApi = !useServerBuild(nuxt).buildsSeparately
-  const sharedDirExternal = new RegExp('^' + escapeStringRegexp(withTrailingSlash(resolve(nuxt.options.rootDir, nuxt.options.dir.shared))))
   const legacyExternals = isEnvApi
     ? []
     : [
@@ -54,10 +51,7 @@ export function ssrEnvironment (nuxt: Nuxt, serverEntry: string) {
       ssr: true,
       rolldownOptions: {
         input: { server: serverEntry },
-        external: [
-          ...legacyExternals,
-          sharedDirExternal,
-        ],
+        external: legacyExternals,
         makeAbsoluteExternalsRelative: false,
         output: {
           entryFileNames: '[name].mjs',

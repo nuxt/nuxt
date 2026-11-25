@@ -8,6 +8,8 @@ import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
 
+import { resolvePathsToWatch } from '../src/core/builder.ts'
+
 describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')
   const cacheDir = join(await findWorkspaceDir(), '.test/builder-watch-vite-cache')
@@ -321,6 +323,52 @@ describe('plugin dependencies', { timeout: 60_000 }, async () => {
     await buildWith({
       'dynamic.ts': 'const createPlugin = (name: string) => ({ name, setup () {} })\nexport default defineNuxtPlugin(createPlugin(\'dynamic\'))\n',
     }, false, result => expect(result).resolves.toBeUndefined())
-    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/\[NUXT_B2010\] Failed to parse static properties from plugin `[^`]*dynamic\.ts`/))
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^\[NUXT_B2013\] The plugin passed to `defineNuxtPlugin` is a `CallExpression`[\s\S]*sources: \S*dynamic\.ts$/))
+  })
+})
+
+describe('resolvePathsToWatch', () => {
+  function createStubNuxt (watch: string[]) {
+    const rootDir = '/x/project'
+    const options = { rootDir, srcDir: '/x/project/app', alias: {}, dir: {}, watch }
+    return {
+      options: {
+        ...options,
+        _layers: [
+          { cwd: rootDir, config: { rootDir } },
+          { cwd: '/x/foo-bar', config: { rootDir: '/x/foo-bar', srcDir: '/x/foo-bar/app' } },
+        ],
+      },
+    } as unknown as Nuxt
+  }
+
+  it('keeps layer directories that share a name prefix with a watched path', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['../../foo']))
+    expect([...paths]).toContain('/x/foo-bar/app/')
+    expect([...paths]).toContain('/x/foo')
+  })
+
+  it('keeps watched paths that share a name prefix with each other', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['/y/foo', '/y/foo-bar']))
+    expect([...paths]).toContain('/y/foo')
+    expect([...paths]).toContain('/y/foo-bar')
+  })
+
+  it('replaces directories nested in a watched path', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['../../foo-bar']))
+    expect([...paths]).toContain('/x/foo-bar')
+    expect([...paths]).not.toContain('/x/foo-bar/app/')
+  })
+
+  it('skips watched paths that are already covered', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['components', '/x/project/app']))
+    expect([...paths]).toContain('/x/project/app/')
+    expect([...paths]).not.toContain('/x/project/app/components')
+    expect([...paths]).not.toContain('/x/project/app')
+  })
+
+  it('keeps a watched path that is listed twice', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['../../foo-bar', '../../foo-bar']))
+    expect([...paths].filter(path => path.startsWith('/x/foo-bar'))).toEqual(['/x/foo-bar'])
   })
 })

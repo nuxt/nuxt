@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { parse } from 'devalue'
 import { createNuxtRenderer } from '../../packages/nuxt/src/runtime/server/renderer/index.ts'
 import { renderPayloadJsonScript } from '../../packages/nuxt/src/runtime/server/renderer/payload.ts'
@@ -160,6 +160,17 @@ describe('renderer without a server builder', () => {
     expect(html).toContain('rel="preload" as="fetch" crossorigin="anonymous" href="/_payload.json?page=2"')
   })
 
+  it('renders a payload only for a `_payload.json` url', async () => {
+    const getRouteRules = () => ({ ssr: true, isr: 60 })
+    const payload = await render('/about/_payload.json', { getRouteRules })
+    expect(payload.response.headers.get('content-type')).toContain('application/json')
+
+    for (const path of ['/about/_payload-json', '/about/_payload/json', '/about/_payloadxjson?page=2']) {
+      const { response } = await render(path, { getRouteRules })
+      expect(response.headers.get('content-type')).toContain('text/html')
+    }
+  })
+
   it('serves the client-only shell for a route the rules opt out of ssr', async () => {
     const { html } = await render('/', { getRouteRules: () => ({ ssr: false }) })
 
@@ -204,6 +215,83 @@ describe('renderer without a server builder', () => {
 
     expect(ssrHtml).toContain('rendered without nitro')
     expect(spaHtml).not.toContain('rendered without nitro')
+  })
+})
+
+describe('a streamed render in development', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+  })
+
+  it.each([
+    ['reports a header set after the shell', true, 1],
+    ['does not report a render that leaves the response alone', false, 0],
+  ])('%s', async (_, setsLateHeader, reports) => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
+
+    await render('/', {
+      getRouteRules: () => ({ ssr: true, streaming: true }),
+      hooks: () => ({
+        callHook: ((name: string) => {
+          if (setsLateHeader && name === 'render:html:close') {
+            event.res.headers.set('x-late', 'dropped')
+          }
+        }) as never,
+      }),
+    }, event)
+
+    expect(warn.mock.calls.filter(args => args.join(' ').includes('NUXT_E8002'))).toHaveLength(reports)
+  })
+})
+
+describe('cookies in a streamed render', () => {
+  const streamed = async (path: string) => {
+    const event = createEvent(path, { headers: { 'user-agent': 'Mozilla/5.0' } })
+    return { event, ...await render(path, { getRouteRules: () => ({ ssr: true, streaming: true }) }, event) }
+  }
+
+  it('sends a cookie set before the headers are sent', async () => {
+    const { response, html } = await streamed('/streamed-cookie')
+
+    expect(html).toContain('window.__unhead__')
+    expect(response.headers.getSetCookie()).toEqual(['streamed=set-before-headers; Path=/'])
+    expect(html).toContain('__NUXT_DATA__')
+  })
+
+  it('leaves out a cookie set after the headers are sent and still completes the page', async () => {
+    const { event, response, html, captureError } = await streamed('/late-cookie')
+
+    expect(html).toContain('window.__unhead__')
+    expect(response.headers.getSetCookie()).toEqual([])
+    expect(event.res.headers.getSetCookie()).toEqual([])
+    expect(html).toContain('__NUXT_DATA__')
+    expect(captureError).not.toHaveBeenCalled()
+  })
+
+  it('sends a cookie set before a redirect', async () => {
+    const { response } = await streamed('/redirected-cookie')
+
+    expect(response.status).toBe(302)
+    expect(response.headers.get('location')).toBe('/')
+    expect(response.headers.getSetCookie()).toEqual(['redirected=set-before-redirect; Path=/'])
+  })
+
+  it('sends a cookie set before an error', async () => {
+    const { response } = await streamed('/failed-cookie')
+
+    expect(response.status).toBe(401)
+    expect(response.headers.getSetCookie()).toEqual(['failed=set-before-error; Path=/'])
+  })
+
+  it('reports a cookie that cannot be serialized', async () => {
+    const { response, captureError } = await streamed('/invalid-cookie')
+
+    expect(response.status).toBe(500)
+    expect(response.headers.getSetCookie()).toEqual([])
+    expect(captureError.mock.calls[0]![0]).toMatchObject({ code: 'NUXT_E7011' })
   })
 })
 

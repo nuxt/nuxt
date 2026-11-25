@@ -480,8 +480,9 @@ describe('component islands', () => {
     await page.click('#islands')
     await page.waitForFunction(() => window.useNuxtApp?.()._route.fullPath === '/islands')
 
+    const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
-    await page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
+    await islandRequest
 
     await page.locator('#slot-in-server').getByText('Slot with in .server component').waitFor()
     await page.locator('#test-slot').getByText('Slot with name test').waitFor()
@@ -750,6 +751,18 @@ describe.skipIf(!oncePerServer)('reserved island prop keys', () => {
     const body = await res.text()
     expect(body).toContain('Invalid island request props')
     expect(body).not.toContain('declare')
+  })
+
+  it('rejects a top-level `hasOwnProperty` prop and keeps rendering attributes afterwards', async () => {
+    for (const name of ['CustomElementRoot', 'ForwardedAttrsRoot']) {
+      for (const key of ['hasOwnProperty', '^hasOwnProperty']) {
+        const res = await fetch(islandURL(name, { props: { [key]: 'x' } }))
+        expect(res.status).toBe(400)
+      }
+    }
+
+    const result = await $fetch<NuxtIslandResponse>(islandURL('CustomElementRoot', { props: { title: 'ok' } }))
+    expect(result.html).toContain('title="ok"')
   })
 
   it('renders a top-level `as` prop the island declares', async () => {

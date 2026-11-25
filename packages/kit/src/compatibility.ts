@@ -84,7 +84,7 @@ export async function checkNuxtCompatibility (constraints: NuxtCompatibility, nu
 export async function assertNuxtCompatibility (constraints: NuxtCompatibility, nuxt: Nuxt = useNuxt()): Promise<true> {
   const issues = await checkNuxtCompatibility(constraints, nuxt)
   if (issues.length) {
-    throw kitDiagnostics.NUXT_B8004({ issues: issues.toString() })
+    throw kitDiagnostics.NUXT_B8004({ issues: issues.toString() }, { method: 'error' })
   }
   return true
 }
@@ -140,12 +140,8 @@ function getNitroFullVersion (nuxt: Nuxt): string | undefined {
       import.meta.url,
     ]
     // a nuxt <5 host always builds with nitropack, so prefer it there.
-    let nuxtMajor: number | undefined
-    try {
-      nuxtMajor = Number.parseInt(getNuxtVersion(nuxt), 10)
-    } catch {
-      // no nuxt version available; keep the default order
-    }
+    const nuxtVersion = readNuxtVersion(nuxt)
+    const nuxtMajor = nuxtVersion ? Number.parseInt(nuxtVersion, 10) : undefined
     const packages = nuxtMajor !== undefined && nuxtMajor < 5 ? ['nitropack', 'nitro'] : ['nitro', 'nitropack']
     for (const pkg of packages) {
       const path = resolvePackageJSON(pkg, { from, try: true })
@@ -203,9 +199,14 @@ const NUXT_VERSION_RE = /^v/g
  * Get nuxt version
  */
 export function getNuxtVersion (nuxt: Nuxt | any = useNuxt() /* TODO: LegacyNuxt */): string {
-  const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
-  if (typeof rawVersion !== 'string') {
-    throw kitDiagnostics.NUXT_B8005()
+  const version = readNuxtVersion(nuxt)
+  if (version === undefined) {
+    throw kitDiagnostics.NUXT_B8005({}, { method: 'error' })
   }
-  return rawVersion.replace(NUXT_VERSION_RE, '')
+  return version
+}
+
+function readNuxtVersion (nuxt: Nuxt | any): string | undefined {
+  const rawVersion = nuxt?._version || nuxt?.version || nuxt?.constructor?.version
+  return typeof rawVersion === 'string' ? rawVersion.replace(NUXT_VERSION_RE, '') : undefined
 }

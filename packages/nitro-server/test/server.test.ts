@@ -12,7 +12,7 @@ describe('the h3-backed `nuxt/server` implementations', () => {
   it('exports every name the portable surface does', async () => {
     const [surface, delegate] = await Promise.all([
       resolveModuleExportNames('nuxt/server', { url: import.meta.url }),
-      resolveModuleExportNames(delegatePath, { url: import.meta.url }),
+      resolveModuleExportNames(delegatePath, { url: import.meta.url, extensions: ['.ts'] }),
     ])
 
     expect(surface.length).toBeGreaterThan(0)

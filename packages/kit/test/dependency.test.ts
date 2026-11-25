@@ -1,7 +1,9 @@
 import { rm } from 'node:fs/promises'
+import process from 'node:process'
 import { join } from 'pathe'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { x } from 'tinyexec'
+import nuxt from '../../nuxt/package.json' with { type: 'json' }
 
 import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand, toPackageName } from '../src/dependency.ts'
 import { logger } from '../src/logger.ts'
@@ -92,6 +94,15 @@ describe('ensureDependencyInstalled', () => {
     expect(x).not.toHaveBeenCalled()
   })
 
+  it.each(['~~/postcss/plugin', './postcss.js', '/abs/postcss.js', '#build/postcss'])('does not offer to install %s', async (specifier) => {
+    const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+
+    await expect(ensureDependencyInstalled(specifier, { rootDir, searchPaths: [] })).resolves.toBe(false)
+
+    expect(prompt).not.toHaveBeenCalled()
+    expect(x).not.toHaveBeenCalled()
+  })
+
   it('installs the package a missing subpath belongs to', async () => {
     const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
     installCreatesPackage('@scope/missing', { './plugin': './index.js' })
@@ -136,5 +147,44 @@ describe('ensureDependencyInstalled', () => {
 
     await expect(ensureDependencyInstalled('@scope/other/plugin', { rootDir, searchPaths: [] })).resolves.toBe(false)
     expect(x).toHaveBeenCalledOnce()
+  })
+})
+
+describe('install advice', () => {
+  const nodeVersion = process.versions.node
+
+  afterEach(() => {
+    Object.defineProperty(process.versions, 'node', { value: nodeVersion })
+  })
+
+  async function requestPackage (name: string, { version, typescript }: { version: string, typescript: 'strip' | false }) {
+    Object.defineProperty(process.versions, 'node', { value: version })
+    vi.spyOn(process.features, 'typescript', 'get').mockReturnValue(typescript)
+    vi.spyOn(logger, 'prompt').mockResolvedValue(false)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    await expect(ensureDependencyInstalled(name, { rootDir, searchPaths: [] })).resolves.toBe(false)
+    const message = warn.mock.calls.map(args => String(args[0])).find(message => message.includes('NUXT_B5010'))
+    return message?.split('fix: ')[1]
+  }
+
+  it('suggests upgrading Node.js before installing jiti on a Node.js that cannot strip types', async () => {
+    const fix = await requestPackage('jiti', { version: '22.12.0', typescript: false })
+    expect(fix).toMatch(/^Upgrade Node\.js to a supported version \(`(.+)`\)\. Alternatively, run `pnpm add .*jiti` to install them\.$/)
+    expect(fix).toContain(`(\`${nuxt.engines.node}\`)`)
+  })
+
+  it('suggests turning type stripping back on for a supported Node.js', async () => {
+    const fix = await requestPackage('jiti', { version: '24.15.0', typescript: false })
+    expect(fix).toMatch(/^Type stripping is turned off in this Node\.js process\. .* Alternatively, run `pnpm add .*jiti` to install them\.$/)
+  })
+
+  it('only suggests installing jiti on a Node.js that strips types', async () => {
+    const fix = await requestPackage('jiti', { version: '22.18.0', typescript: 'strip' })
+    expect(fix).toMatch(/^Run `pnpm add .*jiti` to install them\.$/)
+  })
+
+  it('only suggests installing any other package', async () => {
+    const fix = await requestPackage('not-jiti', { version: '22.12.0', typescript: false })
+    expect(fix).toMatch(/^Run `pnpm add .*not-jiti` to install them\.$/)
   })
 })

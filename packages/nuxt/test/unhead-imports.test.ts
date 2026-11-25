@@ -48,6 +48,12 @@ describe('UnheadImportsPlugin', () => {
     expect(result).toContain('import { createHead } from "@unhead/vue"')
   })
 
+  it('should keep #app/composables/head server composables bound to Nuxt', async () => {
+    const result = await transform(`import { useServerHead } from '#app/composables/head'\nimport { headSymbol } from '@unhead/vue'`, '/project/plugins/head.ts')
+    expect(result).toContain('import { useServerHead } from "#app/composables/head"')
+    expect(result).toContain('import { headSymbol } from "@unhead/vue"')
+  })
+
   it('should rewrite imports in a compiled SFC', async () => {
     const sfc = `<script lang="ts" setup>\nimport { useHead } from '@unhead/vue'\nuseHead({ title: 'My Page' })\n</script>`
     const result = await transform(compileScript(parse(sfc).descriptor, { id: 'component.vue' }).content)

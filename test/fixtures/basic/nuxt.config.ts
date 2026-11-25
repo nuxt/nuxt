@@ -198,6 +198,7 @@ export default withMatrix({
       '/route-rules/spa-async-data': { ssr: false },
       '/redirect/catchall': { ssr: false },
       '/catchall/route-rules/**': { appLayout: 'custom', headers: { 'x-catchall-route-rules': 'applied' } },
+      '/catchall/client-only/**': { ssr: false },
       '/route-rules/middleware': { appMiddleware: 'route-rules-middleware' },
       // Decoded key must still apply to the percent-encoded path generated for the page.
       '/route-rules/测试': { appMiddleware: 'route-rules-middleware' },
@@ -213,6 +214,13 @@ export default withMatrix({
       '/route-rules/swr-in-spa': { ssr: true, swr: 60 },
       '/payload-query': { cache: { swr: true, maxAge: 60, allowQuery: true } },
       '/swr': { swr: 60 },
+      '/api/cached-error': { swr: 60, headers: { 'cache-control': 'public, max-age=60' } },
+      '/error/not-found': { headers: { 'cache-control': 'public, max-age=60' } },
+      '/api/returned-error': { headers: { 'cache-control': 'public, max-age=60' } },
+      '/payload-rules/**': { swr: 60 },
+      '/payload-rules/redirect': { redirect: '/' },
+      '/payload-rules/proxy': { proxy: '/api/hello' },
+      '/payload-rules/headers': { headers: { 'x-payload-rules': 'applied' } },
     },
     prerender: {
       routes: [

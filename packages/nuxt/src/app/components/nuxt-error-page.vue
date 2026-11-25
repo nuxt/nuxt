@@ -36,7 +36,7 @@ const status = Number(_error.status || 500)
 const is404 = status === 404
 
 const statusText = _error.statusText ?? (is404 ? 'Page Not Found' : 'Internal Server Error')
-const description = _error.message || _error.toString()
+const description = _error.message || statusText
 const stack = import.meta.dev && !is404 ? _error.description || `<pre>${stacktrace}</pre>` : undefined
 
 const ErrorTemplate = (is404 ? await import('./error-404.vue') : await import('./error-500.vue')).default

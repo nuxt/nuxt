@@ -5,10 +5,14 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
 import { NavigationFailureType, isNavigationFailure } from 'vue-router'
+import { createApp, inject } from 'vue'
+import { headSymbol } from '@unhead/vue'
 
 import * as composables from '#app/composables'
 import { _showErrorUnlessCrawler, clearError, showError, useError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
+import type { NuxtApp } from '#app/nuxt'
+import { injectHead, useHead, useServerHead, useServerHeadSafe, useServerSeoMeta } from '#app/composables/head'
 import * as idleCallback from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
@@ -21,9 +25,10 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
+import { loadPayload, preloadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
 import routerOptions from '#build/router.options.mjs'
+import { navigateToDefaults } from '#build/nuxt.config.mjs'
 
 import { isTestingAppManifest } from '../matrix'
 
@@ -37,6 +42,18 @@ vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
   payloadExtraction: true,
 }))
+
+const routeRulesMatcher = vi.hoisted(() => ({ calls: 0 }))
+vi.mock('#build/route-rules.mjs', async (importOriginal) => {
+  const original = await importOriginal<{ default: (path: string) => Record<string, any> }>()
+  return {
+    ...original,
+    default: (path: string) => {
+      routeRulesMatcher.calls++
+      return original.default(path)
+    },
+  }
+})
 
 describe('app config', () => {
   it('can be updated', () => {
@@ -269,19 +286,97 @@ describe('ssr composables', () => {
     expect(prerenderRoutes('/')).toBeUndefined()
     expect(useResponseHeader('x-test').value).toBeUndefined()
   })
+
+  it('do not add server-only head entries on client', async () => {
+    await mountSuspended(defineComponent({
+      setup () {
+        useHead({ meta: [{ name: 'client-head', content: 'client' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerHead({ meta: [{ name: 'server-head', content: 'server' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerHeadSafe({ meta: [{ name: 'server-head-safe', content: 'server' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerSeoMeta({ author: 'server' })
+        return () => h('div')
+      },
+    }))
+    onTestFinished(() => document.querySelector('meta[name="client-head"]')?.remove())
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('meta[name="client-head"]')?.getAttribute('content')).toBe('client')
+    })
+
+    expect(document.querySelector('meta[name="server-head"]')).toBeNull()
+    expect(document.querySelector('meta[name="server-head-safe"]')).toBeNull()
+    expect(document.querySelector('meta[name="author"]')).toBeNull()
+  })
+
+  it('returns an inert head entry on client', () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const headEntry = useServerHead({ meta: [{ name: 'server-head', content: 'server' }] })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const headSafeEntry = useServerHeadSafe({ meta: [{ name: 'server-head-safe', content: 'server' }] })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const seoEntry = useServerSeoMeta({ author: 'server' })
+
+    for (const entry of [headEntry, headSafeEntry, seoEntry]) {
+      expect(entry._i).toBe(-1)
+      entry.patch({})
+      entry.dispose()
+    }
+  })
 })
 
 describe('useHydration', () => {
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let initialState: { appCreated: boolean | undefined, isHydrating: boolean | undefined }
+
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    initialState = {
+      appCreated: nuxtApp._appCreated,
+      isHydrating: nuxtApp.isHydrating,
+    }
+  })
+
+  afterEach(() => {
+    nuxtApp._appCreated = initialState.appCreated
+    nuxtApp.isHydrating = initialState.isHydrating
+    delete nuxtApp.payload.key
+  })
+
   it('should hydrate value from payload', async () => {
+    nuxtApp._appCreated = false
     let val: any
-    const nuxtApp = useNuxtApp()
     useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
-    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
-    expect(val).toMatchInlineSnapshot('undefined')
+    expect(val).toBeUndefined()
 
     nuxtApp.payload.key = 'from payload'
     await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
-    expect(val).toMatchInlineSnapshot('"from payload"')
+    expect(val).toBe('from payload')
+  })
+
+  it('should hydrate immediately when registered during hydration after the app has been created', async () => {
+    nuxtApp._appCreated = false
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    nuxtApp.isHydrating = true
+    nuxtApp.payload.key = 'late registration'
+
+    let val: any
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    expect(val).toBe('late registration')
+  })
+
+  it('should not apply the initial payload when registered after hydration', async () => {
+    nuxtApp._appCreated = false
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    nuxtApp.isHydrating = false
+    nuxtApp.payload.key = 'stale'
+
+    const set = vi.fn()
+    useHydration('key', () => {}, set)
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(set).not.toHaveBeenCalled()
   })
 })
 
@@ -790,6 +885,13 @@ describe('encoded slash route rules', () => {
     }
   })
 
+  it('applies rules for the path with each run of slashes collapsed', () => {
+    for (const path of ['//pre/test', '///pre/test', '/%2Fpre/test', '/%2Fpre%2F%2Ftest']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ prerender: true, redirect: '/' })
+    }
+    expect(getRouteRules({ path: '/pre//spa/thing' })).toMatchObject({ ssr: false })
+  })
+
   it('does not treat a double-encoded slash as a separator', () => {
     expect(getRouteRules({ path: '/pre%252Ftest' })).not.toHaveProperty('redirect')
   })
@@ -840,6 +942,51 @@ describe('compiled route rules', () => {
     } finally {
       fetchSpy.mockRestore()
     }
+  })
+
+  it('should match route rules once per payload load', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1},{}]')))
+    try {
+      routeRulesMatcher.calls = 0
+      await loadPayload('/pre/matched', { fresh: true })
+      expect(fetchSpy).toHaveBeenCalledOnce()
+      expect(routeRulesMatcher.calls).toBe(1)
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
+  it('should add a single preload link per payload', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/preloaded/_payload.json"]')]
+
+    const first = preloadPayload('/pre/preloaded')
+    const second = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await Promise.all([first, second])
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
+  })
+
+  it('should retry a payload preload that failed', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/unreachable/_payload.json"]')]
+
+    const failed = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('error'))
+    await expect(failed).rejects.toBeUndefined()
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
   })
 })
 
@@ -897,6 +1044,8 @@ describe('routing utilities: `navigateTo`', () => {
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
     expect(() => navigateTo('/\t/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
     expect(() => navigateTo('/\n\\test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
+    expect(() => navigateTo('https:test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
+    expect(() => navigateTo('https:/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
     const urls = [
@@ -928,7 +1077,7 @@ describe('routing utilities: `navigateTo`', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       expect(() => navigateTo('https://example.com', { open: { target: '_blank' } })).not.toThrow()
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       open.mockRestore()
     }
@@ -938,10 +1087,32 @@ describe('routing utilities: `navigateTo`', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       navigateTo('https://example.com', { open: {} })
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       open.mockRestore()
     }
+  })
+
+  it('navigateTo should let explicit `noopener` override `experimental.defaults.navigateTo`', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    const noopener = navigateToDefaults.noopener
+    onTestFinished(() => {
+      navigateToDefaults.noopener = noopener
+      open.mockRestore()
+    })
+
+    navigateTo('https://example.com', { open: { windowFeatures: { popup: true } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'popup=true, noopener=true')
+
+    navigateTo('https://example.com', { open: { windowFeatures: { noopener: false } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'noopener=false')
+
+    navigateToDefaults.noopener = false
+    navigateTo('https://example.com', { open: { windowFeatures: { popup: true } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'popup=true')
+
+    navigateTo('https://example.com', { open: {} })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', '')
   })
 
   it('navigateTo should respect app.baseURL when opening internal routes', () => {
@@ -951,13 +1122,13 @@ describe('routing utilities: `navigateTo`', () => {
     config.app.baseURL = '/docs/'
     try {
       navigateTo('/guide', { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', 'noopener=true')
 
       navigateTo({ path: '/guide' }, { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', 'noopener=true')
 
       navigateTo('https://example.com', { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       config.app.baseURL = originalBaseURL
       open.mockRestore()
@@ -1087,7 +1258,7 @@ describe('routing utilities: `navigateTo`', () => {
         return navigateTo({ path: '/', query: { race: 'redirected' } })
       }
     })
-    addRouteMiddleware(middleware, { global: true })
+    const unregister = addRouteMiddleware(middleware, { global: true })
 
     try {
       const first = router.push({ path: '/', query: { race: 'first' } })
@@ -1098,12 +1269,92 @@ describe('routing utilities: `navigateTo`', () => {
       releaseSecond()
       await second
     } finally {
-      const globalMiddleware = useNuxtApp()._middleware.global
-      globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      unregister()
     }
 
     expect(router.currentRoute.value.query.race).toBe('redirected')
     expect(router.currentRoute.value.redirectedFrom?.query.race).toBe('second')
+  })
+})
+
+describe('routing utilities: `addRouteMiddleware`', () => {
+  it('returns a function that unregisters global middleware', async () => {
+    const router = useRouter()
+    const visits: unknown[] = []
+    const unregister = addRouteMiddleware((to) => {
+      visits.push(to.query.unregister)
+    })
+    onTestFinished(unregister)
+    await router.push({ path: '/', query: { unregister: 'before' } })
+    unregister()
+    await router.push({ path: '/', query: { unregister: 'after' } })
+    expect(router.currentRoute.value.query.unregister).toBe('after')
+    expect(visits).toEqual(['before'])
+  })
+
+  it('removes a global middleware only once when unregister is called twice', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware(middleware)
+    const unregisterAgain = addRouteMiddleware(middleware)
+    onTestFinished(unregisterAgain)
+    unregister()
+    unregister()
+    expect(nuxtApp._middleware.global.filter(mw => mw === middleware)).toHaveLength(1)
+  })
+
+  it('preserves registration order when unregistering a duplicate global middleware', () => {
+    const nuxtApp = useNuxtApp()
+    const first = () => {}
+    const second = () => {}
+    const unregisterFirst = addRouteMiddleware(first)
+    const unregisterSecond = addRouteMiddleware(second)
+    const unregisterDuplicate = addRouteMiddleware(first)
+    onTestFinished(() => {
+      unregisterFirst()
+      unregisterSecond()
+      unregisterDuplicate()
+    })
+    unregisterDuplicate()
+    expect(nuxtApp._middleware.global).toEqual([first, second])
+  })
+
+  it('returns a function that unregisters named middleware', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware('test-named', middleware)
+    expect(nuxtApp._middleware.named['test-named']).toBe(middleware)
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBeUndefined()
+  })
+
+  it('does not remove named middleware that has since been replaced', () => {
+    const nuxtApp = useNuxtApp()
+    const first = () => {}
+    const second = () => {}
+    const unregister = addRouteMiddleware('test-named', first)
+    addRouteMiddleware('test-named', second)
+    onTestFinished(() => { delete nuxtApp._middleware.named['test-named'] })
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBe(second)
+  })
+
+  it('does not remove a named middleware that was re-registered when unregister is called again', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware('test-named', middleware)
+    unregister()
+    addRouteMiddleware('test-named', middleware)
+    onTestFinished(() => { delete nuxtApp._middleware.named['test-named'] })
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBe(middleware)
+  })
+
+  it('removes a named middleware whose name collides with an Object prototype property', () => {
+    const nuxtApp = useNuxtApp()
+    const unregister = addRouteMiddleware('constructor', () => {})
+    unregister()
+    expect(nuxtApp._middleware.named.constructor).toBeUndefined()
   })
 })
 
@@ -1373,6 +1624,7 @@ describe('routing utilities: `abortNavigation`', () => {
   describe('aborted navigation', () => {
     const abortMiddleware = defineNuxtRouteMiddleware(to => to.query.abort ? abortNavigation() : undefined)
     let restoreRoutes = () => {}
+    let unregisterAbort = () => {}
 
     beforeEach(() => {
       const router = useRouter()
@@ -1387,12 +1639,11 @@ describe('routing utilities: `abortNavigation`', () => {
           router.addRoute(catchall)
         }
       }
-      addRouteMiddleware(abortMiddleware, { global: true })
+      unregisterAbort = addRouteMiddleware(abortMiddleware, { global: true })
     })
 
     afterEach(async () => {
-      const globalMiddleware = useNuxtApp()._middleware.global
-      globalMiddleware.splice(globalMiddleware.indexOf(abortMiddleware), 1)
+      unregisterAbort()
       await clearError()
       await navigateTo('/abort-matched')
       restoreRoutes()
@@ -1471,12 +1722,11 @@ describe('routing utilities: `setPageLayout`', () => {
         return navigateTo('/')
       }
     })
-    addRouteMiddleware(middleware, { global: true })
+    const unregister = addRouteMiddleware(middleware, { global: true })
     try {
       await router.push(targets[0]!)
     } finally {
-      const globalMiddleware = useNuxtApp()._middleware.global
-      globalMiddleware.splice(globalMiddleware.indexOf(middleware), 1)
+      unregister()
     }
     expect(route.fullPath).toBe('/')
     setPageLayout('custom')
@@ -1582,6 +1832,81 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(3)
     })
 
+    // https://github.com/nuxt/nuxt/issues/37146
+    it.runIf(options?.mode === 'navigation')('should rerun on the next navigation after navigating away while it was still running', async () => {
+      let finish!: () => void
+      const fn = vi.fn()
+        .mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve }))
+        .mockImplementation(() => {})
+      const execute = () => callOnce('superseded-nav', fn, options)
+
+      await navigateTo('/superseded-1')
+      const pending = execute()
+
+      // navigate away while the callback is still running
+      await navigateTo('/superseded-2')
+      finish()
+      await pending
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      // the next navigation must run the callback again
+      await navigateTo('/superseded-3')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation').each(['resolves', 'rejects'] as const)('should not reuse a callback still running from the previous route when it %s', async (outcome) => {
+      const settlers: Array<{ resolve: () => void, reject: (e: Error) => void }> = []
+      const fn = vi.fn().mockImplementation(() => new Promise<void>((resolve, reject) => { settlers.push({ resolve, reject }) }))
+      const key = `superseded-reuse-${outcome}`
+      const execute = () => callOnce(key, fn, options)
+
+      await navigateTo(`/${key}-1`)
+      const first = execute()
+
+      await navigateTo(`/${key}-2`)
+      const second = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      // settling the first call must not drop the second, still running one
+      if (outcome === 'resolves') {
+        settlers[0]!.resolve()
+        await first
+      } else {
+        settlers[0]!.reject(new Error('first'))
+        await expect(first).rejects.toThrow('first')
+      }
+      expect(nuxtApp.payload.once.has(key)).toBe(false)
+      const third = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      settlers[1]!.resolve()
+      await Promise.all([second, third])
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation')('should tell runs apart when the callback returns a shared promise', async () => {
+      let finish!: () => void
+      const shared = new Promise<void>((resolve) => { finish = resolve })
+      const fn = vi.fn(() => shared)
+      const execute = () => callOnce('superseded-shared', fn, options)
+
+      await navigateTo('/superseded-shared-1')
+      const first = execute()
+      let rerun: Promise<void> | undefined
+      void shared.then(() => { rerun = execute() })
+
+      await navigateTo('/superseded-shared-2')
+      const second = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      finish()
+      await Promise.all([first, second])
+      await rerun
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
     it('should retry after a rejected promise', async () => {
       const fn = vi.fn()
         .mockRejectedValueOnce(new Error('fail'))
@@ -1648,5 +1973,17 @@ describe('namespace access to useNuxtApp', () => {
 
   it('should throw an error when used with wrong appId', () => {
     expect(() => useNuxtApp('nuxt-app-unknown')).toThrow()
+  })
+})
+
+describe('injectHead', () => {
+  it('creates and provides the client head on first use', () => {
+    const vueApp = createApp({ render: () => null })
+    const nuxtApp = { vueApp, runWithContext: (fn: () => unknown) => vueApp.runWithContext(fn) } as unknown as NuxtApp
+
+    expect(vueApp.runWithContext(() => inject(headSymbol, null))).toBeNull()
+    const head = injectHead(nuxtApp)
+    expect(injectHead(nuxtApp)).toBe(head)
+    expect(vueApp.runWithContext(() => inject(headSymbol))).toBe(head)
   })
 })

@@ -204,7 +204,7 @@ An object accepting the following properties:
 - `open`
 
   - **Type**: `OpenOptions`
-  - Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This option is only applicable on the client side and will be ignored on the server side.
+  - Allows navigating to the URL using the [open()](https://developer.mozilla.org/en-US/docs/Web/API/Window/open) method of the window. This is only supported on the client side; on the server, `navigateTo` with `open` is a no-op, though script-protocol URLs are still rejected.
 
     An object accepting the following properties:
 
@@ -232,3 +232,16 @@ An object accepting the following properties:
       | `noreferrer`              | `boolean` | Prevents the Referer header from being sent and implicitly enables `noopener`.                 |
 
       Refer to the [documentation](https://developer.mozilla.org/en-US/docs/Web/API/Window/open#windowfeatures) for more detailed information on the **windowFeatures** properties.
+
+      ::note
+      `noopener` is enabled by default, so the opened page cannot access your application through `window.opener` unless you disable it for that call or app-wide. A named `target` other than `_self`, `_parent` and `_top` then always opens a new window instead of reusing an existing one. Set it to `false` for a page that needs `window.opener`, such as an OAuth popup that posts its result back, or to reuse a named window:
+
+      ```ts
+      await navigateTo('https://auth.example.com/authorize', {
+        external: true,
+        open: { target: '_blank', windowFeatures: { popup: true, noopener: false } },
+      })
+      ```
+
+      To change the default for your whole application, set [`experimental.defaults.navigateTo.noopener`](/docs/guide/going-further/experimental-features#defaults).
+      ::

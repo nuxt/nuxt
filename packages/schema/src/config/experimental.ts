@@ -185,7 +185,10 @@ export default defineResolvers({
      */
     templateDiagnostics: true,
 
+    webmcp: false,
+
     /** @deprecated use `<NuxtErrorBoundary retry-on-client>` instead */
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     clientFallback: false,
     /**
      * Allow `<NuxtErrorBoundary>` to catch errors thrown while server-rendering its default slot.
@@ -252,6 +255,9 @@ export default defineResolvers({
       },
       useState: {
         resetOnClear: booleanOr(true),
+      },
+      navigateTo: {
+        noopener: booleanOr(true),
       },
       useFetch: {},
     },

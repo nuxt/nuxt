@@ -8,9 +8,9 @@ import ts from 'typescript'
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, pluginsDeclaration, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
-import type { Nuxt, NuxtApp } from 'nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtPlugin } from 'nuxt/schema'
 import type { RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
 
 // deliberately partial, as the objects that reach a template in a unit test, in
@@ -175,5 +175,31 @@ describe('schemaTemplate', () => {
     })
     expect(ts.transpileModule(contents, { reportDiagnostics: true }).diagnostics).toEqual([])
     expect(contents).toContain('interface SharedRuntimeConfig {\n  apiKey: string,\n}')
+  })
+})
+
+describe('pluginsDeclaration', () => {
+  it('leaves plugins marked `_skipTypes` out of the generated types', async () => {
+    const buildDir = '/project/.nuxt'
+    const plugins: NuxtPlugin[] = [
+      { src: '/project/app/plugins/user.ts' },
+      { src: '/nuxt/app/plugins/dev-overlay.client.ts', _skipTypes: true },
+    ]
+    const nuxt = {
+      ...makeNuxt({ buildDir, extensions: ['.ts'] } as unknown as Partial<Nuxt['options']>),
+      vfs: {
+        '/project/app/plugins/user.ts': `export default defineNuxtPlugin({ name: 'user', setup () {} })`,
+        '/nuxt/app/plugins/dev-overlay.client.ts': `export default defineNuxtPlugin({ name: 'nuxt:dev-overlay', setup () {} })`,
+      },
+    } as unknown as Nuxt
+    const contents = await pluginsDeclaration.getContents!({
+      nuxt,
+      app: { plugins, templates: plugins.map(plugin => ({ dst: plugin.src, write: true })) } as unknown as NuxtApp,
+      options: {},
+    })
+
+    expect(contents).toContain('import("../../app/plugins/user")')
+    expect(contents).toContain(`'user'`)
+    expect(contents).not.toContain('dev-overlay')
   })
 })

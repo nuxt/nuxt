@@ -67,7 +67,6 @@
     "srvx": "catalog:nitro-runtime",
     "std-env": "catalog:build",
     "ufo": "catalog:app-runtime",
-    "unctx": "catalog:app-runtime",
     "unenv": "catalog:build",
     "unimport": "catalog:build",
     "unplugin": "catalog:build",
@@ -81,7 +80,7 @@
     "@babel/plugin-syntax-typescript": "^7.25.0 || ^8.0.0",
     "@rollup/plugin-babel": "^6.0.0 || ^7.0.0",
     "nuxt": "workspace:^",
-    "vue": "^3.5.45"
+    "vue": "^3.5.46"
   },
   "peerDependenciesMeta": {
     "@babel/plugin-proposal-decorators": {
@@ -103,6 +102,7 @@
     "hookable": "catalog:app-runtime",
     "nuxt": "workspace:*",
     "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
     "vitest": "catalog:dev",
     "vue": "catalog:app-runtime"
   },

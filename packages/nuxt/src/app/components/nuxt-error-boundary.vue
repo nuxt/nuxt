@@ -1,7 +1,7 @@
 <template>
   <slot
     v-if="error"
-    v-bind="{ error, clearError }"
+    v-bind="{ error, clearError, clearBoundaryError: clearError }"
     name="error"
   />
 
@@ -20,6 +20,8 @@ import type { NuxtError } from '../composables/error'
 import { createIdScope } from './utils'
 import { ssrErrorBoundary } from '#build/nuxt.config.mjs'
 
+type BoundaryError = Error & Partial<Pick<NuxtError, 'status' | 'statusText' | 'data' | 'cause' | 'fatal'>>
+
 defineOptions({
   name: 'NuxtErrorBoundary',
   inheritAttrs: false,
@@ -34,15 +36,22 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  error: [error: Error]
+  error: [error: BoundaryError]
 }>()
 
 defineSlots<{
-  error(props: { error: Error, clearError: () => void }): any
+  error(props: {
+    /** The error that was caught. Errors created with `createError` also carry `status`, `statusText`, `data`, `cause` and `fatal`. */
+    error: BoundaryError
+    /** Clears the boundary's error and re-renders the default slot. */
+    clearBoundaryError: () => void
+    /** @deprecated Use `clearBoundaryError` instead. */
+    clearError: () => void
+  }): any
   default(): any
 }>()
 
-const error = shallowRef<Error | null>(null)
+const error = shallowRef<BoundaryError | null>(null)
 
 function clearError () {
   error.value = null
@@ -91,5 +100,10 @@ if (import.meta.client) {
   })
 }
 
-defineExpose({ error, clearError })
+defineExpose({
+  error,
+  /** @deprecated Use `clearBoundaryError` instead. */
+  clearError,
+  clearBoundaryError: clearError,
+})
 </script>

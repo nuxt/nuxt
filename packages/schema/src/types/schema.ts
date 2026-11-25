@@ -1294,6 +1294,23 @@ export interface ConfigSchema {
     templateDiagnostics: boolean
 
     /**
+     * Offer the app's actions to AI agents in the browser through [WebMCP](https://webmachinelearning.github.io/webmcp/).
+     *
+     * Functions bound in a template and tagged with `@tool` in their JSDoc become tools, as do
+     * tools defined with `defineAgentTool()` and activated with `useAgentTool()`. Tools register
+     * only in browsers that support WebMCP.
+     *
+     * - `navigate`: register a `navigate` tool listing the app's pages. Defaults to `true`.
+     * - `schema`: where `nuxt dev` writes the tools registered while you browse, relative to
+     *   `rootDir`, or `false` to skip it. Defaults to `<buildDir>/webmcp/schema.json`. Only the
+     *   Vite builder writes this file.
+     *
+     * @see [WebMCP](https://nuxt.com/docs/guide/ai/webmcp)
+     * @default false
+     */
+    webmcp: boolean | { navigate?: boolean, schema?: string | false }
+
+    /**
      * Whether to enable the experimental `<NuxtClientFallback>` component for rendering content on the client if there's an error in SSR.
      *
      * @deprecated Use `<NuxtErrorBoundary retry-on-client>` instead, which catches server-side errors
@@ -1534,6 +1551,22 @@ export interface ConfigSchema {
          * @default true
          */
         resetOnClear: boolean
+      }
+
+      /**
+       * Options that apply to `navigateTo`.
+       * @default { noopener: true }
+       */
+      navigateTo: {
+        /**
+         * When `true`, `navigateTo(url, { open })` passes `noopener` to `window.open` unless
+         * `open.windowFeatures.noopener` is set explicitly.
+         *
+         * This prevents the opened document from accessing your app through `window.opener`.
+         *
+         * @default true
+         */
+        noopener: boolean
       }
 
       useFetch: {

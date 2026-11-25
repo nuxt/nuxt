@@ -12,7 +12,7 @@ import { getScriptProtocol, getUserTrace, isAbsoluteHref } from '../utils'
 import type { NuxtError } from './error'
 import { createError, showError } from './error'
 import { navigationDiagnostics } from '../diagnostics/navigation'
-import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
+import { navigateToDefaults, tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import type { MakeSerializableObject } from '../../pages/runtime/utils'
 
 import { parseQuery, stringifyQuery } from '#build/pages'
@@ -105,26 +105,48 @@ export interface AddRouteMiddlewareOptions {
 }
 
 interface AddRouteMiddleware {
-  (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): void
-  (middleware: RouteMiddleware): void
+  (name: string, middleware: RouteMiddleware, options?: AddRouteMiddlewareOptions): () => void
+  (middleware: RouteMiddleware): () => void
 }
 
-/** @since 3.0.0 */
+const noop = () => {}
+
+/**
+ * Register a route middleware at runtime.
+ * @returns a function that unregisters the middleware again
+ * @since 3.0.0
+ */
 export const addRouteMiddleware: AddRouteMiddleware = (name: string | RouteMiddleware, middleware?: RouteMiddleware, options: AddRouteMiddlewareOptions = {}) => {
   const nuxtApp = useNuxtApp()
   const global = options.global || typeof name !== 'string'
   const mw = typeof name !== 'string' ? name : middleware
   if (!mw) {
     navigationDiagnostics.NUXT_E2006({ cause: name })
-    return
+    return noop
   }
   if (global) {
     if (import.meta.server && tracingChannelNuxt && typeof name === 'string') {
       Object.defineProperty(mw, '_name', { value: name, configurable: true })
     }
-    nuxtApp._middleware.global.push(mw)
-  } else {
-    nuxtApp._middleware.named[name] = mw
+    const middlewares = nuxtApp._middleware.global
+    middlewares.push(mw)
+    let registered = true
+    return () => {
+      if (!registered) { return }
+      registered = false
+      const index = middlewares.lastIndexOf(mw)
+      if (index !== -1) { middlewares.splice(index, 1) }
+    }
+  }
+  const named = nuxtApp._middleware.named
+  named[name as string] = mw
+  let registered = true
+  return () => {
+    if (!registered) { return }
+    registered = false
+    if (named[name as string] === mw) {
+      delete named[name as string]
+    }
   }
 }
 
@@ -209,10 +231,14 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
   const toPath = typeof to === 'string' ? to : 'path' in to ? resolveRouteObject(to) : useRouter().resolve(to).href
 
   // Early open handler
-  if (import.meta.client && options?.open) {
+  if (options?.open) {
     const protocol = getScriptProtocol(toPath)
     if (protocol !== null) {
       throw navigationDiagnostics.NUXT_E2002({ toPath, protocol })
+    }
+
+    if (import.meta.server) {
+      return Promise.resolve()
     }
 
     // route objects with a `name` are already resolved against the router base by `router.resolve`
@@ -226,6 +252,9 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
       if (value !== undefined) {
         features.push(`${feature.toLowerCase()}=${value}`)
       }
+    }
+    if (navigateToDefaults.noopener && windowFeatures.noopener === undefined) {
+      features.push('noopener=true')
     }
 
     open(openPath, target, features.join(', '))
@@ -273,8 +302,6 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
       let location = isExternal ? toPath : joinURL(useRuntimeConfig().app.baseURL, fullPath)
 
       const redirect = async function (response: any) {
-        // TODO: consider deprecating in favour of `app:rendered` and removing
-        await nuxtApp.callHook('app:redirected')
         const encodedHeader = encodeURL(location, isExternalHost)
         const encodedLoc = encodeForHtmlAttr(encodedHeader)
 
@@ -285,6 +312,8 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
             headers: { location: encodedHeader },
           },
         )
+        // TODO: consider deprecating in favour of `app:rendered` and removing
+        await nuxtApp.callHook('app:redirected')
         return response
       }
 

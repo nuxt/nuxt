@@ -132,7 +132,6 @@
     "tinyglobby": "catalog:build",
     "ufo": "catalog:app-runtime",
     "ultrahtml": "catalog:build",
-    "uncrypto": "catalog:app-runtime",
     "unctx": "catalog:app-runtime",
     "unhead": "catalog:app-runtime",
     "unimport": "catalog:build",
@@ -169,8 +168,8 @@
     "@types/node": ">=18.12.0",
     "jiti": "^2.7.0",
     "rolldown": "^1.1.5",
-    "vue": "^3.5.45",
-    "vue-router": "^5.5.0"
+    "vue": "^3.5.46",
+    "vue-router": "^5.5.1"
   },
   "peerDependenciesMeta": {
     "@parcel/watcher": {

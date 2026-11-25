@@ -1,10 +1,5 @@
-import process from 'node:process'
-import { createConsoleReporter, defineDiagnostics } from 'nostics'
-import { ansiFormatter } from 'nostics/formatters/ansi'
-import { colors } from 'consola/utils'
-
-const docsBase = (code: string): string =>
-  `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
+import { defineDiagnostics } from 'nostics'
+import { diagnosticReporters, docsBase } from '@nuxt/kit/internal'
 
 /**
  * B9xxx
@@ -12,7 +7,7 @@ const docsBase = (code: string): string =>
  */
 export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
-  reporters: [/* #__PURE__ */ (createConsoleReporter(process.env.NODE_ENV === 'test' ? undefined : { formatter: ansiFormatter(colors) }))] as const,
+  reporters: diagnosticReporters,
   codes: {
     NUXT_B9001: {
       why: (p: { keys: string }) => `The following \`nitro\` config options are no longer supported by Nitro v3 and were ignored: ${p.keys}.`,
@@ -65,13 +60,38 @@ export const nitroBuildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B9011: {
-      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} call${p.count === 1 ? 's' : ''} \`$fetch\` without importing it, and Nuxt 5 does not provide a global \`$fetch\` to server code, so a request that renders no page can fail with \`$fetch is not defined\`:\n  - ${p.files}`,
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? '' : 's'} call${p.count === 1 ? 's' : ''} \`$fetch\` without importing it, and Nitro v3 does not provide a global \`$fetch\` to server code, so a request that renders no page can fail with \`$fetch is not defined\`:\n  - ${p.files}`,
       fix: 'Call routes of your app with `serverFetch(event, path)` from `nuxt/server`, and other URLs with `fetch`, or add `import { $fetch } from \'ofetch\'`.',
       docs: false,
     },
     NUXT_B9012: {
       why: (p: { id: string }) => `Nitro does not provide \`${p.id}\` in the form Nuxt reads the runtime config from. This version of Nitro is not supported by this version of Nuxt.`,
       fix: 'Install the version of `nitro` that `@nuxt/nitro-server` depends on, or upgrade Nuxt.',
+      docs: false,
+    },
+    NUXT_B9013: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? ' has a suffix in its name' : 's have a suffix in their names'} that Nitro v3 rejects unless it is listed in \`scanSuffixes\`. The Nitro v2 compatibility layer added ${p.count === 1 ? 'it' : 'them'} to \`nitro.scanSuffixes\`, which keeps a suffix part of the name as Nitro v2 did:\n  - ${p.files}`,
+      fix: (p: { suffixes: string }) => `This layer is transitional and will be removed in Nuxt 6. Rename the files, or add ${p.suffixes} to \`nitro.scanSuffixes\` in your \`nuxt.config\` to keep the names.`,
+      docs: false,
+    },
+    NUXT_B9014: {
+      why: (p: { count: number, files: string }) => `${p.count} server file${p.count === 1 ? ' has a suffix in its name' : 's have a suffix in their names'} that Nitro v3 rejects unless it is listed in \`scanSuffixes\`, so Nitro fails the build, or ignores ${p.count === 1 ? 'the file' : 'them'} in development:\n  - ${p.files}`,
+      fix: (p: { suffixes: string }) => `Rename the files, or add ${p.suffixes} to \`nitro.scanSuffixes\` in your \`nuxt.config\` to keep the names.`,
+      docs: false,
+    },
+    NUXT_B9015: {
+      why: (p: { count: number, aliases: string }) => `${p.count} server alias${p.count === 1 ? '' : 'es'} pointed \`h3\` at h3 v1, which does not work with Nitro v3 events, and ${p.count === 1 ? 'was' : 'were'} removed, so that \`h3\` resolves to the h3 v1 helpers of \`nitroLegacy.h3\` in Nitro v2 server code and to h3 v2 elsewhere:\n  - ${p.aliases}`,
+      fix: 'Remove the alias from your configuration, or report it to the author of the module that sets it.',
+      docs: false,
+    },
+    NUXT_B9016: {
+      why: (p: { base: string, driver: string, error: string }) => `\`nitro.storage\` cannot read or write \`${p.base}:\` at build time, because its \`${p.driver}\` driver failed to load: ${p.error}`,
+      fix: 'Check that the driver can be imported from your project, or report it to the author of the module that reads this storage at build time.',
+      docs: false,
+    },
+    NUXT_B9017: {
+      why: (p: { keys: string }) => `\`nitro.options.routeRules\` was replaced after Nitro was initialised, and the new object leaves out built-in route rules, so the server no longer applies them: ${p.keys}.`,
+      fix: 'Keep the existing rules when replacing `nitro.options.routeRules`, for example `nitro.options.routeRules = { ...nitro.options.routeRules, ...rules }`, or add the rules to the existing object. If your code does not replace `nitro.options.routeRules`, a module does: report it to the module author.',
       docs: false,
     },
   },

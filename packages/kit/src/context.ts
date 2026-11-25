@@ -51,7 +51,7 @@ export function useNuxt (): Nuxt {
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   const instance = asyncNuxtStorage.tryUse() || nuxtCtx.tryUse()
   if (!instance) {
-    throw kitDiagnostics.NUXT_B8001()
+    throw kitDiagnostics.NUXT_B8001({}, { method: 'error' })
   }
   return instance
 }

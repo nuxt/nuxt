@@ -2,10 +2,10 @@ import { addRoute, createRouter, findAllRoutes } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 import type { CompileRouterToStringOptions } from 'rou3/compiler'
 import { defu } from 'defu'
-import { tryUseNitro } from '@nuxt/kit'
-import { pageDiagnostics } from '@nuxt/kit/internal'
+import { tryUseNitro } from '../nitro.ts'
+import { pageDiagnostics } from '../diagnostics/pages.ts'
 import type { Nuxt, RouteRuleConfig } from '@nuxt/schema'
-import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './index.ts'
+import { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './route-path.ts'
 
 /** One entry of a route-rules router: the pattern it matches and the rules it resolves to. */
 export interface RouteRulesRoute {
@@ -206,7 +206,7 @@ export function assertEncodingIndependentRouteRuleKey (key: string): void {
   for (const { text, constraint } of splitRouteConstraints(key)) {
     const part = constraint ? findEncodingDependentConstraint(text) : undefined
     if (part !== undefined) {
-      throw pageDiagnostics.NUXT_B4026({ route: decodeRoutePath(key), part: decodeRoutePath(part) })
+      throw pageDiagnostics.NUXT_B4026({ route: decodeRoutePath(key), part: decodeRoutePath(part) }, { method: 'error' })
     }
   }
 }
@@ -225,7 +225,7 @@ export function assertSingleCatchAllRouteRuleKey (key: string): void {
     if (!constraint) { count += text.match(CATCH_ALL_RE)?.length ?? 0 }
   }
   if (count > 1) {
-    throw pageDiagnostics.NUXT_B4027({ route: key })
+    throw pageDiagnostics.NUXT_B4027({ route: key }, { method: 'error' })
   }
 }
 
@@ -291,7 +291,7 @@ export function findCaseDependentRouteRuleKeyPart (key: string): string | undefi
 export function assertCaseIndependentRouteRuleKey (key: string): void {
   const part = findCaseDependentRouteRuleKeyPart(key)
   if (part !== undefined) {
-    throw pageDiagnostics.NUXT_B4022({ route: key, part })
+    throw pageDiagnostics.NUXT_B4022({ route: key, part }, { method: 'error' })
   }
 }
 
@@ -374,6 +374,12 @@ export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<s
   }
 }
 
+/** A server builder's resolved route rules: a router in Nitro v3, a record keyed by pattern in Nitro v2. */
+interface ResolvedRouteRulesHost {
+  routing?: { routeRules: { routes: RouteRulesRoute[] } }
+  options: { baseURL?: string, routeRules?: Record<string, Record<string, any>> }
+}
+
 /**
  * The route rules the build has resolved, as router entries.
  *
@@ -383,9 +389,13 @@ export function normalizeAppMiddlewareRules (routeRules: Record<string, Record<s
  * @internal
  */
 export function resolveRouteRulesRoutes (nuxt: Nuxt): { routes: RouteRulesRoute[], baseURL: string } {
-  const nitro = tryUseNitro()
+  const nitro = tryUseNitro() as ResolvedRouteRulesHost | undefined
   if (nitro?.routing) {
     return { routes: nitro.routing.routeRules.routes, baseURL: nitro.options.baseURL || '' }
+  }
+  if (nitro?.options.routeRules) {
+    const routes = Object.entries(nitro.options.routeRules).map(([route, data]) => ({ route, method: '', data }))
+    return { routes, baseURL: nitro.options.baseURL || '' }
   }
   const routeRules = normalizeRouteRules(nuxt.options.routeRules)
   normalizeAppMiddlewareRules(routeRules)
@@ -458,8 +468,9 @@ export function isWildcardRedirect (redirect: unknown): boolean {
 /**
  * Resolve a wildcard `redirect`, kept by the route-rules matcher as `{ to, base }`, into the
  * path it redirects to: the part of `path` past the segments `base` matched replaces the `**`
- * of `to`. A run of separators leading that part collapses to one, so the target stays on the
- * origin `to` names, and in the query or fragment of `to` it is encoded as a single value.
+ * of `to`, where a run of slashes or encoded slashes (`%2F`) separates two segments. A run of
+ * separators leading that part collapses to one, so the target stays on the origin `to` names,
+ * and in the query or fragment of `to` it is encoded as a single value.
  *
  * Inlined by source into the route-rules matcher, so it must not reference anything outside itself.
  *
@@ -474,7 +485,7 @@ export function resolveWildcardRedirect<T extends { redirect?: unknown }> (rules
   if (base) {
     tail = /\*\*|:\w+[?*+]/.test(base)
       ? (pathname.startsWith(base) ? pathname.slice(base.length) : pathname)
-      : pathname.split('/').slice(base.split('/').length).map(segment => '/' + segment).join('')
+      : base.split('/').slice(1).reduce(rest => rest.replace(/^(?:\/|%2f)+(?:(?!%2f)[^/])*/i, ''), pathname)
   }
   tail = tail.replace(/^(?:[/\\]|%(?:25)*(?:2f|5c))+/i, '/')
   if (tail === '/') { tail = '' }

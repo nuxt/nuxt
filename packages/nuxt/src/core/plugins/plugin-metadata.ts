@@ -8,6 +8,7 @@ import type { NuxtAppLiterals, PluginMeta } from '../../app/types.ts'
 
 import { ScopeTracker, walk } from 'oxc-walker'
 import { parseModule } from '../utils/parse.ts'
+import { createReportOnce } from '../utils/index.ts'
 import type { ESTree } from 'rolldown/utils'
 import { pluginDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
@@ -43,6 +44,8 @@ export type ExtractedPluginMeta = PluginMeta & { parallel?: boolean, hasHooks?: 
 
 export type PluginBuildMode = 'client' | 'server'
 
+const reportOnceByNuxt = new WeakMap<Nuxt, ReturnType<typeof createReportOnce>>()
+
 const pluginDependenciesByMode = new WeakMap<Nuxt, Partial<Record<PluginBuildMode, Map<string, string[]>>>>()
 
 export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode, plugins: Array<{ src: string, dependsOn?: string[] }>) {
@@ -59,6 +62,25 @@ export function setPluginDependenciesForMode (nuxt: Nuxt, mode: PluginBuildMode,
 }
 
 const PLUGIN_WRAPPERS = new Set(['defineNuxtPlugin', 'definePayloadPlugin'])
+
+type FallbackReport = (sources: string[]) => unknown
+
+const fallbackReports = new WeakMap<object, FallbackReport>()
+
+function metadataError (report: FallbackReport) {
+  const error = new Error('Plugin metadata cannot be statically analysed.')
+  fallbackReports.set(error, report)
+  return error
+}
+
+export function reportMetadataFallback (src: string, reason: unknown) {
+  const report = typeof reason === 'object' && reason !== null ? fallbackReports.get(reason) : undefined
+  if (report) {
+    report([src])
+  } else {
+    pluginDiagnostics.NUXT_B2010({ src, cause: reason })
+  }
+}
 
 const metaCache: Record<string, ExtractedPluginMeta> = {}
 const failureCache: Record<string, unknown> = {}
@@ -79,6 +101,8 @@ export function extractMetadata (code: string, loader = 'ts' as 'ts' | 'tsx') {
 
 function parseMetadata (code: string, loader: 'ts' | 'tsx') {
   let meta: ExtractedPluginMeta = {}
+  let fallback: FallbackReport | undefined
+  const onFallback = (report: FallbackReport) => { fallback ||= report }
   const { program } = parseModule(code, `file.${loader}`)
   const constants = collectConstants(program)
   const wrappers = new Map<string, string>()
@@ -102,22 +126,25 @@ function parseMetadata (code: string, loader: 'ts' | 'tsx') {
     const metaArg = node.arguments[1] && unwrapExpression(node.arguments[1])
     if (metaArg) {
       if (metaArg.type !== 'ObjectExpression') {
-        throw pluginDiagnostics.NUXT_B2001({ name, type: metaArg.type })
+        throw metadataError(sources => pluginDiagnostics.NUXT_B2001({ name, type: metaArg.type, sources }))
       }
-      meta = extractMetaFromObject(metaArg.properties, constantsInScope)
+      meta = extractMetaFromObject(metaArg.properties, constantsInScope, onFallback)
     }
 
     const plugin = node.arguments[0] && unwrapExpression(node.arguments[0])
     if (plugin?.type === 'ObjectExpression') {
-      meta = defu(extractMetaFromObject(plugin.properties, constantsInScope), meta)
+      meta = defu(extractMetaFromObject(plugin.properties, constantsInScope, onFallback), meta)
     } else if (plugin && plugin.type !== 'ArrowFunctionExpression' && plugin.type !== 'FunctionExpression') {
-      pluginDiagnostics.NUXT_B2013({ name, type: plugin.type })
+      onFallback(sources => pluginDiagnostics.NUXT_B2013({ name, type: plugin.type, sources }))
       meta._metaUnknown = true
     }
 
     meta.order ||= orderMap[meta.enforce || 'default'] || orderMap.default
     delete meta.enforce
   } })
+  if (meta._metaUnknown && fallback) {
+    fallbackReports.set(meta, fallback)
+  }
   return meta
 }
 
@@ -144,12 +171,18 @@ function collectConstants (program: ESTree.Program) {
 
 const UNRESOLVED = Symbol('unresolved')
 
+const BUILD_TIME_FLAGS = new Set(['server', 'client', 'dev', 'test', 'prerender', 'browser', 'nitro'])
+
 interface Constants {
   values: Map<string, ESTree.Expression>
   isShadowed: (name: string) => boolean
 }
 
-function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, constants: Constants, seen = new Set<string>()): unknown {
+function isBuildFlag (node: ESTree.MemberExpression) {
+  return !node.computed && node.object.type === 'MetaProperty' && node.object.meta.name === 'import' && node.object.property.name === 'meta' && node.property.type === 'Identifier' && BUILD_TIME_FLAGS.has(node.property.name)
+}
+
+function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | null, constants: Constants, seen = new Set<string>(), key?: ExtractedMetaKey): unknown {
   if (!node) { return UNRESOLVED }
   node = unwrapExpression(node)
   switch (node.type) {
@@ -169,8 +202,11 @@ function resolveStaticValue (node: ESTree.Expression | ESTree.SpreadElement | nu
       if (node.name === 'undefined') { return undefined }
       const init = constants.isShadowed(node.name) ? undefined : constants.values.get(node.name)
       if (!init || seen.has(node.name)) { return UNRESOLVED }
-      return resolveStaticValue(init, { values: constants.values, isShadowed: () => false }, new Set(seen).add(node.name))
+      return resolveStaticValue(init, { values: constants.values, isShadowed: () => false }, new Set(seen).add(node.name), key)
     }
+    case 'MemberExpression':
+      // Metadata is extracted once for both builds, so a build flag is `true` here.
+      return key === 'parallel' && isBuildFlag(node) ? true : UNRESOLVED
   }
   return UNRESOLVED
 }
@@ -187,11 +223,11 @@ function isMetadataKey (key: string | ESTree.IdentifierName): key is ExtractedMe
   return typeof key !== 'string' ? key.name in keys : key in keys
 }
 
-function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, constants: Constants) {
+function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, constants: Constants, onFallback: (report: FallbackReport) => void) {
   const meta: ExtractedPluginMeta = {}
   for (const property of properties) {
     if (property.type === 'SpreadElement' || !('name' in property.key)) {
-      throw pluginDiagnostics.NUXT_B2002()
+      throw metadataError(sources => pluginDiagnostics.NUXT_B2002({ sources }))
     }
     const propertyKey = property.key.name
     if (propertyKey === 'hooks') {
@@ -203,11 +239,11 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
       continue
     }
     if (!isMetadataKey(propertyKey)) { continue }
-    const value = resolveStaticValue(property.value, constants)
+    const value = resolveStaticValue(property.value, constants, undefined, propertyKey)
     if (propertyKey === 'dependsOn') {
       if (value === undefined) { continue }
       if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {
-        pluginDiagnostics.NUXT_B2003()
+        onFallback(sources => pluginDiagnostics.NUXT_B2003({ sources }))
         meta._metaUnknown = true
         continue
       }
@@ -215,7 +251,7 @@ function extractMetaFromObject (properties: Array<ESTree.ObjectPropertyKind>, co
       continue
     }
     if (value === UNRESOLVED) {
-      pluginDiagnostics.NUXT_B2014({ key: propertyKey })
+      onFallback(sources => pluginDiagnostics.NUXT_B2014({ key: propertyKey, sources }))
       meta._metaUnknown = true
       continue
     }
@@ -236,6 +272,11 @@ function toPluginIdPattern (src: string) {
 
 export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) => createUnplugin(() => {
   const plugins = nuxt.apps.default?.plugins ?? []
+  let reportOnce = reportOnceByNuxt.get(nuxt)
+  if (!reportOnce) {
+    reportOnce = createReportOnce(nuxt)
+    reportOnceByNuxt.set(nuxt, reportOnce)
+  }
   return {
     name: `nuxt:remove-plugin-metadata:${mode}`,
     transform: {
@@ -247,9 +288,11 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
         if (!plugin) { return }
 
         const filteredDependencies = pluginDependenciesByMode.get(nuxt)?.[mode]?.get(id)
+        const src = linkToAlias(plugin.src, nuxt)
+        const report = (diagnostic: () => unknown) => reportOnce(id, code, diagnostic)
 
         if (!code.trim()) {
-          pluginDiagnostics.NUXT_B2004({ src: linkToAlias(plugin.src, nuxt) })
+          report(() => pluginDiagnostics.NUXT_B2004({ src }))
 
           return {
             code: 'export default () => {}',
@@ -261,13 +304,13 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
         try {
           parsed = parseModule(code, id)
         } catch (e) {
-          pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+          report(() => pluginDiagnostics.NUXT_B2006({ src, cause: e }))
           return
         }
 
         const hasDefaultExport = parsed.module.staticExports.some(statement => statement.entries.some(entry => !entry.isType && (entry.exportName.kind === 'Default' || entry.exportName.name === 'default')))
         if (!hasDefaultExport) {
-          pluginDiagnostics.NUXT_B2005({ src: linkToAlias(plugin.src, nuxt) })
+          report(() => pluginDiagnostics.NUXT_B2005({ src }))
           return {
             code: 'export default () => {}',
             map: null,
@@ -321,12 +364,12 @@ export const RemovePluginMetadataPlugin = (nuxt: Nuxt, mode: PluginBuildMode) =>
             }
           } })
         } catch (e) {
-          pluginDiagnostics.NUXT_B2006({ src: linkToAlias(plugin.src, nuxt), cause: e })
+          report(() => pluginDiagnostics.NUXT_B2006({ src, cause: e }))
           return
         }
 
         if (!wrapped) {
-          pluginDiagnostics.NUXT_B2007({ src: linkToAlias(plugin.src, nuxt) })
+          report(() => pluginDiagnostics.NUXT_B2007({ src }))
         }
 
         return generateTransform(s, id)

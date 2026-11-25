@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { sharedMark } from '#shared/mark'
+
 const config = useRuntimeConfig()
 const { data } = await useAsyncData('greeting', () => Promise.resolve({ rendered: 'from useAsyncData' }))
 
@@ -14,6 +16,9 @@ useHead({
     </p>
     <p id="async-data">
       {{ data?.rendered }}
+    </p>
+    <p id="shared-import">
+      {{ sharedMark }}
     </p>
     <NuxtLink
       id="about-link"

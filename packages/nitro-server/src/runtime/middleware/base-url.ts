@@ -2,6 +2,7 @@ import { HTTPError, defineEventHandler } from 'nitro/h3'
 import { useRuntimeConfig } from 'nitro/runtime-config'
 
 import { urlHash } from 'nuxt/internal/renderer/url'
+import { baseURLDispatchState } from '#internal/nuxt/host'
 
 import '../context'
 import { serverFetch } from 'nitro'
@@ -25,11 +26,7 @@ const handler: ReturnType<typeof defineEventHandler> = defineEventHandler((event
   if (event.url.pathname === baseURL || event.url.pathname.startsWith(baseURL + '/')) {
     const newURL = (event.url.pathname.slice(baseURL.length) || '/') + event.url.search + urlHash(event.url)
 
-    return serverFetch(newURL, event.req, {
-      nuxt: {
-        '~internal': true,
-      },
-    })
+    return serverFetch(newURL, event.req, { nuxt: baseURLDispatchState(event) })
   }
 
   throw new HTTPError({ status: 404, statusText: `Page not found.` })

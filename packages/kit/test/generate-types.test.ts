@@ -1,4 +1,7 @@
-import { readFile } from 'node:fs/promises'
+import { promises as fsp } from 'node:fs'
+import { once } from 'node:events'
+import { readFile, readdir } from 'node:fs/promises'
+import { Worker } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it, vi } from 'vitest'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
@@ -55,7 +58,46 @@ const mockNuxt = {
 
 const mockNuxtWithOptions = (options: NuxtConfig) => defu({ options }, mockNuxt) as Nuxt
 
+const dependencyModule = { meta: { name: 'installed', rawPath: '/my-app/node_modules/installed/index.ts' }, entryPath: '/my-app/node_modules/installed/index.ts', timings: {} }
+
+interface PrepareTypesContext { tsConfig: { include: string[], exclude: string[] } }
+function onPrepareTypes (nuxt: Nuxt, handler: (ctx: PrepareTypesContext) => void) {
+  nuxt.callHook = ((name: string, ctx: PrepareTypesContext) => {
+    if (name === 'prepare:types') {
+      handler(ctx)
+    }
+    return Promise.resolve()
+  }) as Nuxt['callHook']
+}
+
 describe('tsConfig generation', () => {
+  it('should include local layers outside the `layers/` directory', async () => {
+    const nuxt = mockNuxtWithOptions({ srcDir: '/my-app/app', serverDir: '/my-app/server' })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app/app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/my-layer', srcDir: '/my-app/my-layer/app', serverDir: '/my-app/my-layer/server' }, cwd: '/my-app/my-layer', configFile: '/my-app/my-layer/nuxt.config.ts' },
+    ]
+
+    const { tsConfig, nodeTsConfig, sharedTsConfig, serverTsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.include).toEqual(expect.arrayContaining(['../my-layer/app/**/*', '../my-layer/shared/**/*.d.ts', '../my-layer/*.d.ts']))
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../my-layer/server/**/*', '../my-layer/nuxt.config.*']))
+    expect(nodeTsConfig.include).toContain('../my-layer/nuxt.config.*')
+    expect(sharedTsConfig.include).toEqual(expect.arrayContaining(['../my-layer/shared/**/*', '../my-layer/*.d.ts']))
+    expect(serverTsConfig.include).toEqual(expect.arrayContaining(['../my-layer/server/**/*', '../my-layer/shared/**/*']))
+  })
+
+  it('should include auto-scanned layers without an `app/` directory', async () => {
+    const nuxt = mockNuxtWithOptions({ srcDir: '/my-app/app', serverDir: '/my-app/server' })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app/app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/layers/foo', srcDir: '/my-app/layers/foo', serverDir: '/my-app/layers/foo/server' }, cwd: '/my-app/layers/foo', configFile: '/my-app/layers/foo/nuxt.config.ts' },
+    ]
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.include).toContain('../layers/foo/**/*')
+    expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../layers/foo/server/**/*', '../layers/foo/nuxt.config.*']))
+  })
+
   it('should add correct relative paths for aliases', async () => {
     const { tsConfig } = await _generateTypes(mockNuxt)
     expect(tsConfig.compilerOptions?.paths).toMatchInlineSnapshot(`
@@ -68,6 +110,22 @@ describe('tsConfig generation', () => {
         ],
       }
     `)
+  })
+
+  it('should map the app and project root aliases in the server tsconfig', async () => {
+    const { serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      alias: { '~': '/my-app/app/', '@': '/my-app/app/', '~~': '/my-app/', '@@': '/my-app/' },
+    }))
+    expect(serverTsConfig.compilerOptions?.paths).toMatchObject({
+      '~': ['../app'],
+      '~/*': ['../app/*'],
+      '@': ['../app'],
+      '@/*': ['../app/*'],
+      '~~': ['..'],
+      '~~/*': ['../*'],
+      '@@': ['..'],
+      '@@/*': ['../*'],
+    })
   })
 
   it.each([
@@ -159,6 +217,133 @@ describe('tsConfig generation', () => {
     expect(tsConfig.exclude).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
     expect(nodeTsConfig.include).toEqual(expect.arrayContaining(['../modules/*.ts', '../modules/1.dotted/*.ts']))
     expect(nodeTsConfig.include).not.toEqual(expect.arrayContaining([expect.stringMatching(/\*\.\*$/)]))
+  })
+
+  it('should not exclude dependency module files that no include can reach', async () => {
+    const { tsConfig, serverTsConfig, legacyTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+    expect(serverTsConfig.include).toContain('../node_modules/installed/runtime/server')
+    expect(serverTsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+    expect(legacyTsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
+  it.each([
+    { typescript: { tsConfig: { include: ['../i18n/**/*'] } } },
+    { typescript: { appTsConfig: { include: ['./types/custom.d.ts'] } } },
+    { typescript: { includeWorkspace: true }, workspaceDir: '/' },
+  ])('should not exclude dependency module files when an include cannot reach them: %o', async (options) => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      ...options,
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+  })
+
+  it.each([
+    { tsConfig: { include: ['../node_modules/installed/dist/runtime/**/*'] } },
+    { appTsConfig: { include: ['../node_modules/installed/dist/runtime/**/*'] } },
+  ])('should exclude only the dependency module files an include can reach: %o', async (typescript) => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript,
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/dist/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringMatching(/node_modules\/installed\/.*\*/)]))
+  })
+
+  it('should exclude the entry files of a dependency module when one of them is included', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { include: ['../node_modules/installed/module.ts'] } },
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/dist/*.ts')
+  })
+
+  it('should exclude dependency module entry files the server includes can reach', async () => {
+    const { serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { serverTsConfig: { include: ['../node_modules/installed/dist/*'] } },
+      _installedModules: [dependencyModule],
+    }))
+    expect(serverTsConfig.exclude).toContain('../node_modules/installed/dist/*.ts')
+    expect(serverTsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+  })
+
+  it('should resolve includes against the types directory when matching dependency excludes', async () => {
+    const options = { buildDir: '/my-app/node_modules/.cache/nuxt', _installedModules: [dependencyModule] }
+
+    const unreached = await _generateTypes(mockNuxtWithOptions(options))
+    expect(unreached.tsConfig.exclude).not.toContain('../../installed/*.ts')
+
+    const reached = await _generateTypes(mockNuxtWithOptions({ ...options, typescript: { tsConfig: { include: ['../../installed/**/*'] } } }))
+    expect(reached.tsConfig.exclude).toContain('../../installed/*.ts')
+  })
+
+  it('should exclude dependency module files reached by an include that differs in case', async () => {
+    const { tsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: { tsConfig: { include: ['../node_modules/Installed/runtime/**/*'] } },
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+  })
+
+  it('should exclude dependency module files reached by an include added in prepare:types', async () => {
+    const nuxt = mockNuxtWithOptions({ _installedModules: [dependencyModule] })
+    onPrepareTypes(nuxt, (ctx) => {
+      ctx.tsConfig.include.push('../node_modules/installed/runtime/**/*')
+    })
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/dist/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+  })
+
+  it('should keep excludes added in prepare:types when an added include cannot reach a dependency', async () => {
+    const nuxt = mockNuxtWithOptions({ _installedModules: [dependencyModule] })
+    onPrepareTypes(nuxt, (ctx) => {
+      expect(ctx.tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+      ctx.tsConfig.include.push('./module/components.d.ts')
+      ctx.tsConfig.exclude.push('../custom-exclude')
+    })
+
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/installed/')]))
+    expect(tsConfig.exclude).toContain('../custom-exclude')
+  })
+
+  it('should keep user-configured dependency excludes', async () => {
+    const { tsConfig, serverTsConfig } = await _generateTypes(mockNuxtWithOptions({
+      typescript: {
+        appTsConfig: { exclude: ['../node_modules/installed/runtime/server'] },
+        serverTsConfig: { exclude: ['../node_modules/installed/*.ts'] },
+      },
+      _installedModules: [dependencyModule],
+    }))
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toContain('../node_modules/installed/*.ts')
+    expect(serverTsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(serverTsConfig.exclude).not.toContain('../node_modules/installed/*.js')
+  })
+
+  it('should exclude dependency module files only for modules inside a layer in node_modules', async () => {
+    const nuxt = mockNuxtWithOptions({
+      _installedModules: [
+        dependencyModule,
+        { meta: { name: 'other', rawPath: '/my-app/node_modules/other/index.ts' }, entryPath: '/my-app/node_modules/other/index.ts', timings: {} },
+      ],
+    })
+    nuxt.options._layers = [
+      { config: { rootDir: '/my-app', srcDir: '/my-app' }, cwd: '/my-app', configFile: '/my-app/nuxt.config.ts' },
+      { config: { rootDir: '/my-app/node_modules/installed', srcDir: '/my-app/node_modules/installed' }, cwd: '/my-app/node_modules/installed', configFile: '/my-app/node_modules/installed/nuxt.config.ts' },
+    ]
+    const { tsConfig } = await _generateTypes(nuxt)
+    expect(tsConfig.exclude).toContain('../node_modules/installed/*.ts')
+    expect(tsConfig.exclude).toContain('../node_modules/installed/runtime/server')
+    expect(tsConfig.exclude).not.toEqual(expect.arrayContaining([expect.stringContaining('node_modules/other/')]))
   })
 
   it('should not exclude layer module runtime files from app tsconfig', async () => {
@@ -563,6 +748,80 @@ describe('writeTypes', () => {
       expect(await readFile(join(typesDir, missing!), 'utf8')).not.toBe('{}')
       for (const file of existing) {
         expect(await readFile(join(typesDir, file), 'utf8')).toBe('{}')
+      }
+    })
+  })
+
+  it('should retry transient rename failures without removing the destination', async () => {
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+      await writeTypes(nuxt)
+      const path = join(buildDir, 'tsconfig.json')
+      const existing = await readFile(path, 'utf8')
+      const rename = fsp.rename.bind(fsp)
+      let attempts = 0
+      const spy = vi.spyOn(fsp, 'rename').mockImplementation(async (source, destination) => {
+        if (destination === path && ++attempts < 3) {
+          expect(await readFile(path, 'utf8')).toBe(existing)
+          throw Object.assign(new Error('File is locked'), { code: 'EPERM' })
+        }
+        await rename(source, destination)
+      })
+      try {
+        nuxt.options.alias.changing = join(rootDir, 'changed')
+        await writeTypes(nuxt)
+      } finally {
+        spy.mockRestore()
+      }
+      expect(attempts).toBe(3)
+      expect(await readFile(path, 'utf8')).not.toBe(existing)
+      expect((await readdir(buildDir)).filter(file => file.endsWith('.tmp'))).toEqual([])
+    })
+  })
+
+  it('should never expose a partially written tsconfig to concurrent readers', async () => {
+    await withTempDir({}, async (rootDir) => {
+      const buildDir = join(rootDir, '.nuxt')
+      const nuxt = mockNuxtWithOptions({ rootDir, srcDir: rootDir, buildDir, dev: true })
+      await writeTypes(nuxt)
+
+      const state = new Int32Array(new SharedArrayBuffer(4))
+      const reader = new Worker(`
+        const { readFileSync } = require('node:fs')
+        const { parentPort, workerData } = require('node:worker_threads')
+        const state = new Int32Array(workerData.state)
+        let activeReads = 0
+        let invalid = 0
+        let stopped = false
+        parentPort.on('message', () => { stopped = true })
+        function poll () {
+          const active = Atomics.load(state, 0) === 1
+          try { JSON.parse(readFileSync(workerData.path, 'utf8')) } catch { invalid++ }
+          if (active) { activeReads++ }
+          if (stopped) { parentPort.postMessage({ activeReads, invalid }) } else { setImmediate(poll) }
+        }
+        parentPort.postMessage('ready')
+        poll()
+      `, { eval: true, workerData: { path: join(buildDir, 'tsconfig.json'), state: state.buffer } })
+
+      try {
+        expect(await once(reader, 'message')).toEqual(['ready'])
+        Atomics.store(state, 0, 1)
+        for (let i = 0; i < 50; i++) {
+          nuxt.options.alias.changing = join(rootDir, 'aliases', String(i))
+          await writeTypes(nuxt)
+        }
+        Atomics.store(state, 0, 0)
+        const result = await new Promise<{ activeReads: number, invalid: number }>((resolve, reject) => {
+          reader.once('error', reject)
+          reader.once('message', resolve)
+          reader.postMessage('stop')
+        })
+        expect(result.activeReads).toBeGreaterThan(0)
+        expect(result.invalid).toBe(0)
+      } finally {
+        await reader.terminate()
       }
     })
   })

@@ -8,7 +8,7 @@ import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 
 import { flushPromises } from '@vue/test-utils'
-import { Transition, isShallow, triggerRef, watch } from 'vue'
+import { Transition, isShallow, triggerRef, watch, watchSyncEffect } from 'vue'
 
 import type { NuxtApp } from '#app/nuxt'
 import * as idleCallback from '#app/compat/idle-callback'
@@ -179,6 +179,23 @@ describe('useAsyncData', () => {
     clearNuxtData(uniqueKey)
     expect(data.data.value).toBeUndefined()
     expect(useNuxtData(uniqueKey).data.value).toBeUndefined()
+  })
+
+  it('should not treat inherited object properties as shared data', async () => {
+    const nuxtApp = useNuxtApp()
+    const data = useNuxtData('valueOf')
+    const values: unknown[] = []
+    const stop = watchSyncEffect(() => { values.push(data.data.value) })
+    onTestFinished(stop)
+
+    expect(values).toEqual([undefined])
+
+    nuxtApp.payload.data.valueOf = 'value'
+    await nextTick()
+
+    expect(values).toEqual([undefined, 'value'])
+    expect(data.data.value).toBe('value')
+    clearNuxtData('valueOf')
   })
 
   it('should be usable _after_ a useNuxtData call', async () => {
@@ -362,6 +379,10 @@ describe('useAsyncData', () => {
     expect(uniqueKey in nuxtApp._asyncDataPromises).toBe(false)
   })
 
+  it('should not throw when clearing a key named after an inherited object property', () => {
+    expect(() => clearNuxtData('constructor')).not.toThrow()
+  })
+
   it('should have correct status for previously fetched requests', async () => {
     vi.useFakeTimers()
 
@@ -520,6 +541,15 @@ describe('useAsyncData', () => {
     useAsyncData(uniqueKey, promiseFn, { dedupe: 'defer' })
 
     expect(promiseFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('should execute the handler for an inherited object property when dedupe option is "defer"', async () => {
+    const promiseFn = vi.fn(() => Promise.resolve('test'))
+    const { data } = await useAsyncData('isPrototypeOf', promiseFn, { dedupe: 'defer' })
+
+    expect(promiseFn).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('test')
+    clearNuxtData('isPrototypeOf')
   })
 
   it('should watch params deeply in a non synchronous way', async () => {
@@ -983,6 +1013,65 @@ describe('useAsyncData', () => {
     expect(key in nuxtApp._asyncData).toBe(false)
   })
 
+  it('should not refresh a released entry kept alive by `useNuxtData`', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+
+    const page = effectScope()
+    await page.run(() => useAsyncData(uniqueKey, handler))
+    page.stop()
+    const reader = effectScope()
+    reader.run(() => useNuxtData(uniqueKey))
+    const nextPage = effectScope()
+    await nextPage.run(() => useAsyncData(uniqueKey, handler))
+
+    handler.mockClear()
+    await refreshNuxtData(uniqueKey)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    reader.stop()
+    nextPage.stop()
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should only refresh an entry rebuilt by `refresh()` once it has a subscriber', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+
+    const page = effectScope()
+    const { refresh } = await page.run(() => useAsyncData(uniqueKey, handler))!
+    page.stop()
+    await flushPromises()
+    await refresh()
+
+    handler.mockClear()
+    await refreshNuxtData(uniqueKey)
+    expect(handler).not.toHaveBeenCalled()
+
+    const nextPage = effectScope()
+    await nextPage.run(() => useAsyncData(uniqueKey, handler))
+    handler.mockClear()
+    await refreshNuxtData(uniqueKey)
+    expect(handler).toHaveBeenCalledTimes(1)
+
+    nextPage.stop()
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not add a key to the payload when reading data that has not been fetched', () => {
+    const nuxtApp = useNuxtApp()
+
+    const { data } = useNuxtData(uniqueKey)
+    expect(Object.keys(nuxtApp.payload.data)).not.toContain(uniqueKey)
+    expect(data.value).toBeUndefined()
+
+    const seen: unknown[] = []
+    const stop = watchSyncEffect(() => { seen.push(data.value) })
+    nuxtApp.payload.data[uniqueKey] = 'arrived'
+    expect(seen).toEqual([undefined, 'arrived'])
+
+    stop()
+    clearNuxtData(uniqueKey)
+  })
+
   it('should run middleware around the handler on every execution', async () => {
     const calls: string[] = []
     const { data, refresh } = await useAsyncData(uniqueKey, () => {
@@ -1308,6 +1397,17 @@ describe('useAsyncData', () => {
       expect(observed).toMatchObject({ status: 'success', data: 'client' })
       expect(promiseFn).toHaveBeenCalledTimes(1)
       wrapper.unmount()
+    })
+
+    it('should fetch before resolving when the key is an inherited object property', async () => {
+      const promiseFn = vi.fn(() => Promise.resolve('client'))
+
+      const { wrapper, observed } = await mountAwaitingAsyncData('toString', promiseFn)
+
+      expect(observed).toMatchObject({ status: 'success', data: 'client' })
+      expect(promiseFn).toHaveBeenCalledTimes(1)
+      wrapper.unmount()
+      clearNuxtData('toString')
     })
 
     it('should fetch before resolving when a default is set but there is no payload entry for the key', async () => {
@@ -2015,6 +2115,113 @@ describe('useAsyncData', () => {
     persistent.unmount()
   })
 
+  it('should cancel an in-flight request when a cache hit supersedes it', async () => {
+    let resolveHandler!: (value: string) => void
+    let signal!: AbortSignal
+    const handler = vi.fn((_nuxtApp: NuxtApp, ctx: { signal: AbortSignal }) => {
+      signal = ctx.signal
+      return new Promise<string>((resolve) => { resolveHandler = resolve })
+    })
+    let cached: string | undefined = undefined
+
+    const { data, execute, status } = useAsyncData(uniqueKey, handler, {
+      immediate: false,
+      getCachedData: () => cached,
+    })
+
+    execute()
+    await nextTick()
+    expect(status.value).toBe('pending')
+
+    cached = 'from-cache'
+    await execute()
+    expect(signal.aborted).toBe(true)
+    expect(data.value).toBe('from-cache')
+    expect(status.value).toBe('success')
+
+    resolveHandler('from-network')
+    await flushPromises()
+
+    expect(data.value).toBe('from-cache')
+    expect(status.value).toBe('success')
+
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not let a request superseded by a cache hit during its transform overwrite the cached value', async () => {
+    let resolveTransform!: (value: string) => void
+    let cached: string | undefined = undefined
+
+    const { data, execute, status } = useAsyncData(uniqueKey, () => Promise.resolve('from-network'), {
+      immediate: false,
+      getCachedData: () => cached,
+      transform: () => new Promise<string>((resolve) => { resolveTransform = resolve }),
+    })
+
+    execute()
+    await flushPromises()
+    expect(resolveTransform).toBeDefined()
+
+    cached = 'from-cache'
+    await execute()
+    expect(data.value).toBe('from-cache')
+
+    resolveTransform('transformed')
+    await flushPromises()
+
+    expect(data.value).toBe('from-cache')
+    expect(status.value).toBe('success')
+
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not let a later subscriber cancel a refresh with the initial cache lookup', async () => {
+    let resolveHandler!: (value: string) => void
+    const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
+    const getCachedData = (_key: string, _nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => ctx.cause === 'initial' ? 'from-cache' : undefined
+
+    const scope = effectScope()
+    const first = scope.run(() => useAsyncData(uniqueKey, handler, { getCachedData }))!
+    expect(first.data.value).toBe('from-cache')
+
+    const refreshed = first.refresh()
+    expect(first.status.value).toBe('pending')
+
+    const second = scope.run(() => useAsyncData(uniqueKey, handler, { getCachedData }))!
+    resolveHandler('from-network')
+    await refreshed
+    await flushPromises()
+
+    expect(first.data.value).toBe('from-network')
+    expect(second.data.value).toBe('from-network')
+    scope.stop()
+    clearNuxtData(uniqueKey)
+  })
+
+  it('should not let a subscriber switching key cancel a refresh with its initial cache lookup', async () => {
+    let resolveHandler!: (value: string) => void
+    const handler = vi.fn(() => new Promise<string>((resolve) => { resolveHandler = resolve }))
+    const getCachedData = (_key: string, _nuxtApp: NuxtApp, ctx: { cause: AsyncDataRefreshCause }) => ctx.cause === 'initial' ? 'from-cache' : undefined
+
+    const scope = effectScope()
+    const first = scope.run(() => useAsyncData(uniqueKey, handler, { getCachedData }))!
+    const key = shallowRef(`${uniqueKey}-other`)
+    const second = scope.run(() => useAsyncData(key, handler, { getCachedData }))!
+
+    const refreshed = first.refresh()
+    expect(first.status.value).toBe('pending')
+
+    key.value = uniqueKey
+    resolveHandler('from-network')
+    await refreshed
+    await flushPromises()
+
+    expect(first.data.value).toBe('from-network')
+    expect(second.data.value).toBe('from-network')
+    scope.stop()
+    clearNuxtData([uniqueKey, `${uniqueKey}-other`])
+  })
+
   it('should not execute when enabled is false', async () => {
     const promiseFn = vi.fn(() => Promise.resolve('test'))
     const { data, pending, status } = await useAsyncData(uniqueKey, promiseFn, { enabled: false })
@@ -2187,6 +2394,16 @@ describe('useAsyncData', () => {
     clear()
     expect(data.value).toBeUndefined()
     expect(status.value).toBe('idle')
+  })
+
+  it('should not treat inherited object properties as cached data', async () => {
+    const handler = vi.fn(() => Promise.resolve('value'))
+    const { data, error } = await useAsyncData('constructor', handler)
+
+    expect(handler).toHaveBeenCalledTimes(1)
+    expect(data.value).toBe('value')
+    expect(error.value).toBeUndefined()
+    clearNuxtData('constructor')
   })
 
   it('does not cross-pollute cache slots when the reactive key changes (#32836)', async () => {

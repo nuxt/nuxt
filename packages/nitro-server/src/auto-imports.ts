@@ -1,5 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises'
-import { createIsIgnored } from '@nuxt/kit'
+import { createIsIgnored, directoryToURL, resolveTypePaths as resolvePackageTypePaths } from '@nuxt/kit'
+import { isWithinDir } from '@nuxt/kit/internal'
+import { resolveModulePath } from 'exsolve'
 import { dirname, isAbsolute, join, relative } from 'pathe'
 import { createUnimport, scanDirExports, toExports } from 'unimport'
 import type { Import, InjectImportsOptions, InlinePreset, Unimport } from 'unimport'
@@ -15,6 +17,15 @@ export interface ServerAutoImports {
   getImports: () => Promise<Import[]>
   /** Write `#imports` and the type declarations for the server program. */
   writeTypes: () => Promise<void>
+  /** Render the module `#imports/server` resolves to. */
+  renderModule: () => Promise<string>
+  /**
+   * The directory a bare import source is resolved from, for a registered source that the
+   * project root cannot resolve but one of `modulesDir` can.
+   */
+  resolveSourceDir: (source: string) => Promise<string | undefined>
+  /** `paths` substitutions for the sources `resolveSourceDir` resolves, keyed as the declarations name them. */
+  getSourceTypePaths: () => Promise<Record<string, [string]>>
   /** Path of the generated module `#imports/server` resolves to in the server program. */
   importsModulePath: string
   /** Whether auto-imports are enabled at all. */
@@ -30,6 +41,10 @@ export interface ServerAutoImportsContext {
 
 const MAX_REPORTED_FILES = 10
 const DOLLAR_FETCH_RE = /(?<![\w$.])\$fetch\b/
+const BARE_SPECIFIER_RE = /^(?:@[\w.-]+\/)?\w[\w.-]*(?:\/|$)/
+const SOURCE_RESOLVE_CONDITIONS = ['node', 'import', 'require']
+const TYPE_SOURCE_RESOLVE_CONDITIONS = ['types', ...SOURCE_RESOLVE_CONDITIONS]
+const SOURCE_TYPES_PREFIX = '#internal/server-imports/'
 const GLOBAL_FETCH_IMPORT: Import = { name: '$fetch', from: 'ofetch' }
 
 /** Creates and applies the auto-imports available to the modules the server builder bundles. */
@@ -74,6 +89,28 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
     .map((layer, i) => [layer.config.rootDir, nuxt.options._layers.length - i] as const)
     .sort(([a], [b]) => b.length - a.length)
 
+  let sourceDirs: Promise<Map<string, string>> | undefined
+  function resolveSourceDirs () {
+    sourceDirs ??= init().then(async () => {
+      const dirs = new Map<string, string>()
+      const searchDirs = [nuxt.options.rootDir, ...nuxt.options.modulesDir ?? []]
+      const sources = (await ctx.getImports()).flatMap((i): Array<[string, string[]]> => [[i.from, SOURCE_RESOLVE_CONDITIONS], ...i.typeFrom ? [[i.typeFrom, TYPE_SOURCE_RESOLVE_CONDITIONS] as [string, string[]]] : []])
+      for (const [source, conditions] of sources) {
+        if (dirs.has(source) || !BARE_SPECIFIER_RE.test(source)) { continue }
+        const dir = searchDirs.find(dir => resolveModulePath(source, { from: directoryToURL(dir), conditions, try: true }))
+        if (dir && dir !== nuxt.options.rootDir) {
+          dirs.set(source, dir)
+        }
+      }
+      return dirs
+    })
+    return sourceDirs
+  }
+
+  function renderModule (imports: Import[]) {
+    return (toExports(imports, importsModuleDir).trim() || 'export {}') + '\n'
+  }
+
   let initialised: Promise<void> | undefined
   function init () {
     initialised ??= (async () => {
@@ -96,7 +133,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
         fileFilter: file => !isIgnored(file),
       })
       for (const i of scanned) {
-        i.priority ??= layerPriorities.find(([dir]) => i.from === dir || i.from.startsWith(dir + '/'))?.[1]
+        i.priority ??= layerPriorities.find(([dir]) => isWithinDir(i.from, dir))?.[1]
       }
       imports.push(...scanned)
       return imports
@@ -186,10 +223,12 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
    *
    * A bare specifier is left as written so it resolves through the package's `exports` map: an
    * extensionless relative path cannot reach a subpath shipping only `foo.d.mts`, and under
-   * `skipLibCheck` that silently widens every symbol from it to `any`.
+   * `skipLibCheck` that silently widens every symbol from it to `any`. One that only a `modulesDir`
+   * copy resolves is named under its own prefix, so its `paths` substitution leaves explicit
+   * imports of the package elsewhere to their own resolution.
    */
   const resolvedTypePaths = new Map<string, string>()
-  function resolveTypePaths (imports: Import[]) {
+  function resolveTypePaths (imports: Import[], sourceDirs: Map<string, string>) {
     for (const i of imports) {
       const from = i.typeFrom || i.from
       if (resolvedTypePaths.has(from)) { continue }
@@ -198,7 +237,7 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
         from,
         isAbsolute(from)
           ? relativeWithDot(importsModuleDir, from).replace(/\.[cm]?[jt]sx?$/, '')
-          : from,
+          : sourceDirs.has(from) ? SOURCE_TYPES_PREFIX + from : from,
       )
     }
   }
@@ -226,6 +265,15 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
       return ctx.getImports()
     },
 
+    async resolveSourceDir (source) {
+      return (await resolveSourceDirs()).get(source)
+    },
+
+    async getSourceTypePaths () {
+      const resolved = await Promise.all([...await resolveSourceDirs()].map(([source, dir]) => resolvePackageTypePaths([source], [dir], { entry: true })))
+      return Object.fromEntries(resolved.flat().map(([source, path]) => [SOURCE_TYPES_PREFIX + source, [path]]))
+    },
+
     async refresh () {
       await init()
       resolvedTypePaths.clear()
@@ -241,7 +289,8 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
       await init()
       const imports = await ctx.getImports()
-      resolveTypePaths(imports)
+      const sourceDirs = await resolveSourceDirs()
+      resolveTypePaths(imports, sourceDirs)
 
       // with `autoImport: false` nothing is injected, but the registered imports stay reachable
       // through an explicit `import { x } from '#imports/server'`, so the module is still emitted;
@@ -255,12 +304,17 @@ export function createServerAutoImports (nuxt: Nuxt, options: ServerImportsOptio
 
       // the re-exports make this a module, so `import { x } from '#imports'` resolves as well as
       // the ambient `x` the declarations provide
-      const reExports = toExports(imports, importsModuleDir, true)
+      const reExports = toExports(imports.map(i => sourceDirs.has(i.typeFrom || i.from) ? { ...i, typeFrom: SOURCE_TYPES_PREFIX + (i.typeFrom || i.from) } : i), importsModuleDir, true, { declaration: true })
 
       await Promise.all([
         writeFile(importsModulePath + '.d.ts', [declarations.trim(), reExports.trim() || 'export {}'].filter(Boolean).join('\n') + '\n', 'utf8'),
-        writeFile(importsModulePath + '.mjs', (toExports(imports, importsModuleDir).trim() || 'export {}') + '\n', 'utf8'),
+        writeFile(importsModulePath + '.mjs', renderModule(imports), 'utf8'),
       ])
+    },
+
+    async renderModule () {
+      await init()
+      return renderModule(await ctx.getImports())
     },
   }
 }

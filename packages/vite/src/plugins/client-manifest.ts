@@ -199,6 +199,6 @@ export function ClientManifestPlugin (nuxt: Nuxt): Plugin {
   }
 
   function raiseMissingManifest (): never {
-    throw bundlerDiagnostics.NUXT_B7021({ manifestFile })
+    throw bundlerDiagnostics.NUXT_B7021({ manifestFile }, { method: 'error' })
   }
 }

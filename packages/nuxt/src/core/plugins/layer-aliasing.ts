@@ -25,7 +25,7 @@ export const LayerAliasingPlugin = (options: LayerAliasingOptions) => createUnpl
     const srcDir = layer.config.srcDir || layer.cwd
     const rootDir = layer.config.rootDir || layer.cwd
 
-    aliases[srcDir] = {
+    aliases[normalize(srcDir).replace(/\/?$/, '/')] = {
       '~': layer.config?.alias?.['~'] || srcDir,
       '@': layer.config?.alias?.['@'] || srcDir,
       '~~': layer.config?.alias?.['~~'] || rootDir,

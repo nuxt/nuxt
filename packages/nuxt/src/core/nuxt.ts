@@ -10,7 +10,7 @@ import { createDebugger, createHooks } from 'hookable'
 import ignore from 'ignore'
 import type { LoadNuxtOptions } from '@nuxt/kit'
 import { addBuildPlugin, ensureDependencyInstalled, getAddDependencyCommand, getLayerDirectories, loadNuxtConfig, nuxtCtx, resolveAlias, resolveIgnorePatterns, runWithNuxtContext } from '@nuxt/kit'
-import { configDiagnostics, createServerBuild, installModules } from '@nuxt/kit/internal'
+import { configDiagnostics, createServerBuild, installModules, isWithinDir } from '@nuxt/kit/internal'
 import type { PackageJson } from 'pkg-types'
 import { readPackageJSON } from 'pkg-types'
 import { hash } from 'ohash'
@@ -29,6 +29,7 @@ import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
 import compilerModule from '../compiler/module.ts'
+import webmcpModule from '../webmcp/module.ts'
 
 import { resolveDevAppSecret } from './app-secret.ts'
 import { assertRuntimeConfigWithoutSchemas, checkRuntimeConfig } from './runtime-config.ts'
@@ -48,6 +49,7 @@ import { setupTemplateDiagnostics } from './template-diagnostics.ts'
 import { setupTypes } from './typescript.ts'
 import { addCoreBuildPlugins } from './build-plugins.ts'
 import { checkPeerVersion } from './peer-version.ts'
+import { checkVueVersion } from './vue-version.ts'
 import { addAppPlugin, addBuiltinsAfterModules, addBuiltinsAfterServer, addBuiltinsBeforeModules } from './builtins.ts'
 import { stripDebugProxies, trackModuleMutations } from './debug-module-mutation.ts'
 
@@ -149,7 +151,7 @@ async function initNuxt (nuxt: Nuxt) {
   // Restart Nuxt when layer directories are added or removed
   const layersDir = withTrailingSlash(resolve(nuxt.options.rootDir, 'layers'))
   nuxt.hook('builder:watch', (event, relativePath) => {
-    if ((event === 'addDir' || event === 'unlinkDir') && resolve(nuxt.options.srcDir, relativePath).startsWith(layersDir)) {
+    if ((event === 'addDir' || event === 'unlinkDir') && isWithinDir(resolve(nuxt.options.srcDir, relativePath), layersDir)) {
       return nuxt.callHook('restart', { hard: true })
     }
   })
@@ -170,8 +172,8 @@ async function initNuxt (nuxt: Nuxt) {
 
   if (nuxt.options.dev) {
     // warn when layouts are defined without `<NuxtLayout>` being instantiated
-    addAppPlugin(nuxt, 'check-if-layout-used')
-    addAppPlugin(nuxt, 'warn.dev.server')
+    addAppPlugin(nuxt, 'check-if-layout-used', { _skipTypes: true })
+    addAppPlugin(nuxt, 'warn.dev.server', { _skipTypes: true })
   }
 
   // Registered before `installModules` so module `build:manifest` hooks can attach to these
@@ -219,7 +221,7 @@ async function initNuxt (nuxt: Nuxt) {
   const locallyScannedLayersDirs = layerDirs.map(l => join(l.root, 'layers/'))
   const rootWithTrailingSlash = withTrailingSlash(nuxt.options.rootDir)
   for (const dirs of layerDirs) {
-    if (dirs.root !== rootWithTrailingSlash && locallyScannedLayersDirs.every(dir => !dirs.root.startsWith(dir))) {
+    if (dirs.root !== rootWithTrailingSlash && locallyScannedLayersDirs.every(dir => !isWithinDir(dirs.root, dir))) {
       nuxt.options.modulesDir.push(join(dirs.root, 'node_modules'))
     }
   }
@@ -267,6 +269,7 @@ async function initNuxt (nuxt: Nuxt) {
   if (!nuxt.options._prepare) {
     checkRuntimeConfig(nuxt)
     await checkPeerVersion(nuxt, 'vue')
+    checkVueVersion(nuxt)
   }
 
   await addBuiltinsAfterModules(nuxt)
@@ -384,6 +387,9 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   // Add core modules
   options._modules.push(pagesModule, metaModule, componentsModule)
   options._modules.push(compilerModule)
+  if (options.experimental.webmcp) {
+    options._modules.push(webmcpModule)
+  }
   const importIncludes: RegExp[] = []
   for (const layer of options._layers) {
     if (layer.cwd && layer.cwd.includes('node_modules')) {
@@ -551,7 +557,7 @@ function warnUnresolvableGlobalCss (nuxt: Nuxt) {
     // build-dir entries are generated later in startup, and bare specifiers may
     // be resolved by builder-specific aliases, so neither can be checked here
     const resolved = resolveAlias(entry, nuxt.options.alias)
-    if (isAbsolute(resolved) && !resolved.startsWith(nuxt.options.buildDir) && !existsSync(resolved)) {
+    if (isAbsolute(resolved) && !isWithinDir(resolved, nuxt.options.buildDir) && !existsSync(resolved)) {
       configDiagnostics.NUXT_B5026({ entry, resolved: resolved === entry ? undefined : linkToAlias(resolved, nuxt) })
     }
   }

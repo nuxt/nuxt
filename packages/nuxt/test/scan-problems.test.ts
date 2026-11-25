@@ -89,7 +89,8 @@ describe('scan problems', () => {
     const [first, second] = messages as ProblemSetMessage[]
     expect(first).toMatchObject({ type: 'nuxt:dev:error:problems', source: 'nuxt:components', meta: { group: 'Nuxt', label: 'Components' } })
     expect(first!.reports).toMatchObject([{ kind: 'warning', name: 'NUXT_B3011', code: 'NUXT_B3011', hint: 'Rename one of the files.' }])
-    expect(first!.reports[0]!.frames.map(frame => [frame.file, frame.line])).toStrictEqual(files.map(file => [file, undefined]))
+    expect(first!.reports[0]!.frames.map(frame => [frame.file, frame.line])).toStrictEqual([[files[0], undefined]])
+    expect(first!.reports[0]!.related).toStrictEqual([{ file: files[1] }])
     expect(second!.reports.map(report => report.id)).toStrictEqual(first!.reports.map(report => report.id))
 
     problems.scan().done()

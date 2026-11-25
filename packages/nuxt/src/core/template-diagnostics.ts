@@ -6,6 +6,7 @@ import type { Diagnostic } from 'nostics'
 import type { ErrorReport } from 'my-bad'
 import type { Component, Nuxt } from 'nuxt/schema'
 import { getLayerDirectories } from '@nuxt/kit'
+import { isWithinDir } from '@nuxt/kit/internal'
 import { createFsAccessCheck, createReportFsLoader, openErrorBroadcast } from '../runtime/server/dev-error/index.ts'
 import type { ErrorChannelMessage } from '../runtime/server/dev-error/index.ts'
 import { createTemplateDiagnostics } from './plugins/template-diagnostics.ts'
@@ -44,7 +45,7 @@ export function setupTemplateDiagnostics (nuxt: Nuxt): void {
     displayPath: file => relative(nuxt.options.rootDir, file),
     filter: (file) => {
       const path = normalize(file)
-      return layerDirs.some(dir => path.startsWith(dir) && !path.slice(dir.length).includes('node_modules/'))
+      return layerDirs.some(dir => isWithinDir(path, dir) && !path.slice(dir.length).includes('node_modules/'))
     },
     onWarning: publisher?.warn,
     onWarningResolved: publisher?.clear,

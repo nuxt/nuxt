@@ -90,6 +90,27 @@ describe('renderPayloadJsonScript (dev)', () => {
     expect(warn).not.toHaveBeenCalled()
   })
 
+  it('bounds the set of urls it has warned about', () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const data = { data: { big: 'z'.repeat(101 * 1024) } }
+    for (let i = 0; i <= 100; i++) {
+      renderPayloadJsonScript({ ssrContext: ssrContext(`/bounded/${i}`), data })
+    }
+    expect(warn).toHaveBeenCalledTimes(101)
+
+    warn.mockClear()
+    for (let i = 1; i <= 100; i++) {
+      renderPayloadJsonScript({ ssrContext: ssrContext(`/bounded/${i}`), data })
+    }
+    expect(warn).not.toHaveBeenCalled()
+
+    warn.mockClear()
+    renderPayloadJsonScript({ ssrContext: ssrContext('/bounded/0'), data })
+    expect(warn).toHaveBeenCalledOnce()
+  })
+
   it('does not warn for small payloads', () => {
     vi.stubGlobal('__TEST_DEV__', true)
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})

@@ -224,4 +224,8 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
     expect(specifiers.size).toBeGreaterThan(0)
     expect([...specifiers].filter(specifier => !specifier.startsWith('node:') && !specifier.startsWith('.'))).toEqual([])
   })
+
+  it('bundles `#shared` imports instead of leaving them as bare paths', () => {
+    expect(html).toContain('<p id="shared-import">imported from #shared</p>')
+  })
 })

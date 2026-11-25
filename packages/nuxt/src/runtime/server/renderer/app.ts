@@ -6,6 +6,7 @@ import { appEvent, getRequestState } from './runtime'
 import type { NuxtRendererOptions, NuxtRequestState, RendererEvent } from './runtime'
 import { urlHash } from './url'
 import { mergeHeaders } from './headers'
+import { captureError } from './error-page'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
@@ -31,6 +32,7 @@ export function createSSRContext (options: NuxtRendererOptions, event: RendererE
     nuxt: undefined!, /* NuxtApp */
     payload: {},
     ['~payloadReducers']: Object.create(null),
+    ['~captureError']: (error) => { void captureError(options, event, error, ['async-data']) },
     modules: new Set(),
   }
 

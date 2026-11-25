@@ -1,4 +1,5 @@
-import { dirname, join } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
+import { isWithinDir } from '@nuxt/kit/internal'
 
 export { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER, isVue, parseModuleId } from '../../../nuxt/src/core/utils/plugins.ts'
 export { toVirtualId } from '../../../nuxt/src/core/utils/virtual.ts'
@@ -33,6 +34,13 @@ export function removeNestedDirs (dirs: string[]): string[] {
     }
     return true
   })
+}
+
+/**
+ * A rolldown `sourcemapIgnoreList` that lists sources from `node_modules` or the build directory.
+ */
+export function createSourcemapIgnoreList (buildDir: string): (relativeSourcePath: string, sourcemapPath: string) => boolean {
+  return (relativeSourcePath, sourcemapPath) => relativeSourcePath.includes('node_modules') || isWithinDir(resolve(dirname(sourcemapPath), relativeSourcePath), buildDir)
 }
 
 /**

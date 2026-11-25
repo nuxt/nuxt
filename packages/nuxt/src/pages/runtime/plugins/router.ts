@@ -83,6 +83,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     const router = createRouter({
       ...routerOptions,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       scrollBehavior: (to, from, savedPosition) => {
         if (from === START_LOCATION) {
           startPosition = savedPosition
@@ -105,6 +106,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
       },
       history,
       routes,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       matcher: import.meta.server && staticRoutes ? getSharedMatcher(routes) : undefined,
     })
 
@@ -176,7 +178,7 @@ const plugin: Plugin<{ router: Router }> = defineNuxtPlugin({
 
     nuxtApp._middleware ||= {
       global: [],
-      named: {},
+      named: Object.create(null),
     }
 
     const error = useError()

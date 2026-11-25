@@ -1,6 +1,6 @@
 import type { AttributeNode, BindingMetadata, ElementNode, ExpressionNode, NodeTransform, RootNode, SourceLocation } from '@vue/compiler-core'
 import type { Diagnostic } from 'nostics'
-import { componentDiagnostics, pageDiagnostics } from '@nuxt/kit/internal'
+import { componentDiagnostics, isWithinDir, pageDiagnostics } from '@nuxt/kit/internal'
 import { parseModule } from '../utils/parse.ts'
 
 type Finding =
@@ -279,9 +279,8 @@ export function createTemplateDiagnostics (options: TemplateDiagnosticsOptions =
 
   /** Resolve the findings of `path`, and of every file under it, once it is deleted. */
   const forget = (path: string) => {
-    const dir = path.endsWith('/') ? path : `${path}/`
     for (const file of [...files.keys()]) {
-      if (file === path || file.startsWith(dir)) {
+      if (isWithinDir(file, path)) {
         finalise(file, [])
       }
     }

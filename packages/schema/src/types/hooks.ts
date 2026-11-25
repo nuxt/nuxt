@@ -1,4 +1,5 @@
 import type { Server as HttpServer } from 'node:http'
+import type { Http2SecureServer } from 'node:http2'
 import type { Server as HttpsServer } from 'node:https'
 import type { TSConfig } from 'pkg-types'
 import type { ViteDevServer } from 'vite'
@@ -107,6 +108,93 @@ export interface NuxtAnalyzeMeta {
 }
 
 /**
+ * A bundle written by a production build, as reported by the `build:environment:*` hooks.
+ */
+export interface NuxtBuildEnvironment {
+  /**
+   * Name of the environment, as the builder that bundles it names it (such as `client`, `ssr`,
+   * `server` or `nitro`). Unique within a build.
+   */
+  name: string
+  /** Where the bundle runs. */
+  consumer: 'client' | 'server'
+  /**
+   * The tool that bundles it, for display: such as `vite`, `webpack`, `rspack`, `rsbuild`,
+   * `rolldown` or `rollup`.
+   */
+  builder: string
+}
+
+/** A file written by a production bundle. */
+export interface NuxtBuildFile {
+  /** Path relative to the `outDir` of the bundle, with forward slashes. */
+  path: string
+  /** Size on disk, in bytes. */
+  size: number
+}
+
+/** The outcome of a production bundle, passed to the `build:environment:done` hook. */
+export interface NuxtBuildEnvironmentResult {
+  /** Milliseconds from the start of the bundle until its files were written. */
+  duration: number
+  /** Absolute path of the directory the bundle was written to. */
+  outDir: string
+  /** The files the bundle wrote to `outDir`. */
+  files: NuxtBuildFile[]
+}
+
+/** A route the build prerendered or tried to prerender, passed to the `build:prerender:route` hook. */
+export interface NuxtPrerenderRoute {
+  /** The route, without the base URL. */
+  route: string
+  /** Milliseconds it took to render. */
+  duration: number
+  /**
+   * How many routes are queued so far, including this one and every route found by crawling
+   * up to this point. Grows while links are crawled.
+   */
+  total: number
+  /** Path the route was written to, relative to the public directory of the build output, without a leading slash. */
+  fileName?: string
+  /** Whether the route rendered but was not written to disk. */
+  skipped: boolean
+  /** Set when the route failed to render. */
+  error?: {
+    /** HTTP status the route responded with, when it responded at all. */
+    status?: number
+    message: string
+  }
+  /**
+   * With `error`, the pages that link to the route, without the base URL. Absent when the
+   * prerenderer does not report them.
+   */
+  linkedFrom?: string[]
+}
+
+/** A route that failed to prerender. */
+export interface NuxtPrerenderFailure {
+  route: string
+  /** HTTP status the route responded with, when it responded at all. */
+  status?: number
+  message: string
+  /**
+   * The pages that link to the route, without the base URL. Absent when the prerenderer does
+   * not report them.
+   */
+  linkedFrom?: string[]
+}
+
+/** The outcome of prerendering, passed to the `build:prerender:done` hook. */
+export interface NuxtPrerenderResult {
+  /** Milliseconds from the start of prerendering until the last route was rendered. */
+  duration: number
+  /** How many routes were written to disk. */
+  written: number
+  /** The routes that failed to render. */
+  failed: NuxtPrerenderFailure[]
+}
+
+/**
  * The listeners to Nuxt build time events
  */
 export interface NuxtHooks {
@@ -199,7 +287,7 @@ export interface NuxtHooks {
    * `serverHandlers`.
    * @param routes Array of route handlers to be extended
    * @param context Object the builder can extend
-   * @param context.requestTypes How the builder's types read a handler's validated request shapes
+   * @param context.requestTypes How the builder's types read a handler's validated request shapes and response
    * @returns Promise
    */
   'server:routes': (routes: ServerRouteHandler[], context: { requestTypes?: ServerRequestTypes }) => HookResult
@@ -259,6 +347,45 @@ export interface NuxtHooks {
    * @returns Promise
    */
   'build:manifest': (manifest: NuxtManifest) => HookResult
+
+  /**
+   * Called in a production build when a bundle starts. Bundles may build concurrently, so
+   * the `start` and `done` calls of different environments can interleave.
+   *
+   * Every bundle written to disk by the app builder or the server builder is reported,
+   * including intermediate bundles a later step consumes. A bundle built only to
+   * prerender with is not.
+   * @param environment The environment being bundled
+   * @returns Promise
+   */
+  'build:environment:start': (environment: NuxtBuildEnvironment) => HookResult
+  /**
+   * Called in a production build once a bundle has been written to disk.
+   * @param environment The environment that was bundled, as passed to `build:environment:start`
+   * @param result How long the bundle took, and the files it wrote
+   * @returns Promise
+   */
+  'build:environment:done': (environment: NuxtBuildEnvironment, result: NuxtBuildEnvironmentResult) => HookResult
+
+  /**
+   * Called in a production build when prerendering starts, whichever server builder prerenders.
+   * @param info Information about the prerender
+   * @param info.routes How many routes prerendering starts from. Crawling may add more.
+   * @returns Promise
+   */
+  'build:prerender:start': (info: { routes: number }) => HookResult
+  /**
+   * Called after each route is prerendered, or fails to.
+   * @param route The prerendered route
+   * @returns Promise
+   */
+  'build:prerender:route': (route: NuxtPrerenderRoute) => HookResult
+  /**
+   * Called when prerendering finishes, before the build fails for any route that failed to render.
+   * @param result How long prerendering took, how many routes were written and which failed
+   * @returns Promise
+   */
+  'build:prerender:done': (result: NuxtPrerenderResult) => HookResult
 
   /**
    * Called when `nuxt analyze` is finished
@@ -380,11 +507,11 @@ export interface NuxtHooks {
   'prepare:types': (options: { references: TSReference[], declarations: string[], tsConfig: VueTSConfig, nodeTsConfig: TSConfig, nodeReferences: TSReference[], sharedTsConfig: TSConfig, sharedReferences: TSReference[], serverTsConfig: TSConfig, serverReferences: TSReference[] }) => HookResult
   /**
    * Called when the dev server is loading.
-   * @param listenerServer The HTTP/HTTPS server object
+   * @param listenerServer The HTTP, HTTPS or HTTP/2 server object
    * @param listener The server's listener object
    * @returns Promise
    */
-  'listen': (listenerServer: HttpServer | HttpsServer, listener: any) => HookResult
+  'listen': (listenerServer: HttpServer | HttpsServer | Http2SecureServer, listener: any) => HookResult
 
   // Schema
   /**

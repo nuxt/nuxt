@@ -171,7 +171,10 @@ function rendererProject (name: string, include: string[], rendererConfig: strin
 }
 
 const rendererProjects = [
-  rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+  {
+    ...rendererProject('renderer', ['test/renderer/*.test.ts', '!test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/.nuxt/renderer/renderer-config.mjs'),
+    plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
+  },
   rendererProject('renderer-legacy-errors', ['test/renderer/legacy-errors.test.ts'], './test/fixtures/standalone-renderer/renderer-config-legacy-errors.mjs'),
 ]
 
@@ -265,18 +268,20 @@ export default defineConfig({
         },
       },
       {
-        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)', test: '(globalThis.__TEST_TEST__ ?? false)', prerender: '(globalThis.__TEST_PRERENDER__ ?? false)' })],
+        plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)', server: '(globalThis.__TEST_SERVER__ ?? false)', test: '(globalThis.__TEST_TEST__ ?? false)', prerender: '(globalThis.__TEST_PRERENDER__ ?? false)', hot: '(globalThis.__TEST_HOT__ ?? undefined)' })],
         resolve: {
           alias: {
             '#build/nuxt.config.mjs': resolve('./test/mocks/nuxt-config'),
             '#build/router.options.mjs': resolve('./test/mocks/router-options'),
             '#build/route-rules.mjs': resolve('./test/mocks/route-rules'),
+            '#build/unhead-client.mjs': resolve('./test/mocks/unhead-client'),
             '#app-manifest': resolve('./test/mocks/app-manifest'),
             '#build/pages': resolve('./test/mocks/pages'),
             '#build/routes': resolve('./test/mocks/routes'),
             '#internal/nuxt.config.mjs': resolve('./test/mocks/nitro-nuxt-config'),
             '#internal/nuxt/paths': resolve('./test/mocks/paths'),
             '#internal/nuxt/error-channel': resolve('./packages/nitro-server/src/runtime/utils/error-channel'),
+            '#internal/nuxt/host': resolve('./packages/nitro-server/src/runtime/host/nuxt5'),
             '#nuxt-compat/import-meta': resolve('./test/mocks/nitro-compat-import-meta'),
             '#nuxt-compat/flags': resolve('./test/mocks/nitro-compat-flags'),
             '#build/app.config.mjs': resolve('./test/mocks/app-config'),

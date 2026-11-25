@@ -7,7 +7,8 @@
   "tags": ["-knipignore"],
   "ignore": ["**/.nuxt-*/**", "packages/*/dist/**"],
   "ignoreIssues": {
-    "**/.nuxt/**": ["unlisted", "unresolved"]
+    "**/.nuxt/**": ["unlisted", "unresolved"],
+    "packages/{nuxt,rspack,vite,webpack}/package.json": ["subpaths"]
   },
   "ignoreDependencies": [
     "bing",
@@ -106,6 +107,23 @@
       },
       "ignoreDependencies": ["@rsbuild/plugin-pug", "pug"]
     },
+    "test/fixtures/server-module-imports": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "paths": {
+        "~~/*": ["./*"],
+        "~/*": ["./*"],
+        "#shared/*": ["./shared/*"]
+      },
+      "ignoreDependencies": ["module-only-dep"]
+    },
+    "test/fixtures/unhead-duplicate": {
+      "entry": [
+        "**/*.{js,ts,tsx,mjs,mts,vue}!"
+      ],
+      "ignoreDependencies": ["unhead"]
+    },
     "packages/nitro-server": {
       "entry": [
         "src/runtime/**/*.{js,ts,mjs}!"
@@ -121,12 +139,13 @@
     },
     "packages/vite-server": {
       "ignoreDependencies": [
-        "mocked-exports",
-        "rou3"
+        "mocked-exports"
       ]
     },
     "packages/vite": {
       "entry": [
+        "src/ssr-sourcemap.ts!",
+        "src/vite-node-entry.ts!",
         "test/utils.ts"
       ],
       "ignoreDependencies": [

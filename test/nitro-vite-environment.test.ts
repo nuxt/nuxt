@@ -1,7 +1,7 @@
 import http from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { readFile } from 'node:fs/promises'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { join } from 'pathe'
 import { buildNuxt, loadNuxt } from '@nuxt/kit'
@@ -44,6 +44,42 @@ describe.skipIf(builder !== 'nitro-vite' || !isBuilt)('nitro/vite environment pr
 
   it('prerenders a page that uses vue-router', async () => {
     expect(await readFile(join(outputDir, 'public/index.html'), 'utf-8')).toContain('nitro-vite-environment')
+  })
+})
+
+describe.skipIf(builder !== 'nitro-vite' || !isBuilt)('nitro/vite environment shared modules', () => {
+  const outputDir = join(rootDir, 'node_modules/.cache/nuxt/.output-shared')
+  let fetchHandler: (request: Request) => Promise<Response>
+
+  beforeAll(async () => {
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        buildDir: join(rootDir, 'node_modules/.cache/nuxt/.nuxt-shared'),
+        nitro: {
+          preset: 'standard',
+          output: { dir: outputDir },
+        },
+      },
+    })
+    await buildNuxt(nuxt)
+    await nuxt.close()
+
+    const server = await import(pathToFileURL(join(outputDir, 'server/index.mjs')).href) as { default: { fetch: typeof fetchHandler } }
+    fetchHandler = server.default.fetch
+  }, 240 * 1000)
+
+  it('keeps one module instance for the ssr renderer and server routes', async () => {
+    const route = () => fetchHandler(new Request('http://localhost/api/shared-state')).then(r => r.json())
+    const page = () => fetchHandler(new Request('http://localhost/')).then(r => r.text())
+
+    const first = await route() as { sawSsr: boolean, nitroSeen: number }
+    expect(first).toMatchObject({ sawSsr: false, nitroSeen: 1 })
+
+    expect(await page()).toContain('sawNitro=true')
+
+    expect(await route()).toEqual({ sawSsr: true, ssrSeen: 1, nitroSeen: 2, marks: ['nitro', 'ssr'] })
   })
 })
 
@@ -105,6 +141,17 @@ describe.skipIf(builder !== 'nitro-vite' || isBuilt)('nitro/vite environment dev
     const res = await fetch(url, secFetchDest ? { headers: { 'sec-fetch-dest': secFetchDest } } : undefined)
     expect(res.status, url).toBe(200)
     await expect(res.text()).resolves.toBe(`dev-handler:${base}${path.replace(/\?.*$/, '')}`)
+  }, 120 * 1000)
+
+  it.each([
+    ['/public-script.js', undefined, 'console.log("public-script")\n'],
+    ['/public-script.js', 'script', 'console.log("public-script")\n'],
+    ['/public-style.css', undefined, 'body { color: rebeccapurple }\n'],
+    ['/public-style.css', 'style', 'body { color: rebeccapurple }\n'],
+  ])('serves public file %s as written (sec-fetch-dest=%s)', async (path, secFetchDest, contents) => {
+    const res = await fetch(`http://127.0.0.1:${port}${path}`, secFetchDest ? { headers: { 'sec-fetch-dest': secFetchDest } } : undefined)
+    expect(res.status, path).toBe(200)
+    await expect(res.text()).resolves.toBe(contents)
   }, 120 * 1000)
 
   it('handles websocket upgrades for nitro routes', async () => {

@@ -15,4 +15,10 @@ describe('DevStyleSSRPlugin', () => {
   ])('should remove the ssr link for %j at %j', (id, href) => {
     expect(transform(id)).toContain(`link[href="${href}"]`)
   })
+
+  it('should not strip the source directory from siblings sharing its name prefix', () => {
+    const result = transform('/project/app-other/main.css')
+    expect(result).toContain('link[href="/_nuxt/project/app-other/main.css"]')
+    expect(result).not.toContain('link[href="/_nuxt/-other/main.css"]')
+  })
 })

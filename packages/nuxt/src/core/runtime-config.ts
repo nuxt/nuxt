@@ -6,7 +6,7 @@ import { formatRuntimeConfigIssues } from '../runtime/server/runtime-config/sche
 export function assertRuntimeConfigWithoutSchemas (nuxt: Nuxt): void {
   const path = findRuntimeConfigSchema(nuxt.options.runtimeConfig)
   if (path) {
-    throw configDiagnostics.NUXT_B5033({ path: ['runtimeConfig', ...path].join('.') })
+    throw configDiagnostics.NUXT_B5033({ path: ['runtimeConfig', ...path].join('.') }, { method: 'error' })
   }
 }
 

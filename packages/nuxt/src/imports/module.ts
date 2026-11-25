@@ -1,12 +1,14 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNuxt } from '@nuxt/kit'
-import { headDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { headDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
+import { withTrailingSlash } from 'ufo'
 import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
+import { hash } from 'ohash'
 import { parseAndWalk } from 'oxc-walker'
 import type { ESTree } from 'rolldown/utils'
 
@@ -14,7 +16,7 @@ import { isDirectory, linkToAlias, logger, offsetToPosition, resolveToAlias } fr
 import { createScanProblems } from '../core/scan-problems.ts'
 import { createFsAccessCheck } from '../runtime/server/dev-error/index.ts'
 import type { ProblemScan } from '../core/scan-problems.ts'
-import { RemovedImportsPlugin, TransformPlugin } from './transform.ts'
+import { RemovedImportsPlugin, TransformPlugin, getImportsSignature } from './transform.ts'
 import { appCompatPresets, defaultPresets, removedImports } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
@@ -40,7 +42,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     dirs: [],
     transform: {
       include: [
-        new RegExp('^' + escapeRE(nuxt.options.buildDir)),
+        new RegExp('^' + escapeRE(withTrailingSlash(nuxt.options.buildDir))),
       ],
       exclude: undefined,
     },
@@ -159,6 +161,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       options,
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       refreshImports: file => refreshImports(file),
+      getImportsVersion: () => importsVersion,
+      getImportsHash: () => importsHash ??= hash(getImportsSignature(resolvedImports)),
     }))
 
     // runs ahead of other build plugins, which may rewrite calls to former auto-imports
@@ -201,7 +205,14 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const isIgnored = createIsIgnored(nuxt)
     const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
     const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
-    const regenerateImports = async () => {
+    let lastScanStartedAt = Number.NEGATIVE_INFINITY
+    let lastScannedFiles = new Set<string>()
+    let lastScannedImports: Import[] | undefined
+    let importsSignature: string | undefined
+    let importsVersion = 0
+    let resolvedImports: Import[] = []
+    let importsHash: string | undefined
+    const regenerateImports = async ({ rescan = true } = {}) => {
       const scan = problems.scan()
       let registeredFiles = new Set<string>()
       await ctx.modifyDynamicImports(async (imports) => {
@@ -210,13 +221,24 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
         // Scan for `composables/` and `utils/` directories
         if (options.scan) {
-          const scannedImports = await scanDirExports(composablesDirs, {
-            fileFilter: file => !isIgnored(file),
-          })
-          for (const i of scannedImports) {
-            i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+          if (rescan || !lastScannedImports) {
+            const scanStartedAt = Date.now()
+            const scannedFiles = new Set<string>()
+            lastScannedImports = await scanDirExports(composablesDirs, {
+              fileFilter: (file) => {
+                if (isIgnored(file)) { return false }
+                scannedFiles.add(file)
+                return true
+              },
+            })
+            lastScanStartedAt = scanStartedAt
+            lastScannedFiles = new Set([...scannedFiles, ...lastScannedImports.map(i => i.from)])
+            for (const i of lastScannedImports) {
+              i.priority ||= priorities.find(([dir]) => isWithinDir(i.from, dir))?.[1]
+            }
           }
-          imports.push(...scannedImports)
+          // `imports:extend` hooks may change the entries they are given
+          imports.push(...lastScannedImports.map(i => ({ ...i })))
         }
 
         // Modules extending
@@ -230,6 +252,12 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             }
           }
         }
+
+        const signature = getImportsSignature(imports)
+        if (importsSignature !== undefined && signature !== importsSignature) {
+          importsVersion++
+        }
+        importsSignature = signature
 
         registeredFiles = new Set(imports.map(i => i.from).filter(from => isAbsolute(from)))
         return imports
@@ -245,7 +273,8 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       dedupingScans.set(scan, (file, name) => registeredFiles.has(file) && readable(file) ? locateExport(file, name) : file)
       try {
         ctx.getInternalContext().invalidate()
-        await ctx.getImports()
+        resolvedImports = await ctx.getImports()
+        importsHash = undefined
       } finally {
         dedupingScans.delete(scan)
       }
@@ -256,11 +285,22 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       })
     }
 
+    function isScanned (path: string) {
+      let modified: number | undefined
+      try {
+        modified = statSync(path, { throwIfNoEntry: false })?.mtimeMs
+      } catch {
+        return false
+      }
+      return modified === undefined ? !lastScannedFiles.has(path) : lastScannedFiles.has(path) && modified < lastScanStartedAt
+    }
+
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
     let pendingRegeneration: Promise<void> | undefined
     let staleScan = false
+    const isComposablesPath = (path: string) => composablesDirs.some(dir => isWithinDir(path, dir))
     function refreshImports (path: string) {
-      if (!options.scan || !composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+      if (!options.scan || !isComposablesPath(path)) {
         return
       }
       if (pendingRegeneration) {
@@ -268,6 +308,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         // so schedule a single extra pass rather than resolving with stale imports
         staleScan = true
         return pendingRegeneration
+      }
+      if (isScanned(path)) {
+        return Promise.resolve()
       }
       pendingRegeneration = (async () => {
         staleScan = false
@@ -296,7 +339,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
       // Only regenerate when non-imports templates are updated
       if (templates.some(t => !isImportsTemplate(t))) {
-        await regenerateImports()
+        await regenerateImports({ rescan: templates.some(t => t.write && isComposablesPath(t.dst)) })
       }
     })
   },

@@ -1,9 +1,10 @@
 /// <reference path="./internal.d.ts" />
-import type { Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, TracingChannelOptions as NitroTracingChannelOptions, NormalizedRouteRules, RouteRuleConfig } from 'nitro/types'
-import type { EventHandler, H3Event } from 'nitro/h3'
+import type { CachedHandlerOptions, Nitro, NitroConfig, NitroDevEventHandler, NitroEventHandler, NitroOptions, NitroRuntimeConfig, TracingChannelOptions as NitroTracingChannelOptions, NormalizedRouteRules, RouteRuleConfig } from 'nitro/types'
+import type { EventHandler, EventHandlerRequest, EventHandlerResponse, H3Event } from 'nitro/h3'
 import type { NitroLegacyOptions } from './compat.ts'
+import type { CachedEventHandler } from './runtime/compat/cache.ts'
 import type { DevServerLog, NuxtIslandContext, NuxtIslandResponse, NuxtRenderChunkContext, NuxtRenderCloseContext, NuxtRenderDocumentContext, NuxtRenderHTMLContext, NuxtRenderRouteContext } from '#app/types'
-import type { NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
+import type { NitroServerHost, NuxtRequestContext, RouteRuleConfigExtensions, RuntimeConfig, ServerImportsOptions, TracingChannelOptions } from 'nuxt/schema'
 
 /**
  * Per-channel toggles for `tracingChannel`: Nitro's own {@link NitroTracingChannelOptions}, plus the
@@ -24,6 +25,13 @@ export interface SSRSourceMaps {
   getCode: (file: string) => string | undefined
   /** Position in generated code a source position was mapped from. */
   getCompiledPosition?: (file: string, line: number, column?: number) => { file: string, line: number, column: number } | undefined
+}
+
+declare global {
+  interface ImportMeta {
+    dev: boolean
+    test: boolean
+  }
 }
 
 declare module 'nitro/types' {
@@ -76,8 +84,24 @@ declare module 'nitro/types' {
     'render:document': (documentContext: NuxtRenderDocumentContext, context: { event: H3Event }) => void | Promise<void>
     'render:route': (renderRouteContext: NuxtRenderRouteContext, context: { event: H3Event }) => void | Promise<void>
     'render:island': (islandResponse: NuxtIslandResponse, context: { event: H3Event, islandContext: NuxtIslandContext }) => void | Promise<void>
+    /** @deprecated Called only while the `nitroLegacy` layer covers Nitro v2 code. Return a `Response` from a server middleware instead. */
+    'render:before': (context: { event: H3Event, render: (event: H3Event) => Promise<{ body?: unknown, statusCode?: number, statusMessage?: string, headers?: Record<string, string | string[] | number | undefined> }>, response?: { body?: unknown, statusCode?: number, statusMessage?: string, headers?: Record<string, string | string[] | number | undefined> } }) => void | Promise<void>
+    /** @deprecated Called only while the `nitroLegacy` layer covers Nitro v2 code. Use the Nitro `response` hook instead. */
+    'render:response': (response: { body?: string, statusCode?: number, statusMessage?: string, headers?: Record<string, string> }, context: { event: H3Event }) => void | Promise<void>
   }
 }
+
+type RedirectRuleConfig = Extract<RouteRuleConfig['redirect'], { to: string }>
+
+/** A route rule as a project configures it, also accepting the Nitro v2 `redirect.statusCode` on a Nuxt 4 host. */
+export type NuxtRouteRuleConfig<Host = NitroServerHost> = Host extends { nuxt4: true }
+  ? Omit<RouteRuleConfig, 'redirect'> & {
+    redirect?: RouteRuleConfig['redirect'] | (RedirectRuleConfig & {
+      /** @deprecated Use `status` instead. */
+      statusCode?: RedirectRuleConfig['status']
+    })
+  }
+  : RouteRuleConfig
 
 type _NitroOnlyRuntimeConfig = Omit<NonNullable<NitroRuntimeConfig['nitro']>, 'envPrefix'> & { envPrefix: string }
 
@@ -87,7 +111,7 @@ interface NitroSchemaTypes {
   config: NitroConfig
   handler: NitroEventHandler
   devHandler: NitroDevEventHandler
-  routeRuleConfig: RouteRuleConfig
+  routeRuleConfig: NuxtRouteRuleConfig
   tracingChannels: NitroTracingChannelOptions
 }
 
@@ -102,6 +126,10 @@ declare module '@nuxt/schema' {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface NitroTypes extends NitroSchemaTypes {}
 
+  /** The Nuxt major this builder runs on, declared as `{ nuxt4: true }` in the generated types of a Nuxt 4 project. */
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+  interface NitroServerHost {}
+
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   interface ServerTypes extends NitroServerTypes {}
 
@@ -115,8 +143,8 @@ declare module '@nuxt/schema' {
      * Transitional: this option and the compatibility layer behind it are removed in
      * Nuxt 6. Prefer importing from `nuxt/server`.
      *
-     * @note Enabling this, or installing any module whose server code imports from `h3`
-     * or `nitropack`, also turns on Nitro v2 error-shape recovery app-wide: an error
+     * @note Enabling this, or installing any module whose server code gets the
+     * compatibility layer, also turns on Nitro v2 error-shape recovery app-wide: an error
      * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
      * scrubbed to a 500.
      *
@@ -157,8 +185,8 @@ declare module 'nuxt/schema' {
      * Transitional: this option and the compatibility layer behind it are removed in
      * Nuxt 6. Prefer importing from `nuxt/server`.
      *
-     * @note Enabling this, or installing any module whose server code imports from `h3`
-     * or `nitropack`, also turns on Nitro v2 error-shape recovery app-wide: an error
+     * @note Enabling this, or installing any module whose server code gets the
+     * compatibility layer, also turns on Nitro v2 error-shape recovery app-wide: an error
      * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
      * scrubbed to a 500.
      *
@@ -194,6 +222,11 @@ declare module 'h3' {
   interface H3EventContext {
     nuxt?: NuxtRequestContext
   }
+}
+
+declare module 'nitro/cache' {
+  /** Cache a handler, keeping the type of what it returns as the body of the `Response` it serves. */
+  export function defineCachedHandler<RequestT extends EventHandlerRequest = EventHandlerRequest, ResponseT = EventHandlerResponse> (handler: EventHandler<RequestT, ResponseT>, opts?: CachedHandlerOptions): CachedEventHandler<RequestT, ResponseT>
 }
 
 export {}

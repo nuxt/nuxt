@@ -5,11 +5,7 @@ interface LegacyHooks {
   callHook: (name: any, ...args: any[]) => unknown
 }
 
-/**
- * The payload nitro v2 passed to `render:response`. Typed here rather than declared on
- * `NitroRuntimeHooks`: the hook exists for nitro v2 module code, which types it against
- * nitropack v2, and Nuxt does not offer it to code written for this server.
- */
+/** The payload nitro v2 passed to `render:response`. */
 interface LegacyRenderResponse {
   body: string | undefined
   statusCode?: number

@@ -6,7 +6,6 @@ import { withTrailingSlash } from 'ufo'
 import { toRequest } from 'nitro/h3'
 import { definePlugin } from 'nitro'
 import { useNitroHooks } from 'nitro/app'
-import { getContext } from 'unctx'
 import type { ServerRequest } from 'srvx'
 import { captureRawStackTrace, parseRawStackTrace } from 'errx'
 import type { ParsedTrace } from 'errx'
@@ -28,7 +27,16 @@ interface NuxtDevAsyncContext {
   request: ServerRequest
 }
 
-const asyncContext = getContext<NuxtDevAsyncContext>('nuxt-dev', { asyncContext: true, AsyncLocalStorage })
+function appendLogs (ctx: NuxtDevAsyncContext, bodyAppend: string[]) {
+  try {
+    const reducers = Object.assign(Object.create(null), devReducers, ctx.request.context?.['~payloadReducers'])
+    bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
+  } catch (e) {
+    serverDiagnostics.NUXT_E8003({ error: e instanceof Error ? e.toString() : undefined, cause: e })
+  }
+}
+
+const asyncContext = new AsyncLocalStorage<NuxtDevAsyncContext>()
 
 const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   // TODO: Use nitro asyncContext
@@ -36,11 +44,11 @@ const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   nitroApp.fetch = (input: ServerRequest | URL | string, init?: RequestInit, context?: any) => {
     const req = toRequest(input, init)
     req.context = { ...req.context, ...context }
-    return asyncContext.callAsync({ logs: [], request: req }, () => originalFetch(req))
+    return asyncContext.run({ logs: [], request: req }, () => originalFetch(req))
   }
 
   onConsoleLog((_log) => {
-    const ctx = asyncContext.tryUse()
+    const ctx = asyncContext.getStore()
     if (!ctx) { return }
 
     const rawStack = captureRawStackTrace()
@@ -74,23 +82,27 @@ const plugin: ReturnType<typeof definePlugin> = definePlugin((nitroApp) => {
   const nitroHooks = useNitroHooks()
 
   nitroHooks.hook('response', () => {
-    const ctx = asyncContext.tryUse()
+    const ctx = asyncContext.getStore()
     if (!ctx) { return }
     const url = new URL(ctx.request.url)
     const path = url.pathname + url.search + url.hash
     return nitroHooks.callHook('dev:ssr-logs', { logs: ctx.logs, path })
   })
 
-  // Pass any logs to the client
-  nitroHooks.hook('render:html', (htmlContext) => {
-    const ctx = asyncContext.tryUse()
+  // `render:html` runs before a streamed body is rendered, so streamed logs are
+  // attached from `render:html:close` once the render is complete.
+  nitroHooks.hook('render:html', (htmlContext, { streaming }) => {
+    if (streaming) { return }
+
+    const ctx = asyncContext.getStore()
     if (!ctx) { return }
-    try {
-      const reducers = Object.assign(Object.create(null), devReducers, ctx.request.context?.['~payloadReducers'])
-      htmlContext.bodyAppend.unshift(`<script type="application/json" data-nuxt-logs="${appId}">${stringify(ctx.logs, reducers)}</script>`)
-    } catch (e) {
-      serverDiagnostics.NUXT_E8003({ error: e instanceof Error ? e.toString() : undefined, cause: e })
-    }
+    appendLogs(ctx, htmlContext.bodyAppend)
+  })
+
+  nitroHooks.hook('render:html:close', (closeContext) => {
+    const ctx = asyncContext.getStore()
+    if (!ctx) { return }
+    appendLogs(ctx, closeContext.bodyAppend)
   })
 })
 

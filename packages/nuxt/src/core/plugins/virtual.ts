@@ -1,9 +1,11 @@
 import process from 'node:process'
 import { resolveAlias } from '@nuxt/kit'
+import { isWithinDir } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { dirname, isAbsolute, resolve } from 'pathe'
 import { createUnplugin } from 'unplugin'
 import escapeStringRegexp from 'escape-string-regexp'
+import { withTrailingSlash } from 'ufo'
 import { combineRE } from '../utils/plugins.ts'
 import { toVirtualId } from '../utils/virtual.ts'
 
@@ -79,14 +81,14 @@ export const VirtualFSPlugin = (nuxt: Nuxt, options: VirtualFSPluginOptions) => 
 
   const vfsEntries = new Set<string>()
   for (const key in nuxt.vfs) {
-    if (!key.startsWith('#build/') && !key.startsWith(nuxt.options.buildDir)) {
+    if (!key.startsWith('#build/') && !isWithinDir(key, nuxt.options.buildDir)) {
       vfsEntries.add(escapeDirectory(dirname(key)))
     }
   }
 
   const vfsLocations = [
     /^#build\//,
-    new RegExp('^(\\w:)?' + escapeDirectory(nuxt.options.buildDir)),
+    new RegExp('^(\\w:)?' + escapeDirectory(withTrailingSlash(nuxt.options.buildDir))),
     ...Array.from(vfsEntries).map(id => new RegExp('^' + id)),
   ]
   const vfsLocationRE = combineRE(vfsLocations)

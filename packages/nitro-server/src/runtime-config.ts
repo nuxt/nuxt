@@ -1,4 +1,5 @@
 import type { Nuxt } from '@nuxt/schema'
+import { isNuxtMajorVersion } from '@nuxt/kit'
 import { getRuntimeConfigSchema } from '@nuxt/kit/internal'
 import { normalize } from 'pathe'
 import type { Nitro } from 'nitro/types'
@@ -11,11 +12,16 @@ const NITRO_RUNTIME_CONFIG_ID = '#nitro/virtual/runtime-config'
 const USE_RUNTIME_CONFIG_EXPORT_RE = /\bexport\s*\{[^}]*\buseRuntimeConfig\b[^}]*\}|\bexport\s+(?:async\s+)?(?:function\*?|const|let|var)\s+useRuntimeConfig\b/
 
 /**
- * The schema the server applies environment variables to the runtime config with.
+ * The schema the server applies environment variables to the runtime config with. On Nuxt 4
+ * before `compatibilityVersion: 5`, `strictPaths` lists the schemas declared in `nuxt.config`:
+ * only their issues stop the server, while issues with schemas from modules only warn.
  */
 export function getRuntimeConfigSchemaModule (nuxt: Nuxt, nitro: Nitro): string {
   const schema = getRuntimeConfigSchema(nitro.options.runtimeConfig as Record<string, unknown>, nuxt.options._runtimeConfigSchemas)
-  return `export default ${JSON.stringify(schema)}`
+  const strictPaths = isNuxtMajorVersion(4, nuxt) && (nuxt.options.future?.compatibilityVersion ?? 4) < 5
+    ? (nuxt.options._runtimeConfigSchemas ?? []).filter(entry => !entry.module).map(entry => entry.path.join('.'))
+    : undefined
+  return `export default ${JSON.stringify(schema)}\nexport const strictPaths = ${JSON.stringify(strictPaths) ?? 'undefined'}`
 }
 
 /**
@@ -36,7 +42,7 @@ export function runtimeConfigPlugin (runtimeConfigPath: string, { strict = false
     },
     buildEnd (error?: Error) {
       if (strict && !error && !replaced) {
-        throw nitroBuildDiagnostics.NUXT_B9012({ id: 'useRuntimeConfig' })
+        throw nitroBuildDiagnostics.NUXT_B9012({ id: 'useRuntimeConfig' }, { method: 'error' })
       }
     },
     resolveId: {
@@ -47,7 +53,7 @@ export function runtimeConfigPlugin (runtimeConfigPath: string, { strict = false
         }
         const resolved = await this.resolve(id, importer, { ...options, skipSelf: true })
         if (!resolved) {
-          throw nitroBuildDiagnostics.NUXT_B9012({ id })
+          throw nitroBuildDiagnostics.NUXT_B9012({ id }, { method: 'error' })
         }
         return resolved
       },

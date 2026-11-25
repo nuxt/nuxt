@@ -4,7 +4,7 @@ import { gzipSync } from 'node:zlib'
 import { beforeAll, describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
-import { join } from 'pathe'
+import { dirname, join } from 'pathe'
 
 describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application', () => {
   const rootDir = fileURLToPath(new URL('./fixtures/minimal', import.meta.url))
@@ -22,8 +22,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"110k"`)
-    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"41.1k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"95.4k"`)
+    expect.soft(roundToKilobytes(clientStats!.gzipBytes)).toMatchInlineSnapshot(`"36.0k"`)
 
     const entry = await fsp.readFile(join(rootDir, '.output/public', clientStats!.files.find(f => f.startsWith('_nuxt/entry'))!), 'utf8')
     expect(entry).not.toContain('[ofetch] global.fetch is not supported')
@@ -40,7 +40,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('does not ship payload revival machinery in a spa build', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(spaRootDir, '.output/public'), spaRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"105k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"90.0k"`)
 
     const contents = await Promise.all(
       (await glob(['**/*.js'], { cwd: join(spaRootDir, '.output/public') }))
@@ -63,10 +63,25 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     expect(client).toContain('Hello World!')
   })
 
+  it.each([
+    ['ssr', rootDir],
+    ['spa', spaRootDir],
+  ])('moves the static head of the app component to the server renderer (%s)', async (_, dir) => {
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(dir, '.output/server') }))
+        .map(file => fsp.readFile(join(dir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    const client = await readClientBundle(join(dir, '.output/public'))
+
+    expect(server).toContain('A static description')
+    expect(client).not.toContain('A static description')
+    expect(client).not.toContain('tags:afterResolve')
+  })
+
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"186k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"187k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -92,7 +107,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(rootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, rootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"220k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"224k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
@@ -117,7 +132,7 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"289k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"293k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`
@@ -155,6 +170,49 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
 
     expect(server).toContain('Server-only page')
     expect(client).not.toContain('Server-only page')
+  })
+})
+
+describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM_CI)('minimal nuxt application without head usage', () => {
+  const rootDir = fileURLToPath(new URL('./fixtures/minimal-no-head', import.meta.url))
+
+  beforeAll(async () => {
+    await exec('pnpm', ['nuxt', 'build', rootDir])
+  }, 120 * 1000)
+
+  it('loads unhead with the default error pages instead of the client entry', async () => {
+    const clientDir = join(rootDir, '.output/public')
+    const chunks = new Map(await Promise.all(
+      (await glob(['**/*.js'], { cwd: clientDir }))
+        .map(async file => [file, await fsp.readFile(join(clientDir, file), 'utf8')] as const),
+    ))
+
+    // the entry and every chunk it imports statically are loaded before an error page can render
+    const entries = [...chunks.keys()].filter(file => /(?:^|\/)entry\.js$/.test(file))
+    expect(entries).not.toHaveLength(0)
+
+    const eager = new Set<string>()
+    const queue = [...entries]
+    while (queue.length) {
+      const file = queue.pop()!
+      if (eager.has(file)) { continue }
+      eager.add(file)
+      for (const [, source] of chunks.get(file)!.matchAll(/\b(?:from|import)\s*["']\.\/([^"']+\.js)["']/g)) {
+        queue.push(join(dirname(file), source!))
+      }
+    }
+
+    const eagerlyLoadedWithHead = [...eager].filter(file => chunks.get(file)!.includes('tags:afterResolve'))
+    const lazilyLoadedWithHead = [...chunks.keys()].filter(file => !eager.has(file) && chunks.get(file)!.includes('tags:afterResolve'))
+
+    expect(eagerlyLoadedWithHead).toEqual([])
+    expect(lazilyLoadedWithHead).not.toHaveLength(0)
+
+    const server = (await Promise.all(
+      (await glob(['**/*.mjs'], { cwd: join(rootDir, '.output/server') }))
+        .map(file => fsp.readFile(join(rootDir, '.output/server', file), 'utf8')),
+    )).join('\n')
+    expect(server).toContain('tags:afterResolve')
   })
 })
 

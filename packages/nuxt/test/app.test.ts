@@ -1,5 +1,6 @@
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { randomUUID } from 'node:crypto'
+import { format } from 'node:util'
 import { afterAll, describe, expect, it, vi } from 'vitest'
 import { dirname, join, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
@@ -87,22 +88,17 @@ describe('resolveApp', () => {
     `)
   })
 
-  it('registers the streaming client head plugin when ssrStreaming is enabled', async () => {
-    const app = await getResolvedApp([
-      {
-        name: 'nuxt.config.ts',
-        contents: 'export default defineNuxtConfig({ experimental: { ssrStreaming: true } })',
-      },
-    ])
-    const headPlugins = app.plugins
-      .filter(p => !('getContents' in p) && p.src.includes('head/runtime/plugins'))
-      .map(p => p.src)
-    expect(headPlugins).toMatchInlineSnapshot(`
-      [
-        "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead.server.ts",
-        "<repoRoot>/packages/nuxt/src/head/runtime/plugins/unhead-stream.client.ts",
-      ]
-    `)
+  it.each([
+    [false, false],
+    [true, true],
+  ])('creates the client head from the streaming queue when ssrStreaming is %s', async (ssrStreaming, streamable) => {
+    const rootDir = resolve(repoRoot, 'node_modules/.fixture', randomUUID())
+    await mkdir(rootDir, { recursive: true })
+    const nuxt = await loadNuxt({ cwd: rootDir, overrides: { experimental: { ssrStreaming } } })
+    const template = nuxt.options.build.templates.find(t => t.filename === 'unhead-client.mjs')!
+    const contents = await template.getContents!({ nuxt, app: createApp(nuxt), options: {} } as any)
+    await nuxt.close()
+    expect(contents.includes('createStreamableHead')).toBe(streamable)
   })
 
   it('does not register the deferred prefetch plugin when deferPrefetchHints is disabled', async () => {
@@ -431,15 +427,20 @@ describe('generateApp template diagnostics', () => {
     const app = createApp(nuxt)
 
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const error = vi.spyOn(console, 'error').mockImplementation(() => {})
     try {
       await generateApp(nuxt, app, { filter: t => t.filename === 'bad-src.mjs' || t.filename === 'bad-contents.mjs' })
-      const messages = warn.mock.calls.map(call => String(call[0]))
+      const warnings = warn.mock.calls.map(call => format(...call))
+      const errors = error.mock.calls.map(call => format(...call))
       // unreadable `src` keeps its specific diagnostic
-      expect(messages.filter(m => m.includes('NUXT_B1002'))).toHaveLength(1)
+      expect(errors.filter(m => m.includes('NUXT_B1002'))).toHaveLength(1)
+      expect(warnings.filter(m => m.includes('NUXT_B1002'))).toHaveLength(0)
       // only uncoded failures (e.g. from `getContents`) get the generic diagnostic
-      expect(messages.filter(m => m.includes('NUXT_B1001'))).toHaveLength(1)
+      expect(warnings.filter(m => m.includes('NUXT_B1001'))).toHaveLength(1)
+      expect(errors.filter(m => m.includes('NUXT_B1001'))).toHaveLength(0)
     } finally {
       warn.mockRestore()
+      error.mockRestore()
       await nuxt.close()
       await rm(rootDir, { recursive: true, force: true })
     }

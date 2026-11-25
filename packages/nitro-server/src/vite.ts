@@ -39,7 +39,7 @@ function collectSsrGraphCss (moduleGraph: EnvironmentModuleGraph): { urls: strin
   for (const [mod, node] of moduleGraph.urlToModuleMap.entries()) {
     if (!IS_CSS_RE.test(mod) || 'raw' in getQuery(mod)) { continue }
     const importers = node.importers
-    if (importers?.size && [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
+    if (!importers?.size || [...importers].every(i => i.url && 'raw' in getQuery(i.url))) { continue }
     if (seen.has(node)) { continue }
     seen.add(node)
     urls.add(toDevUrl(mod))
@@ -444,6 +444,14 @@ function DevClientCssPlugin (nuxt: Nuxt): VitePlugin {
       handler (_code, id) {
         if (this.environment.name === 'ssr' && IS_CSS_RE.test(id)) { push?.() }
       },
+    },
+    // An edit that drops a `<style>` block transforms no CSS, so the pushed set
+    // would keep linking a style module that now 500s until something else
+    // pushes. Re-transforming the edited modules updates their imports first.
+    async hotUpdate ({ modules }) {
+      if (this.environment.name !== 'ssr' || !push) { return }
+      await Promise.all(modules.map(mod => mod.url && this.environment.transformRequest(mod.url).catch(() => {})))
+      push()
     },
   }
 }

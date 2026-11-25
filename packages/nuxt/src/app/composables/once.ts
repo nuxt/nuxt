@@ -29,10 +29,12 @@ export async function callOnce (...args: any[]): Promise<void> {
     throw stateDiagnostics.NUXT_E7008({ type: typeof fn })
   }
   const nuxtApp = useNuxtApp()
+  nuxtApp._once ||= {}
 
   if (options?.mode === 'navigation') {
     const removeGuard = useRouter().beforeResolve(() => {
       nuxtApp.payload.once.delete(_key)
+      delete nuxtApp._once[_key]
       removeGuard()
     })
   }
@@ -45,16 +47,19 @@ export async function callOnce (...args: any[]): Promise<void> {
     }
   }
 
-  nuxtApp._once ||= {}
-  nuxtApp._once[_key] ||= fn() || true
+  const promise = nuxtApp._once[_key] ||= fn() || true
   try {
-    await nuxtApp._once[_key]
+    await promise
   } catch (e) {
-    delete nuxtApp._once[_key]
+    if (nuxtApp._once[_key] === promise) {
+      delete nuxtApp._once[_key]
+    }
     throw e
   }
-  nuxtApp.payload.once.add(_key)
-  delete nuxtApp._once[_key]
+  if (nuxtApp._once[_key] === promise) {
+    nuxtApp.payload.once.add(_key)
+    delete nuxtApp._once[_key]
+  }
 }
 
 if (import.meta.hot) {

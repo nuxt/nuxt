@@ -1,9 +1,11 @@
 import { defineHandler, toEventHandler } from 'nitro/h3'
 import type { H3Event } from 'nitro/h3'
+import type { IncomingMessage } from 'node:http'
 
-import { prepareLegacyEvent } from './event.ts'
+import { fromLegacyBody, prepareLegacyEvent } from './event.ts'
 import type { RouteRulesResolver } from './event.ts'
 import { toLegacyError } from './error-shape.ts'
+import { getEndedResponse } from './ended-response.ts'
 
 /**
  * Wrap a handler written for nitro v2 so it sees the event and error shape it expects.
@@ -20,15 +22,16 @@ export function wrapLegacyHandler (input: unknown, base?: string, getRouteRules?
 
   const wrapped = defineHandler(async (event: H3Event) => {
     prepareLegacyEvent(event, getRouteRules)
-    const url = base ? withStrippedBase(event, base) : undefined
+    if (getEndedResponse(event) !== undefined) {
+      return fromLegacyBody(event, undefined)
+    }
+    const restore = base ? withStrippedBase(event, base) : undefined
     try {
-      return await handler(event)
+      return fromLegacyBody(event, await handler(event))
     } catch (error) {
       throw toLegacyError(error)
     } finally {
-      if (url) {
-        event.url = url
-      }
+      restore?.()
     }
   })
 
@@ -49,10 +52,11 @@ export function wrapLegacyHandler (input: unknown, base?: string, getRouteRules?
 }
 
 /**
- * Replace `event.url` with one whose path is relative to `base`, returning the original for
- * the caller to restore. `event.path` reads off `event.url`, so both move together.
+ * Replace `event.url`, and the url of a node request, with ones whose path is relative to
+ * `base`, returning a function that restores the originals. `event.path` reads off
+ * `event.url`, so both move together. A node request keeps the full path as `originalUrl`.
  */
-function withStrippedBase (event: H3Event, base: string): URL | undefined {
+function withStrippedBase (event: H3Event, base: string): (() => void) | undefined {
   const { pathname } = event.url
   if (pathname !== base && !pathname.startsWith(`${base}/`)) {
     return
@@ -61,5 +65,18 @@ function withStrippedBase (event: H3Event, base: string): URL | undefined {
   const stripped = new URL(original)
   stripped.pathname = pathname.slice(base.length) || '/'
   event.url = stripped
-  return original
+
+  const req = event.req.runtime?.node?.req as (IncomingMessage & { originalUrl?: string }) | undefined
+  const url = req?.url
+  if (req) {
+    req.originalUrl ||= url
+    req.url = stripped.pathname + stripped.search
+  }
+
+  return () => {
+    event.url = original
+    if (req) {
+      req.url = url
+    }
+  }
 }

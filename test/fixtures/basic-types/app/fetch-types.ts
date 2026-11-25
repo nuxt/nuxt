@@ -1,3 +1,5 @@
+import type { FetchOptions } from '#app'
+import type { FetchOptions as OFetchOptions } from 'ofetch'
 import { expectTypeOf } from 'vitest'
 
 export async function probe () {
@@ -56,6 +58,16 @@ export async function probe () {
   expectTypeOf(data.value).toEqualTypeOf<string | undefined>()
   // @ts-expect-error no GET route matches '/api/helo'
   useFetch('/api/helo')
+
+  // a nitro v2 cached handler is typed by the handler it caches
+  expectTypeOf(await $fetch('/api/cached')).toEqualTypeOf<{ cached: boolean, at: string }>()
+  expectTypeOf(useFetch('/api/cached').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
+  expectTypeOf(useLazyFetch('/api/cached').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
+
+  // and so is one cached with `defineCachedHandler`
+  expectTypeOf(await $fetch('/api/cached-v3')).toEqualTypeOf<{ cached: boolean, at: string }>()
+  expectTypeOf(useFetch('/api/cached-v3').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
+  expectTypeOf(useLazyFetch('/api/cached-v3').data.value).toEqualTypeOf<{ cached: boolean, at: string } | undefined>()
 }
 
 declare const runtimeBase: string
@@ -137,4 +149,47 @@ export async function validatedRequestProbe () {
   useFetch('/api/searched', { query: { q: 'nuxt', page: 1 } })
   // @ts-expect-error `x-api-ke` is not part of the validated headers
   useFetch('/api/searched', { headers: { 'x-api-ke': 'secret' } })
+}
+
+interface SearchResponse { data?: { organization?: { team?: { members: { nodes: Array<{ login: string }> } } } } }
+
+/** A call that names its response type, or a wrapper that does, accepts any method. */
+export async function namedResponseMethodProbe<T> (url: string, body: Record<string, unknown>) {
+  await $fetch<T>(url, { method: 'POST', body })
+  await $fetch.raw<T>(url, { method: 'POST', body })
+  expectTypeOf(await $fetch<unknown>('https://example.com', { method: 'PUT' })).toEqualTypeOf<unknown>()
+  expectTypeOf(await $fetch<SearchResponse>('https://api.github.com/graphql', { method: 'POST', headers: { Authorization: 'x' }, body: { query: 'q' } })).toEqualTypeOf<SearchResponse>()
+
+  // a call that infers its request is still resolved against GET
+  // @ts-expect-error no GET route matches '/api/validated'
+  await $fetch('/api/validated')
+  expectTypeOf(await $fetch('/api/validated', { method: 'POST', body: { title: 'a', count: 1 } })).toEqualTypeOf<{ created: boolean }>()
+}
+
+/** A URL the app does not serve is fetched with options typed for any request. */
+export async function externalFetchProbe<T> (url: string, options: FetchOptions = {}) {
+  const post: FetchOptions = { method: 'POST', body: { a: 1 }, query: { a: 1 }, headers: { a: 'b' } }
+  await $fetch(new Request('https://example.com'))
+  await $fetch.raw(new Request('https://example.com'))
+  await $fetch<T>(url, post)
+  return await $fetch<T>(url, options)
+}
+
+export async function ofetchOptionsProbe<T> (url: string, options: OFetchOptions) {
+  // @ts-expect-error ofetch's `FetchOptions` types `method` as a plain `string`
+  return await $fetch<T>(url, options)
+}
+
+const api = $fetch.create({ headers: { 'x-client': 'app' } })
+
+/** An instance created from `$fetch` is typed by the routes it is called with. */
+export async function createdFetchProbe () {
+  expectTypeOf(await api('/api/hello')).toEqualTypeOf<string>()
+  expectTypeOf(await api('/api/validated', { method: 'POST', body: { title: 'a', count: 1 } })).toEqualTypeOf<{ created: boolean }>()
+  // @ts-expect-error the route validates a body, so it cannot be omitted
+  await api('/api/validated', { method: 'POST' })
+  // @ts-expect-error `count` is not a string
+  await api('/api/validated', { method: 'POST', body: { title: 'a', count: '1' } })
+  // @ts-expect-error no GET route matches '/api/helo'
+  await api('/api/helo')
 }

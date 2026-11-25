@@ -1,9 +1,11 @@
 import fc from 'fast-check'
 import { describe, expect, it } from 'vitest'
+import type { Nuxt } from '@nuxt/schema'
 
-import { decodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from '../src/core/utils/index.ts'
 import { addRoute, createRouter } from 'rou3'
-import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath } from '../src/core/utils/route-rules.ts'
+import { runWithNuxtContext } from '../src/context.ts'
+import { decodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from '../src/internal/route-path.ts'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../src/internal/route-rules.ts'
 
 const RESERVED_RE = /[%;/?:@&=+$,#]/g
 
@@ -75,6 +77,16 @@ describe('matchAllRouteRules', () => {
     expect(matchAllRouteRules(match, '/docs/internal/x')).toEqual(match('/docs/internal/x'))
     expect(matchAllRouteRules(match, '/docs/internal%252Fx')).toEqual(match('/docs/internal%252Fx'))
     expect(matchAllRouteRules(match, '/docs/a?next=%2Fdocs%2Finternal')).toEqual(match('/docs/a'))
+  })
+
+  it('should match the path with each run of slashes collapsed', () => {
+    for (const path of ['//docs/internal/x', '///docs/internal/x', '/docs//internal/x', '/%2Fdocs/internal/x', '/%2fdocs%2F%2Finternal/x']) {
+      expect(matchAllRouteRules(match, path), path).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { page: true }, { internal: true, layout: 'internal' }])
+    }
+    expect(matchAllRouteRules(match, '/docs/a?next=//docs/internal')).toEqual(match('/docs/a'))
+
+    const slug = createNormalizedRouteRulesRouter([{ route: '/docs/:slug', data: { slug: true } }], '', true)
+    expect(matchAllRouteRules(path => slug.matchAll('', normalizeRouteRuleLookupPath(path, true)), '//docs/a%2Fb')).toEqual([{ slug: true }])
   })
 })
 
@@ -305,5 +317,40 @@ describe('assertSingleCatchAllRouteRuleKey', () => {
         expect(() => assertSingleCatchAllRouteRuleKey(key), key).not.toThrow()
       }
     }
+  })
+})
+
+describe('resolveRouteRulesRoutes', () => {
+  function host (nitro?: Record<string, unknown>): Nuxt {
+    return {
+      __name: 'nuxt-route-rules',
+      _nitro: nitro,
+      options: { app: { baseURL: '/app/' }, routeRules: { '/config': { ssr: false } } },
+    } as unknown as Nuxt
+  }
+
+  it('reads the routes a Nitro v3 server has resolved', () => {
+    const routes = [{ route: '/v3', method: '', data: { prerender: true } }]
+    const nuxt = host({ routing: { routeRules: { routes } }, options: { baseURL: '/base/', routeRules: { '/ignored': {} } } })
+
+    expect(runWithNuxtContext(nuxt, () => resolveRouteRulesRoutes(nuxt))).toEqual({ routes, baseURL: '/base/' })
+  })
+
+  it('reads the rules a Nitro v2 server has resolved', () => {
+    const nuxt = host({ options: { baseURL: '/base/', routeRules: { '/v2': { prerender: true } } } })
+
+    expect(runWithNuxtContext(nuxt, () => resolveRouteRulesRoutes(nuxt))).toEqual({
+      routes: [{ route: '/v2', method: '', data: { prerender: true } }],
+      baseURL: '/base/',
+    })
+  })
+
+  it('falls back to the configured rules without a server builder', () => {
+    const nuxt = host()
+
+    expect(runWithNuxtContext(nuxt, () => resolveRouteRulesRoutes(nuxt))).toEqual({
+      routes: [{ route: '/config', method: '', data: { ssr: false } }],
+      baseURL: '/app/',
+    })
   })
 })

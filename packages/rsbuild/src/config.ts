@@ -31,7 +31,7 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
 
   const entry = resolve(nuxt.options.appDir, nuxt.options.experimental.asyncEntry ? 'entry.async' : 'entry')
   const assetPrefix = joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir)
-  const [postcssPlugins, preprocessorPlugins, typeCheckPlugin, rsdoctorPlugin] = await Promise.all([
+  const [postcssPlugins, preprocessorPlugins, typeCheck, rsdoctorPlugin] = await Promise.all([
     resolvePostcssPlugins<PostCSSPlugin>(nuxt),
     resolvePreprocessorPlugins(nuxt),
     resolveTypeCheckPlugin(nuxt),
@@ -59,14 +59,20 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
     rsdoctorPlugin,
   ]
 
+  // production bundles are reported through the `build:environment:*` hooks, so Rsbuild only
+  // prints warnings and errors unless the project sets a level itself
+  const reportsBuild = !nuxt.options.dev && nuxt.options.logLevel !== 'silent' && !userConfig.logLevel
+
   const config: RsbuildConfig = {
     // passed to Rspack as `context` as is; unplugin's virtual modules require the platform's path format on Windows
     root: resolvePlatformPath(nuxt.options.rootDir),
     mode: nuxt.options.dev ? 'development' : 'production',
-    logLevel: nuxt.options.logLevel === 'silent' ? 'silent' : 'info',
+    logLevel: nuxt.options.logLevel === 'silent' ? 'silent' : reportsBuild ? 'warn' : 'info',
+    performance: reportsBuild ? { printFileSize: false } : undefined,
     plugins,
     source: {
       decorators: nuxt.options.experimental.decorators ? { version: '2023-11' } : undefined,
+      tsconfigPath: typeCheck?.tsconfigPath,
     },
     resolve: {
       alias: {
@@ -142,13 +148,13 @@ export async function resolveRsbuildConfig (nuxt: Nuxt): Promise<RsbuildConfig> 
       client: {
         ...clientEnvironment(nuxt, { entry, assetPrefix }),
         // type checking runs once, in the server build when SSR is enabled
-        plugins: [!nuxt.options.ssr && typeCheckPlugin],
+        plugins: [!nuxt.options.ssr && typeCheck?.plugin],
       },
       ...nuxt.options.ssr
         ? {
             ssr: {
               ...serverEnvironment(nuxt, { entry, assetPrefix }),
-              plugins: [typeCheckPlugin],
+              plugins: [typeCheck?.plugin],
             },
           }
         : {},

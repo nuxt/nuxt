@@ -66,6 +66,9 @@ describe('vite server wildcard redirects', () => {
     expect(await redirectFor('/caf%C3%A9/A/b', { '/café/**': { redirect: '/new/**' } })).toBe('/new/A/b')
     expect(await redirectFor('/old/Some-ID/A/b', { '/old/:id/**': { redirect: '/new/**' } })).toBe('/new/A/b')
     expect(await redirectFor('/old/A/b', { '/old/**': { redirect: '/new?path=**' } })).toBe('/new?path=A/b')
+    for (const path of ['//old/A/b', '/old//A/b', '/%2Fold/A/b', '/old%2FA/b']) {
+      expect(await redirectFor(path, rules), path).toBe('/new/A/b')
+    }
   })
 
   it('moves the tail of the request onto the target under a base URL', async () => {

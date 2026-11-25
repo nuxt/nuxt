@@ -12,9 +12,11 @@ import type { RouteMiddleware } from './composables/router'
 import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composables/asyncData'
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
+import { guardedServerConfig } from './internal/runtime-config'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { NuxtAnnouncer } from './composables/announcer'
+import type { ClientHeadState } from '../head/runtime/client-head-state'
 import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
 import { appDiagnostics } from './diagnostics/core'
@@ -96,6 +98,8 @@ interface _NuxtApp {
     /** @internal */
     _deps: number
     /** @internal */
+    _on: () => void
+    /** @internal */
     _off: () => void
     /** @internal */
     _init: boolean
@@ -165,6 +169,9 @@ interface _NuxtApp {
   '_routeAnnouncerDeps'?: number
 
   /** @internal */
+  '~head'?: ClientHeadState
+
+  /** @internal */
   '~transitionPromise'?: Promise<void>
   /** @internal */
   '~transitionFinish'?: () => void
@@ -178,6 +185,8 @@ interface _NuxtApp {
   '$config': RuntimeConfig
 
   'isHydrating'?: boolean
+  /** @internal */
+  '_appCreated'?: boolean
   'deferHydration': () => () => void | Promise<void>
 
   'ssrContext'?: NuxtSSRContext
@@ -287,8 +296,8 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
         }
       }
     },
-    _asyncDataPromises: {},
-    _asyncData: shallowReactive({}),
+    _asyncDataPromises: Object.create(null),
+    _asyncData: shallowReactive(Object.create(null)),
     _state: shallowReactive({}),
     _payloadRevivers: {},
     ...options,
@@ -378,6 +387,8 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
     }
     window.useNuxtApp ||= useNuxtApp
 
+    nuxtApp.hooks.hook('app:created', () => { nuxtApp._appCreated = true })
+
     // Log errors captured when running plugins, in the `app:created` and `app:beforeMount` hooks
     // as well as when mounting the app.
     const unreg = nuxtApp.hook('app:error', (...args) => {
@@ -388,7 +399,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
 
   // Expose runtime config
   const runtimeConfig = import.meta.server ? options.ssrContext!.runtimeConfig : nuxtApp.payload.config!
-  nuxtApp.provide('config', import.meta.client && import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
+  nuxtApp.provide('config', import.meta.dev ? wrappedConfig(runtimeConfig) : runtimeConfig)
 
   return nuxtApp
 }
@@ -557,8 +568,8 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
  * Returns `null` if Nuxt instance is unavailable.
  * @since 3.10.0
  */
-/* @__NO_SIDE_EFFECTS__ */
 export function tryUseNuxtApp (): NuxtApp | null
+/* @__NO_SIDE_EFFECTS__ */
 export function tryUseNuxtApp (id?: string): NuxtApp | null {
   let nuxtAppInstance
   if (hasInjectionContext()) {
@@ -576,8 +587,8 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
  * Throws an error if Nuxt instance is unavailable.
  * @since 3.0.0
  */
-/* @__NO_SIDE_EFFECTS__ */
 export function useNuxtApp (): NuxtApp
+/* @__NO_SIDE_EFFECTS__ */
 export function useNuxtApp (id?: string): NuxtApp {
   // @ts-expect-error internal usage of id
   const nuxtAppInstance = tryUseNuxtApp(id)
@@ -619,12 +630,10 @@ export function defineAppConfig<C extends AppConfigInput> (config: C): C {
   return config
 }
 
-/**
- * Configure error getter on runtime secret property access that doesn't exist on the client side
- */
 const loggedKeys = new Set<string>()
 function wrappedConfig (runtimeConfig: Record<string, unknown>) {
-  if (!import.meta.dev || import.meta.server) { return runtimeConfig }
+  if (!import.meta.dev) { return runtimeConfig }
+  if (import.meta.server) { return guardedServerConfig(runtimeConfig) }
   const keys: string[] = []
   for (const key in runtimeConfig) {
     keys.push(`\`${key}\``)

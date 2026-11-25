@@ -557,7 +557,7 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
         },
         buildEnd (error) {
           if (!error && this.environment.name === 'ssr' && pendingExtractions) {
-            throw bundlerDiagnostics.NUXT_B7039({ entry: ssrEntry })
+            throw bundlerDiagnostics.NUXT_B7039({ entry: ssrEntry }, { method: 'error' })
           }
         },
         generateBundle (outputOptions, bundle) {
@@ -611,8 +611,10 @@ export function SSRStylesPlugin (nuxt: Nuxt): Plugin | undefined {
               ? outputOptions.assetFileNames
               : outputOptions.assetFileNames({
                   type: 'asset',
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   name: assetName,
                   names: [assetName],
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   originalFileName: assetName,
                   originalFileNames: [assetName],
                   source: '',
