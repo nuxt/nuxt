@@ -11,14 +11,14 @@ import { captureError } from './error-page'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
-const appHeadOptions: CreateServerHeadOptions = {
-  ...unheadOptions,
-  init: [...unheadOptions.init || [], prepareHeadInput(appHead)],
-}
+let appHeadOptions: CreateServerHeadOptions | undefined
 
 // a streamable head renders late JSON-LD, `noscript` and body-positioned tags
 // as markup before `</body>` rather than as client patches
-function createServerHead (options: CreateServerHeadOptions): NuxtSSRContext['head'] {
+function createServerHead (withAppHead: boolean): NuxtSSRContext['head'] {
+  const options = withAppHead
+    ? appHeadOptions ||= { ...unheadOptions, init: [...unheadOptions.init || [], prepareHeadInput(appHead)] }
+    : unheadOptions
   if (!NUXT_SSR_STREAMING) {
     return createHead(options) as NuxtSSRContext['head']
   }
@@ -33,7 +33,7 @@ export function createSSRContext (options: NuxtRendererOptions, event: RendererE
     event: appEvent(event),
     runtimeConfig: options.runtimeConfig(event),
     noSSR: !!(NUXT_NO_SSR) || getRequestState(event)?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
-    head: createServerHead(withAppHead ? appHeadOptions : unheadOptions),
+    head: createServerHead(withAppHead),
     error: false,
     nuxt: undefined!, /* NuxtApp */
     payload: {},
