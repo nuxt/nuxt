@@ -1,7 +1,8 @@
-import { createHead } from '@unhead/vue/server'
+import { createHead, prepareHeadInput } from '@unhead/vue/server'
+import type { CreateServerHeadOptions } from '@unhead/vue/server'
 import { createStreamableHead } from '@unhead/vue/stream/server'
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
-import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SSR_STREAMING, unheadOptions } from 'nuxt/internal/renderer-config'
+import { NUXT_NO_SSR, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_SSR_STREAMING, appHead, unheadOptions } from 'nuxt/internal/renderer-config'
 import { appEvent, getRequestState } from './runtime'
 import type { NuxtRendererOptions, NuxtRequestState, RendererEvent } from './runtime'
 import { urlHash } from './url'
@@ -10,24 +11,29 @@ import { captureError } from './error-page'
 
 const PRERENDER_NO_SSR_ROUTES = new Set<string>(NUXT_PRERENDER_NO_SSR_ROUTES)
 
+const appHeadOptions: CreateServerHeadOptions = {
+  ...unheadOptions,
+  init: [...unheadOptions.init || [], prepareHeadInput(appHead)],
+}
+
 // a streamable head renders late JSON-LD, `noscript` and body-positioned tags
 // as markup before `</body>` rather than as client patches
-function createServerHead (): NuxtSSRContext['head'] {
+function createServerHead (options: CreateServerHeadOptions): NuxtSSRContext['head'] {
   if (!NUXT_SSR_STREAMING) {
-    return createHead(unheadOptions) as NuxtSSRContext['head']
+    return createHead(options) as NuxtSSRContext['head']
   }
-  const { head } = createStreamableHead({ ...unheadOptions, writesBodyTags: true })
+  const { head } = createStreamableHead({ ...options, writesBodyTags: true })
   return head as NuxtSSRContext['head']
 }
 
-export function createSSRContext (options: NuxtRendererOptions, event: RendererEvent): NuxtSSRContext {
+export function createSSRContext (options: NuxtRendererOptions, event: RendererEvent, withAppHead = false): NuxtSSRContext {
   const url = event.url.pathname + event.url.search + urlHash(event.url)
   const ssrContext: NuxtSSRContext = {
     url,
     event: appEvent(event),
     runtimeConfig: options.runtimeConfig(event),
     noSSR: !!(NUXT_NO_SSR) || getRequestState(event)?.noSSR || (import.meta.prerender ? PRERENDER_NO_SSR_ROUTES.has(url) : false),
-    head: createServerHead(),
+    head: createServerHead(withAppHead ? appHeadOptions : unheadOptions),
     error: false,
     nuxt: undefined!, /* NuxtApp */
     payload: {},
