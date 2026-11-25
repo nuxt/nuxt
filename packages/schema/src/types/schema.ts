@@ -2151,6 +2151,14 @@ export interface ConfigSchema {
   _rendererPlugins: RendererPluginEntry[]
 
   /**
+   * Virtual modules registered for the server build through `addServerTemplate()`, keyed by
+   * specifier. Shared with `nitro.virtual`.
+   *
+   * @private
+   */
+  _serverTemplates: Record<string, string | (() => string | Promise<string>)>
+
+  /**
    * Enable [diagnostics-channel](https://nodejs.org/api/diagnostics_channel.html)
    * tracing for Nuxt-owned subsystems, and forward the channels the configured
    * `server.builder` provides.

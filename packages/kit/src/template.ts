@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url'
 import process from 'node:process'
 import { setTimeout as sleep } from 'node:timers/promises'
 import { basename, isAbsolute, join, normalize, parse, relative, resolve } from 'pathe'
-import type { Nuxt, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
+import type { Nuxt, NuxtOptions, NuxtServerTemplate, NuxtTemplate, NuxtTypeTemplate, ResolvedNuxtTemplate, TSReference } from '@nuxt/schema'
 import { defu } from 'defu'
 import type { TSConfig } from 'pkg-types'
 import { isGreaterThanOrEqual } from 'verkit'
@@ -58,8 +58,9 @@ export function addTemplate<T> (_template: NuxtTemplate<T> | string): ResolvedNu
  */
 export function addServerTemplate (template: NuxtServerTemplate): NuxtServerTemplate {
   const nuxt = useNuxt()
-  nuxt.options.nitro.virtual ||= {}
-  nuxt.options.nitro.virtual[template.filename] = template.getContents
+  // a host without `_serverTemplates` predates them, and reads its Nitro config instead
+  const templates = (nuxt.options._serverTemplates as NuxtOptions['_serverTemplates'] | undefined) ?? (nuxt.options.nitro.virtual ||= {})
+  templates[template.filename] = template.getContents
 
   return template
 }

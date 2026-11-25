@@ -447,6 +447,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
   createPortalProperties(options.devServerHandlers, options, ['nitro.devHandlers', 'devServerHandlers'])
   createPortalProperties(nitroOptions.tracingChannel, options, ['nitro.tracingChannel', 'tracingChannel'])
+  createPortalProperties(nitroOptions.virtual ?? options._serverTemplates, options, ['nitro.virtual', '_serverTemplates'])
   const serverTsConfig = defu(options.typescript.serverTsConfig, nitroOptions.typescript?.tsConfig)
   createPortalProperties(serverTsConfig, options, ['nitro.typescript.tsConfig', 'typescript.serverTsConfig'])
 
