@@ -18,6 +18,10 @@ export function setupLegacyDevAndBuild (nuxt: Nuxt & { _nitro?: Nitro }, nitro: 
       await copyPublicAssets(nitro)
       await nuxt.callHook('nitro:build:public-assets', nitro)
     })
+    // prerendering runs before the build, and prerendered handlers may read public assets
+    nitro.hooks.hook('prerender:init', async () => {
+      await copyPublicAssets(nitro)
+    })
   }
 
   let waitUntilCompile: Promise<void> | undefined

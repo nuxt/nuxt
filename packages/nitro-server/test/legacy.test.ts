@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { createHooks } from 'hookable'
 import type { Nuxt } from '@nuxt/schema'
 import type { Nitro } from 'nitro/types'
-import { build } from 'nitro/builder'
+import { build, copyPublicAssets } from 'nitro/builder'
 import { setupLegacyDevAndBuild } from '../src/legacy.ts'
 
 const reload = vi.fn()
@@ -37,6 +37,15 @@ function setup (options: { dev?: boolean, rootDir?: string, nitro?: Record<strin
 }
 
 describe('setupLegacyDevAndBuild', () => {
+  it.each([false, true])('copies public assets before prerendering unless in dev (%s)', async (isDev) => {
+    const { nitro } = setup({ dev: isDev })
+    vi.mocked(copyPublicAssets).mockClear()
+
+    await nitro.hooks.callHook('prerender:init', nitro)
+
+    expect(vi.mocked(copyPublicAssets).mock.calls).toEqual(isDev ? [] : [[nitro]])
+  })
+
   it('reloads the dev server on `vite:compiled` only once nitro has built', async () => {
     const { nuxt, nitro } = setup()
 
