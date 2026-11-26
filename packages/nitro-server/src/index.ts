@@ -7,13 +7,14 @@ import process from 'node:process'
 import type { Nuxt, NuxtOptions, ServerRouteSegment } from '@nuxt/schema'
 import { addRoute, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
+import { createRouter as createRadixRouter, toRouteMatcher } from 'radix3'
 import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import type { Plugin } from 'rollup'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { build, copyPublicAssets, createDevServer, createNitro, prepare, prerender, writeTypes } from 'nitropack'
-import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitropack/types'
+import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig, NitroRouteRules } from 'nitropack/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, logger, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { MAY_CONTAIN_DECORATOR_RE, bundlerDiagnostics, getServerRuntime, hasDecoratorSyntax, reportNitroPrerender, resolveNitroDeployCommand, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild, startBuildEnvironment } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
@@ -1166,7 +1167,18 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         routes.add(`/${status}.html`)
       }
       if (clientOnlyApp) {
-        routes.add('/index.html')
+        // AI-generated change; not yet reviewed by a human.
+        const rootIgnored = nitro.options.prerender.ignore.some(pattern => typeof pattern === 'string'
+          ? '/'.startsWith(pattern)
+          : typeof pattern === 'function'
+            ? pattern('/') === true
+            : pattern instanceof RegExp && new RegExp(pattern.source, pattern.flags).test('/'))
+        const rootRules = defu({} as NitroRouteRules, ...toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules })).matchAll('/').reverse())
+        if (!routes.has('/') || rootIgnored || rootRules.prerender === false) {
+          routes.add('/index.html')
+        } else {
+          routes.delete('/index.html')
+        }
       }
     })
   }
