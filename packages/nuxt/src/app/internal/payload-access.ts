@@ -10,8 +10,12 @@ export function findPayloadElement (id?: string): HTMLElement | null {
     return document.getElementById(appPayloadId)
   }
   if (appPayloadDataAttr) {
+    const targetId = id || appId
     const attr = globalThis.CSS?.escape?.(appPayloadDataAttr) ?? appPayloadDataAttr
-    return document.querySelector(`[${attr}="${id || appId}"]`) as HTMLElement | null
+    for (const el of document.querySelectorAll(`[${attr}]`)) {
+      if (el.getAttribute(appPayloadDataAttr) === targetId) { return el as HTMLElement }
+    }
+    return null
   }
   return appPayloadId ? document.getElementById(appPayloadId) : null
 }
