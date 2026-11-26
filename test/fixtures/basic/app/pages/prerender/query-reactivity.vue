@@ -9,7 +9,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div :style="{ color: route.query.active === 'true' ? 'red' : 'blue' }">
+  <div :style="{ color: String(route.query.active) === 'true' ? 'red' : 'blue' }">
     Query: {{ route.query.active }}
     <span id="mounted-query">{{ mountedQuery }}</span>
   </div>

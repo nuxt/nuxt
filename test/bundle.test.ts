@@ -10,6 +10,9 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
   const spaRootDir = fileURLToPath(new URL('./fixtures/spa', import.meta.url))
 
+  // the classic router build of the pages fixture, for comparison
+  const classicPagesOutput = join(pagesRootDir, '.output-classic')
+
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir], { nodeOptions: { env: { EXTERNAL_VUE: 'false' } } }),
@@ -17,7 +20,8 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
       exec('pnpm', ['nuxt', 'build', pagesRootDir]),
       exec('pnpm', ['nuxt', 'build', spaRootDir]),
     ])
-  }, 120 * 1000)
+    await exec('pnpm', ['nuxt', 'build', pagesRootDir, '--envName', 'classic'])
+  }, 240 * 1000)
 
   // Identical behaviour between inline/external vue options as this should only affect the server build
 
@@ -84,7 +88,26 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
-    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"195k"`)
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"190k"`)
+
+    const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
+
+    expect([...files]).toMatchInlineSnapshot(`
+      [
+        "_nuxt/a.js",
+        "_nuxt/client-component.js",
+        "_nuxt/default.js",
+        "_nuxt/entry.js",
+        "_nuxt/pages.js",
+        "_nuxt/server-component.js",
+      ]
+    `)
+  })
+
+  it('default client bundle size (pages, classic router)', async () => {
+    const clientStats = await analyzeSizes(['**/*.js'], join(classicPagesOutput, 'public'), pagesRootDir)
+
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"196k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
 
@@ -177,14 +200,19 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     `)
   })
 
+  it('default server bundle size (pages, classic router)', async () => {
+    const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], join(classicPagesOutput, 'server'), pagesRootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"329k"`)
+  })
+
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs', '!node_modules'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"328k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"330k"`)
 
     const modules = await analyzeSizes(['node_modules/**/*'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"457k"`)
+    expect.soft(roundToKilobytes(modules.totalBytes)).toMatchInlineSnapshot(`"537k"`)
 
     const packages = modules.files
       .filter(m => m.endsWith('package.json'))

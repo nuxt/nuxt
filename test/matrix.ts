@@ -30,6 +30,9 @@ export const nitroMajor = process.env.TEST_NITRO_MAJOR ? Number(process.env.TEST
 /** Whether the fixtures are built with nitro v3 rather than the default nitropack v2. */
 export const isNitroV3 = nitroMajor === 3
 
+/** Whether the fixture runs on the classic router rather than the experimental one, which has no `addRoute()`. */
+export const classicRouter = process.env.TEST_ROUTER === 'classic'
+
 /**
  * Suffix identifying the current matrix combination.
  */
@@ -42,6 +45,7 @@ export const projectSuffix = [
   process.env.TEST_ERROR_RENDERING,
   process.env.TEST_COMPONENT_RESOLUTION,
   process.env.TEST_NITRO_MAJOR && `nitro${process.env.TEST_NITRO_MAJOR}`,
+  process.env.TEST_ROUTER,
 ].filter(Boolean).join('-') || 'default'
 
 const isMatrixRun = !!process.env.TEST_BUILDER

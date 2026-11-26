@@ -67,6 +67,7 @@ interface FixtureMatrixEntry {
   inlineErrors?: boolean
   legacyComponentResolution?: boolean
   nitro?: 3
+  classicRouter?: boolean
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -111,15 +112,20 @@ const nitroV3Matrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'webpack', context: 'default', manifest: 'manifest-on', payload: 'json', nitro: 3 },
 ]
 
+// re-runs the basic fixture on the classic router, with `experimental.experimentalRouter` disabled
+const classicRouterMatrix: FixtureMatrixEntry[] = [
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', payload: 'json', classicRouter: true },
+]
+
 function fixtureProjectInclude (entry: FixtureMatrixEntry) {
   if (entry.inlineErrors) { return inlineErrorInclude }
-  if (entry.legacyComponentResolution) { return ['test/basic.test.ts'] }
+  if (entry.legacyComponentResolution || entry.classicRouter) { return ['test/basic.test.ts'] }
   if (entry.nitro) { return ['test/*.test.ts', '!test/vite-server-*.test.ts'] }
   return ['test/*.test.ts']
 }
 
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.nitro ? `nitro${entry.nitro}-` : ''}${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}${entry.inlineErrors ? '-inline-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}`
+  return `fixtures:${entry.nitro ? `nitro${entry.nitro}-` : ''}${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}-${entry.payload}${entry.inlineErrors ? '-inline-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}${entry.classicRouter ? '-classic-router' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -132,6 +138,7 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     ...entry.inlineErrors ? { TEST_ERROR_RENDERING: 'inline-errors' } : {},
     ...entry.legacyComponentResolution ? { TEST_COMPONENT_RESOLUTION: 'legacy' } : {},
     ...entry.nitro ? { TEST_NITRO_MAJOR: String(entry.nitro) } : {},
+    ...entry.classicRouter ? { TEST_ROUTER: 'classic' } : {},
   }
 }
 
@@ -221,7 +228,7 @@ export default defineConfig({
           benchmark: { include: ['test/bench/renderer.bench.ts'] },
         },
       },
-      ...[...fixtureMatrix, ...inlineErrorMatrix, ...legacyComponentResolutionMatrix, ...nitroV3Matrix].map(entry => ({
+      ...[...fixtureMatrix, ...inlineErrorMatrix, ...legacyComponentResolutionMatrix, ...nitroV3Matrix, ...classicRouterMatrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),

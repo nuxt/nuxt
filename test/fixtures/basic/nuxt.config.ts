@@ -165,6 +165,7 @@ export default withMatrix({
     inlineStyles: id => !!id,
   },
   experimental: {
+    experimentalRouter: process.env.TEST_ROUTER !== 'classic',
     decorators: true,
     typedPages: true,
     clientFallback: true,

@@ -1,20 +1,40 @@
-export default defineNuxtConfig({
-  $production: {
-    vite: {
-      $client: {
-        build: {
-          rolldownOptions: {
-            output: {
-              chunkFileNames: '_nuxt/[name].js',
-              entryFileNames: '_nuxt/[name].js',
-            },
+// stable chunk names, so the bundle test can list them
+const build = {
+  vite: {
+    $client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            chunkFileNames: '_nuxt/[name].js',
+            entryFileNames: '_nuxt/[name].js',
           },
         },
       },
     },
   },
+}
+
+export default defineNuxtConfig({
+  $env: {
+    // the classic router, to compare its bundle with the experimental one
+    classic: {
+      ...build,
+      buildDir: '.nuxt-classic',
+      experimental: {
+        experimentalRouter: false,
+      },
+      nitro: {
+        output: { dir: '.output-classic' },
+      },
+    },
+  },
+  $production: build,
   devtools: { enabled: false },
   sourcemap: false,
+  // off by default before Nuxt 5
+  experimental: {
+    experimentalRouter: true,
+  },
   compatibilityDate: 'latest',
   nitro: {
     minify: true,
