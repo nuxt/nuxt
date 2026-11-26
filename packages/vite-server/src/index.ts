@@ -213,7 +213,7 @@ function setupAppManifest (nuxt: Nuxt, prerender: boolean): void {
   nuxt.options.alias['#app-manifest'] = dst
 
   nuxt.options.prerender.ignore ||= []
-  nuxt.options.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
+  nuxt.options.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, nuxt.options.app.manifestDir || 'builds'))
 }
 
 /**

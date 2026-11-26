@@ -318,6 +318,91 @@ export interface ConfigSchema {
      * Customize Nuxt SPA loading template element attributes.
      */
     spaLoaderAttrs: SerializableHtmlAttributes
+
+    /**
+     * `id` attribute of the inline hydration payload `<script>` tag, or `false` to omit it.
+     */
+    payloadId: string | false
+
+    /**
+     * Attribute name used on the payload `<script>` tag to store `appId`, or `false` to omit it.
+     */
+    payloadDataAttr: string | false
+
+    /**
+     * Attribute name used on the payload `<script>` tag to mark SSR mode, or `false` to omit it.
+     */
+    ssrAttr: string | false
+
+    /**
+     * Name of the `window` global used to pass initial config, or `false` to emit no `window` global.
+     */
+    globalName: string | false
+
+    /**
+     * Filename used for extracted route payloads.
+     */
+    payloadFileName: string
+
+    /**
+     * URL prefix used for server component island requests.
+     */
+    islandRoutePrefix: string
+
+    /**
+     * Internal route path used to render SSR error pages.
+     */
+    errorRoute: string
+
+    /**
+     * Query parameter name carrying the serialized error payload to `errorRoute`.
+     */
+    errorQueryParam: string
+
+    /**
+     * Attribute name on the inert `<template>` holding deferred prefetch links.
+     */
+    prefetchAttr: string
+
+    /**
+     * Global function name attached to `window` (defaults to `'useNuxtApp'`), or `false` to omit it.
+     */
+    exposeGlobal: string | false
+
+    /**
+     * Whether to expose the Nuxt framework version on `nuxtApp.versions.nuxt`.
+     */
+    exposeVersion: boolean
+
+    /**
+     * Directory inside `buildAssetsDir` holding app build manifests.
+     */
+    manifestDir: string
+
+    /**
+     * Subdirectory inside `manifestDir` holding per-build manifest files.
+     */
+    manifestMetaDir: string
+
+    /**
+     * Filename inside `manifestDir` holding the latest build metadata.
+     */
+    manifestLatestFile: string
+
+    /**
+     * CSS class applied to `<NuxtLoadingIndicator>`, or `false` to omit it.
+     */
+    loadingIndicatorClass: string | false
+
+    /**
+     * CSS class applied to `<NuxtAnnouncer>`, or `false` to omit it.
+     */
+    announcerClass: string | false
+
+    /**
+     * CSS class applied to `<NuxtRouteAnnouncer>`, or `false` to omit it.
+     */
+    routeAnnouncerClass: string | false
   }
 
   /**
@@ -1120,6 +1205,13 @@ export interface ConfigSchema {
      * If set to 'production' or `true`, JS will be disabled in production mode only.
      */
     noScripts: 'production' | 'all' | boolean
+
+    /**
+     * Control the `x-powered-by` HTTP response header emitted by the Nuxt renderer.
+     *
+     * Set to `false` to omit the header, `true` to send `'Nuxt'`, or a custom string.
+     */
+    poweredBy: boolean | string
   }
 
   experimental: {
@@ -1996,6 +2088,16 @@ export interface ConfigSchema {
      * ```
      */
     compilerComponentResolution: boolean
+
+    /**
+     * Obfuscate serialized hydration payloads (`__NUXT_DATA__` and external payload files)
+     * so internal state/store data is not emitted as plaintext JSON in HTML.
+     */
+    payloadObfuscation: false | {
+      enabled: true
+      key: string
+      scriptType: string
+    }
   }
 
   /**

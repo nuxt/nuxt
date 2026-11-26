@@ -13,7 +13,7 @@ import { getFragmentHTML, isEndFragment, isStartFragment } from './utils'
 import { getIslandHash, serializeIslandProps } from '../island-hash'
 import { renderDiagnostics } from '../diagnostics/render'
 
-import { appBaseURL, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
+import { appBaseURL, appIslandRoutePrefix, remoteComponentIslands, selectiveClient } from '#build/nuxt.config.mjs'
 import { $fetch } from '#build/fetch'
 
 const pKey = '_islandPromises'
@@ -215,7 +215,7 @@ const NuxtIsland = defineComponent({
 
       if (!force && nuxtApp.payload.data[key]?.html) { return nuxtApp.payload.data[key] }
 
-      const url = remoteComponentIslands && props.source ? joinURL(props.source, `/__nuxt_island/${key}.json`) : `/__nuxt_island/${key}.json`
+      const url = remoteComponentIslands && props.source ? joinURL(props.source, `${appIslandRoutePrefix}${key}.json`) : `${appIslandRoutePrefix}${key}.json`
       if (import.meta.server && import.meta.prerender) {
         nuxtApp.runWithContext(() => prerenderRoutes(url))
       }

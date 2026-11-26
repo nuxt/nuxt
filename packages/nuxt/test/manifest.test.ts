@@ -11,7 +11,12 @@ const { manifest, diagnostics } = vi.hoisted(() => ({
 
 vi.mock('../src/app/nuxt', () => ({ useRuntimeConfig: () => ({ app: { buildId: manifest.id } }) }))
 vi.mock('../src/app/diagnostics/manifest', () => ({ manifestDiagnostics: diagnostics }))
-vi.mock('#build/nuxt.config.mjs', () => ({ appManifest: true }))
+vi.mock('#build/nuxt.config.mjs', () => ({
+  appManifest: true,
+  appManifestDir: 'builds',
+  appManifestMetaDir: 'meta',
+  payloadObfuscationKey: false,
+}))
 
 describe('app manifest requests', () => {
   const manifestURL = `/_nuxt/builds/meta/${manifest.id}.json`

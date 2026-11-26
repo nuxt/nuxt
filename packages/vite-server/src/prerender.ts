@@ -347,22 +347,24 @@ export async function writeAppManifest (nuxt: Nuxt, publicDir: string, routes: s
   const baseURL = nuxt.options.app.baseURL || '/'
   const matcher = createRouteRulesMatcher(nuxt)
   const prerendered = new Set<string>()
+  const payloadSuffix = `/${nuxt.options.app.payloadFileName || '_payload.json'}`
   for (const route of routes) {
-    if (!route.endsWith(PAYLOAD_SUFFIX)) { continue }
-    const path = route.slice(0, -PAYLOAD_SUFFIX.length) || '/'
+    if (!route.endsWith(payloadSuffix)) { continue }
+    const path = route.slice(0, -payloadSuffix.length) || '/'
     // a route the client can resolve a `prerender` rule for needs no entry of its own
     if (!matcher(withoutBase(path, baseURL)).prerender) {
       prerendered.add(path)
     }
   }
 
-  const dir = resolve(publicDir, joinURL(nuxt.options.app.buildAssetsDir, 'builds').replace(/^\//, ''))
-  await mkdir(join(dir, 'meta'), { recursive: true })
-  await writeFile(join(dir, 'latest.json'), JSON.stringify({ id: buildId, timestamp }))
-  await writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify({ id: buildId, timestamp, prerendered: [...prerendered].sort() }))
+  const manifestDir = nuxt.options.app.manifestDir || 'builds'
+  const manifestMetaDir = nuxt.options.app.manifestMetaDir || 'meta'
+  const manifestLatestFile = nuxt.options.app.manifestLatestFile || 'latest.json'
+  const dir = resolve(publicDir, joinURL(nuxt.options.app.buildAssetsDir, manifestDir).replace(/^\//, ''))
+  await mkdir(join(dir, manifestMetaDir), { recursive: true })
+  await writeFile(join(dir, manifestLatestFile), JSON.stringify({ id: buildId, timestamp }))
+  await writeFile(join(dir, manifestMetaDir, `${buildId}.json`), JSON.stringify({ id: buildId, timestamp, prerendered: [...prerendered].sort() }))
 }
-
-const PAYLOAD_SUFFIX = '/_payload.json'
 
 const timestamps = new WeakMap<Nuxt, number>()
 

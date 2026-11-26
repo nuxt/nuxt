@@ -3,47 +3,58 @@ import { isReactive, isShallow, reactive, shallowReactive, toRaw } from 'vue'
 import type { Script } from '@unhead/vue'
 
 import type { NuxtPayload, NuxtSSRContext } from '#app/types'
+import { encodePayload } from '../../../app/internal/payload-codec'
 import type { CachedResponse, RendererEvent } from './runtime'
 import { rendererDiagnostics } from './diagnostics'
 
-import { NUXT_NO_SSR, appId, multiApp } from 'nuxt/internal/renderer-config'
+import { NUXT_NO_SSR, NUXT_PAYLOAD_OBFUSCATION_KEY, NUXT_PAYLOAD_SCRIPT_TYPE, NUXT_POWERED_BY, appGlobalName, appId, appPayloadDataAttr, appPayloadId, appSsrAttr, multiApp } from 'nuxt/internal/renderer-config'
 
 export function renderPayloadResponse (ssrContext: NuxtSSRContext, event: RendererEvent): CachedResponse {
+  const serialized = encodeForwardSlashes(stringify(sortContainers(splitPayload(ssrContext).payload), ssrContext['~payloadReducers']))
+  const obfuscate = Boolean(NUXT_PAYLOAD_OBFUSCATION_KEY)
   return {
-    body: encodeForwardSlashes(stringify(sortContainers(splitPayload(ssrContext).payload), ssrContext['~payloadReducers'])),
+    body: obfuscate ? encodePayload(serialized, NUXT_PAYLOAD_OBFUSCATION_KEY as string) : serialized,
     status: event.res.status || 200,
     statusText: event.res.statusText || '',
     headers: {
-      'content-type': 'application/json;charset=utf-8',
-      'x-powered-by': 'Nuxt',
+      'content-type': obfuscate ? 'text/plain;charset=utf-8' : 'application/json;charset=utf-8',
+      ...(NUXT_POWERED_BY ? { 'x-powered-by': NUXT_POWERED_BY } : {}),
     },
   }
 }
 
 export function renderPayloadJsonScript (opts: { ssrContext: NuxtSSRContext, data?: any, src?: string }): Script[] {
-  const contents = opts.data ? encodeForwardSlashes(stringify(sortContainers(omitEmptyContainers(opts.data)), opts.ssrContext['~payloadReducers'])) : ''
+  const isSSR = !(NUXT_NO_SSR || opts.ssrContext.noSSR)
+  const rawData = appGlobalName === false
+    ? { ...opts.data, config: opts.ssrContext.config, serverRendered: isSSR }
+    : opts.data
+  const contents = rawData ? encodeForwardSlashes(stringify(sortContainers(omitEmptyContainers(rawData)), opts.ssrContext['~payloadReducers'])) : ''
   if (import.meta.dev) {
     warnOnLargePayload(opts.ssrContext, opts.data, contents.length)
   }
   const payload: Script = {
-    'type': 'application/json',
-    'innerHTML': contents,
-    'data-nuxt-data': appId,
-    'data-ssr': !(NUXT_NO_SSR || opts.ssrContext.noSSR),
+    type: NUXT_PAYLOAD_SCRIPT_TYPE as Script['type'],
+    innerHTML: NUXT_PAYLOAD_OBFUSCATION_KEY && contents
+      ? encodePayload(contents, NUXT_PAYLOAD_OBFUSCATION_KEY)
+      : contents,
+    ...(appPayloadDataAttr ? { [appPayloadDataAttr]: appId } : {}),
+    ...(appSsrAttr ? { [appSsrAttr]: isSSR } : {}),
+    ...(!multiApp && appPayloadId ? { id: appPayloadId } : {}),
+    ...(opts.src ? { 'data-src': opts.src } : {}),
   }
-  if (!multiApp) {
-    payload.id = '__NUXT_DATA__'
-  }
-  if (opts.src) {
-    payload['data-src'] = opts.src
+  if (appGlobalName === false) {
+    return [payload]
   }
   const config = uneval(opts.ssrContext.config)
+  const globalTarget = appGlobalName === '__NUXT__'
+    ? 'window.__NUXT__'
+    : `window[${JSON.stringify(appGlobalName)}]`
   return [
     payload,
     {
       innerHTML: multiApp
-        ? `window.__NUXT__=window.__NUXT__||{};window.__NUXT__[${JSON.stringify(appId)}]={config:${config}}`
-        : `window.__NUXT__={};window.__NUXT__.config=${config}`,
+        ? `${globalTarget}=${globalTarget}||{};${globalTarget}[${JSON.stringify(appId)}]={config:${config}}`
+        : `${globalTarget}={};${globalTarget}.config=${config}`,
     },
   ]
 }

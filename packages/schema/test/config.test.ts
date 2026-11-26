@@ -185,3 +185,92 @@ describe('vite.cacheDir', () => {
     expect((await resolveConfig({ rootDir: '/project/apps/foo', workspaceDir: '/project' })).vite.cacheDir).toBe(resolve('/project/apps/foo', 'node_modules/.cache/vite'))
   })
 })
+
+describe('customizable runtime identifiers and obfuscation', () => {
+  it('resolves features.poweredBy', async () => {
+    expect((await resolveConfig({})).features.poweredBy).toBe(true)
+    expect((await resolveConfig({ features: { poweredBy: false } })).features.poweredBy).toBe(false)
+    expect((await resolveConfig({ features: { poweredBy: '' } })).features.poweredBy).toBe(false)
+    expect((await resolveConfig({ features: { poweredBy: 'Custom' } })).features.poweredBy).toBe('Custom')
+  })
+
+  it('resolves dynamic app identifiers and route overrides', async () => {
+    const resolved = await resolveConfig({
+      app: {
+        rootAttrs: { id: 'app-root' },
+        payloadId: () => 'ctx_123',
+        payloadDataAttr: false,
+        ssrAttr: false,
+        globalName: false,
+        payloadFileName: () => '/state.bin',
+        islandRoutePrefix: () => 'components',
+        errorRoute: () => 'err/',
+        errorQueryParam: () => 'ep',
+        prefetchAttr: () => 'data-pf',
+        exposeGlobal: false,
+        exposeVersion: false,
+        manifestDir: () => '/m/',
+        manifestMetaDir: () => '/v/',
+        manifestLatestFile: () => '/head.json',
+        loadingIndicatorClass: false,
+        announcerClass: () => 'app-announcer',
+        routeAnnouncerClass: false,
+        spaLoaderAttrs: { id: false as unknown as string, class: 'loader' },
+      },
+    })
+    expect(resolved.app.rootAttrs.id).toBe('app-root')
+    expect(resolved.app.payloadId).toBe('ctx_123')
+    expect(resolved.app.payloadDataAttr).toBe(false)
+    expect(resolved.app.ssrAttr).toBe(false)
+    expect(resolved.app.globalName).toBe(false)
+    expect(resolved.app.payloadFileName).toBe('state.bin')
+    expect(resolved.app.islandRoutePrefix).toBe('/components/')
+    expect(resolved.app.errorRoute).toBe('/err')
+    expect(resolved.app.errorQueryParam).toBe('ep')
+    expect(resolved.app.prefetchAttr).toBe('data-pf')
+    expect(resolved.app.exposeGlobal).toBe(false)
+    expect(resolved.app.exposeVersion).toBe(false)
+    expect(resolved.app.manifestDir).toBe('m')
+    expect(resolved.app.manifestMetaDir).toBe('v')
+    expect(resolved.app.manifestLatestFile).toBe('head.json')
+    expect(resolved.app.loadingIndicatorClass).toBe(false)
+    expect(resolved.app.announcerClass).toBe('app-announcer')
+    expect(resolved.app.routeAnnouncerClass).toBe(false)
+    expect(resolved.app.spaLoaderAttrs).toEqual({ id: undefined, class: 'loader' })
+  })
+
+  it('keeps a fallback payloadDataAttr when both payloadId and payloadDataAttr are false', async () => {
+    const resolved = await resolveConfig({
+      app: {
+        payloadId: false,
+        payloadDataAttr: false,
+      },
+    })
+    expect(resolved.app.payloadId).toBe(false)
+    expect(resolved.app.payloadDataAttr).toBe('data-app-payload')
+  })
+
+  it('resolves experimental.payloadObfuscation', async () => {
+    expect((await resolveConfig({})).experimental.payloadObfuscation).toBe(false)
+    expect((await resolveConfig({ experimental: { payloadObfuscation: { enabled: false } } })).experimental.payloadObfuscation).toBe(false)
+
+    const auto = await resolveConfig({ experimental: { payloadObfuscation: true } })
+    expect(auto.experimental.payloadObfuscation).toMatchObject({ enabled: true, scriptType: 'text/plain' })
+    expect(typeof (auto.experimental.payloadObfuscation as { key: string }).key).toBe('string')
+    expect((auto.experimental.payloadObfuscation as { key: string }).key.length).toBeGreaterThan(8)
+
+    const custom = await resolveConfig({
+      experimental: {
+        payloadObfuscation: {
+          key: () => 'my-secret-seed',
+          scriptType: 'application/octet-stream',
+        },
+      },
+    })
+    expect(custom.experimental.payloadObfuscation).toEqual({
+      enabled: true,
+      key: 'my-secret-seed',
+      scriptType: 'application/octet-stream',
+    })
+  })
+})

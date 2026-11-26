@@ -1,8 +1,8 @@
-import { NUXT_PAGE_MATCHER } from 'nuxt/internal/renderer-config'
+import { NUXT_PAGE_MATCHER, appPayloadFileName } from 'nuxt/internal/renderer-config'
 import type { NuxtRendererOptions, RendererEvent, RendererRouteRules } from './runtime'
 import { withoutTrailingSlashes } from './url'
 
-const PAYLOAD_SUFFIX = '/_payload.json'
+const PAYLOAD_SUFFIX = `/${appPayloadFileName || '_payload.json'}`
 
 /**
  * Normalize a request path for the page matchers compiled at build time. The lookup

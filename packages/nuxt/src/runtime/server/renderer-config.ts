@@ -54,6 +54,12 @@ export const NUXT_SSR_STREAMING: boolean = false
 export const NUXT_SSR_STREAMING_BOT_RE: RegExp = /^$/
 /** Whether prefetch hints are rendered inert and activated by the client once the app is ready. */
 export const NUXT_DEFER_PREFETCH_HINTS: boolean = true
+/** Value of the `x-powered-by` response header, or `false` to omit it. */
+export const NUXT_POWERED_BY: string | false = 'Nuxt'
+/** Per-build key used to obfuscate serialized payloads, or `false` when disabled. */
+export const NUXT_PAYLOAD_OBFUSCATION_KEY: string | false = false
+/** Script `type` attribute used on inline payload `<script>` elements. */
+export const NUXT_PAYLOAD_SCRIPT_TYPE: string = 'application/json'
 
 /** Head entries configured in `app.head`. */
 export const appHead: SerializableHead = {}
@@ -63,6 +69,15 @@ export const appTeleportTag: string = 'div'
 export const appTeleportAttrs: Record<string, string> = { id: 'teleports' }
 export const appSpaLoaderTag: string = 'div'
 export const appSpaLoaderAttrs: Record<string, string> = { id: '__nuxt-loader' }
+export const appPayloadId: string | false = '__NUXT_DATA__'
+export const appPayloadDataAttr: string | false = 'data-nuxt-data'
+export const appSsrAttr: string | false = 'data-ssr'
+export const appGlobalName: string | false = '__NUXT__'
+export const appPayloadFileName: string = '_payload.json'
+export const appIslandRoutePrefix: string = '/__nuxt_island/'
+export const appErrorRoute: string = '/__nuxt_error'
+export const appErrorQueryParam: string = '__nuxt_error_payload'
+export const appPrefetchAttr: string = 'data-nuxt-prefetch'
 export const spaLoadingTemplateOutside: boolean = false
 /** Markup rendered inside the app root while a client-only app boots. */
 export const spaTemplate: string = ''

@@ -1,6 +1,7 @@
 import { defineComponent, h } from 'vue'
 import type { DefineSetupFnComponent } from 'vue'
 import { useLoadingIndicator } from '../composables/loading-indicator'
+import { appLoadingIndicatorClass } from '#build/nuxt.config.mjs'
 
 interface NuxtLoadingIndicatorProps {
   throttle?: number
@@ -68,7 +69,7 @@ const NuxtLoadingIndicator = defineComponent({
     })
 
     return () => h('div', {
-      class: 'nuxt-loading-indicator',
+      ...(appLoadingIndicatorClass ? { class: appLoadingIndicatorClass } : {}),
       style: {
         position: 'fixed',
         top: 0,

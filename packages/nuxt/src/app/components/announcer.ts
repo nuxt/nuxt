@@ -26,7 +26,7 @@ const visuallyHidden = {
 }
 
 /* @__NO_SIDE_EFFECTS__ */
-export function defineAnnouncerComponent (name: string, className: string, atomic: boolean, useAnnouncer: (opts: NuxtAnnouncerOpts) => Omit<NuxtAnnouncer, '_cleanup'>): DefineSetupFnComponent<AnnouncerProps, {}, AnnouncerSlots> {
+export function defineAnnouncerComponent (name: string, className: string | false, atomic: boolean, useAnnouncer: (opts: NuxtAnnouncerOpts) => Omit<NuxtAnnouncer, '_cleanup'>): DefineSetupFnComponent<AnnouncerProps, {}, AnnouncerSlots> {
   return defineComponent({
     name,
     props: {
@@ -55,7 +55,7 @@ export function defineAnnouncerComponent (name: string, className: string, atomi
       expose({ set, polite, assertive, message, politeness })
 
       return () => h('span', {
-        class: className,
+        ...(className ? { class: className } : {}),
         style: {
           position: 'absolute',
         },

@@ -10,7 +10,7 @@ import type { NuxtApp } from '#app/nuxt'
 import { getIslandHash } from '#app/island-hash'
 import type { NuxtIslandResponse } from '#app/types'
 import { $fetch } from '#build/fetch'
-import { payloadExtraction } from '#build/nuxt.config.mjs'
+import { appIslandRoutePrefix, payloadExtraction } from '#build/nuxt.config.mjs'
 
 interface ServerComponentProps {
   lazy?: boolean
@@ -119,7 +119,7 @@ async function prefetchIslandPage (nuxtApp: NuxtApp, name: string, route: { path
     scope: 'app',
     run: async (signal) => {
       try {
-        const result = await $fetch<NuxtIslandResponse>(`/__nuxt_island/${key}.json`, {
+        const result = await $fetch<NuxtIslandResponse>(`${appIslandRoutePrefix}${key}.json`, {
           query: { url },
           responseType: 'json',
           signal,

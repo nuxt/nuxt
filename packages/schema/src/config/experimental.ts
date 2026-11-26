@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { schemaDiagnostics } from '../diagnostics.ts'
 import { booleanOr, defineResolvers, oneOf } from '../utils/definition.ts'
 
@@ -63,6 +64,23 @@ export default defineResolvers({
             ? val
             // @ts-expect-error TODO: legacy property - remove in v3.10
             : (await (get('experimental')).then(e => e?.noScripts as boolean | undefined && 'production') ?? false)
+      },
+    },
+    /**
+     * Control the `x-powered-by` HTTP response header emitted by the Nuxt renderer.
+     *
+     * Set to `false` to omit the header, `true` to send `'Nuxt'`, or a custom string.
+     * @type {boolean | string}
+     */
+    poweredBy: {
+      $resolve: (val): boolean | string => {
+        if (val === false || val === '') {
+          return false
+        }
+        if (typeof val === 'string') {
+          return val
+        }
+        return true
       },
     },
   },
@@ -341,5 +359,31 @@ export default defineResolvers({
     clientNodePlaceholder: booleanOr(true),
     clearBuildHooks: true,
     compilerComponentResolution: true,
+    /**
+     * Obfuscate serialized hydration payloads (`__NUXT_DATA__` and external payload files)
+     * so internal state/store data is not emitted as plaintext JSON in HTML.
+     *
+     * Set to `true` to generate a random per-build key, or pass `{ enabled, key, scriptType }`.
+     * @type {boolean | { enabled?: boolean, key?: string | (() => string), scriptType?: string }}
+     */
+    payloadObfuscation: {
+      $resolve: (val) => {
+        if (!val) {
+          return false as const
+        }
+        const obj = typeof val === 'object' ? val as { enabled?: boolean, key?: string | (() => string), scriptType?: string } : null
+        if (obj && obj.enabled === false) {
+          return false as const
+        }
+        const rawKey = typeof obj?.key === 'function' ? obj.key() : obj?.key
+        const key = typeof rawKey === 'string' && rawKey
+          ? rawKey
+          : randomBytes(16).toString('base64url')
+        const scriptType = typeof obj?.scriptType === 'string' && obj.scriptType
+          ? obj.scriptType
+          : 'text/plain'
+        return { enabled: true as const, key, scriptType }
+      },
+    },
   },
 })

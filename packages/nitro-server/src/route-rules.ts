@@ -28,19 +28,19 @@ export function normalizeLegacyRouteRules (routeRules: NitroConfig['routeRules']
   }
 }
 
-const ISLAND_ROUTE = '/__nuxt_island/**'
-
 /**
  * Key cached island responses on the query that carries their props, which a cached route
  * otherwise drops before the handler runs.
  */
-export function keepCachedIslandQuery (nitroConfig: Pick<NitroConfig, 'routeRules'>, fold: boolean): void {
+export function keepCachedIslandQuery (nitroConfig: Pick<NitroConfig, 'routeRules'>, fold: boolean, islandRoutePrefix = '/__nuxt_island/'): void {
+  const prefix = islandRoutePrefix.replace(/^\/?/, '/').replace(/\/?$/, '/')
+  const islandRoute = `${prefix}**`
   const routes = Object.entries(normalizeRouteRules(nitroConfig.routeRules)).map(([route, data]) => ({ route, method: '', data }))
-  const matched = createNormalizedRouteRulesRouter(routes, '', fold).matchAll('', normalizeRouteRuleLookupPath('/__nuxt_island/_.json', fold))
+  const matched = createNormalizedRouteRulesRouter(routes, '', fold).matchAll('', normalizeRouteRuleLookupPath(`${prefix}_.json`, fold))
   const { cache } = defu({}, ...matched.reverse()) as { cache?: false | { allowQuery?: unknown } }
   if (!cache || cache.allowQuery !== undefined) { return }
   nitroConfig.routeRules ||= {}
-  nitroConfig.routeRules[ISLAND_ROUTE] = defu(nitroConfig.routeRules[ISLAND_ROUTE], { cache: { allowQuery: true } })
+  nitroConfig.routeRules[islandRoute] = defu(nitroConfig.routeRules[islandRoute], { cache: { allowQuery: true } })
 }
 
 /**

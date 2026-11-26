@@ -6,6 +6,7 @@ import { mergeHeaders } from 'nuxt/internal/renderer/headers'
 import { claimServerHooks } from 'nuxt/internal/server-default'
 import { createError } from 'nuxt/server'
 import type { NuxtRendererOptions } from 'nuxt/internal/renderer/runtime'
+import { appErrorRoute } from 'nuxt/internal/renderer-config'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 
 import { withBaseURL, withoutBaseURL } from './base.ts'
@@ -222,7 +223,7 @@ async function renderError (renderer: NuxtRenderer, request: Request, error: unk
     return new Response(JSON.stringify(body), { status, statusText, headers: errorResponseHeaders(event, described, 'application/json;charset=utf-8') })
   }
 
-  const errorEvent = createRequestEvent(new Request(withQuery(new URL('/__nuxt_error', url).href, {
+  const errorEvent = createRequestEvent(new Request(withQuery(new URL(appErrorRoute || '/__nuxt_error', url).href, {
     [SSR_ERROR_PARAM]: encodeSSRError({
       status,
       statusText,

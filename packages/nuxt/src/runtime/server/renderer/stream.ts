@@ -5,7 +5,7 @@ import { streamingIifeCode } from '@unhead/vue/stream/iife'
 import type { Link } from '@unhead/vue/types'
 
 import type { NuxtPayload, NuxtRenderHTMLContext, NuxtSSRContext } from '#app/types'
-import { NUXT_DEFER_PREFETCH_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS_PROD, iifeChunkFileName, renderSSRHeadOptions } from 'nuxt/internal/renderer-config'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS_PROD, NUXT_POWERED_BY, iifeChunkFileName, renderSSRHeadOptions } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
@@ -223,7 +223,9 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   ssrContext['~headersSent'] = true
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
-  event.res.headers.set('x-powered-by', 'Nuxt')
+  if (NUXT_POWERED_BY) {
+    event.res.headers.set('x-powered-by', NUXT_POWERED_BY)
+  }
 
   // Snapshot status + headers before shell commit so we can warn in dev when
   // composables like `setResponseStatus` or `useResponseHeader`
