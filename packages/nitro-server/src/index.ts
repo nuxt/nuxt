@@ -411,6 +411,9 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
           // exports, so the generated server project must permit `.ts` import
           // specifiers when type-checking against that source.
           allowImportingTsExtensions: true,
+          // `@nuxt/kit` gives every other generated project a build info file, and `nuxt typecheck`
+          // only runs incrementally when every referenced project has one
+          tsBuildInfoFile: './cache/typecheck/tsconfig.server.tsbuildinfo',
         },
         include: [
           join(typesDir, 'types/nitro-nuxt.d.ts'),
