@@ -29,6 +29,14 @@ const LayoutLoader = defineComponent({
   },
 })
 
+type ForwardedLayoutProps<T = NuxtLayouts[keyof NuxtLayouts]> = {
+  [K in T extends unknown ? keyof T : never]?: T extends unknown
+    ? K extends keyof T
+      ? T[K]
+      : never
+    : never
+}
+
 // props are moved outside of defineComponent to later explicitly assert the prop types
 // this avoids type loss/simplification resulting in things like MaybeRef<string | false>, keeping type hints for layout names
 const nuxtLayoutProps = {
@@ -41,6 +49,8 @@ const nuxtLayoutProps = {
     default: null,
   },
 }
+
+type NuxtLayoutProps = ExtractPublicPropTypes<typeof nuxtLayoutProps> & Omit<ForwardedLayoutProps, keyof typeof nuxtLayoutProps>
 
 export default defineComponent({
   name: 'NuxtLayout',
@@ -142,7 +152,7 @@ export default defineComponent({
       }).default()
     }
   },
-}) as DefineComponent<ExtractPublicPropTypes<typeof nuxtLayoutProps>>
+}) as DefineComponent<NuxtLayoutProps>
 
 const LayoutProvider = defineComponent({
   name: 'NuxtLayoutProvider',

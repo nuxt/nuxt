@@ -600,6 +600,16 @@ describe('layouts', () => {
     h(NuxtLayout, { fallback: 'invalid-layout' })
   })
 
+  it('NuxtLayout accepts forwarded layout props', () => {
+    h(NuxtLayout, { aProp: 42 })
+    h(NuxtLayout, { name: 'with-props', aProp: 42 })
+    // @ts-expect-error Invalid layout prop type
+    h(NuxtLayout, { name: 'with-props', aProp: 'string-instead-of-number' })
+
+    type Props<T> = T extends new (...args: any) => { $props: infer P } ? NonNullable<P> : never
+    expectTypeOf<Props<typeof NuxtLayout>['aProp']>().toEqualTypeOf<number | undefined>()
+  })
+
   it('setPageLayout recognizes named layouts and props', () => {
     setPageLayout('custom')
     setPageLayout('pascal-case')
