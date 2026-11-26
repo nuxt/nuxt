@@ -114,7 +114,9 @@ function defaultShouldEnable (): boolean {
   const route = useRoute()
   const previewQueryName = 'preview'
 
-  return route.query[previewQueryName] === 'true'
+  // the experimental router gives every query value as an array
+  const value = route.query[previewQueryName]
+  return (Array.isArray(value) ? value[0] : value) === 'true'
 }
 
 function getDefaultState (state: Preview['state']): Preview['state'] {

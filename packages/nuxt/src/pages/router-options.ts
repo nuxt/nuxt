@@ -74,6 +74,17 @@ export async function findRoutesModifyingRouterOptions (nuxt: Nuxt, builtInRoute
   }
 }
 
+/** The first `router.options` file that sets any of `keys`, or that cannot be analysed, with the keys it sets. */
+export async function findUnsupportedRouterOptions (nuxt: Nuxt, builtInRouterOptions: string, keys: string[]): Promise<{ file: string, keys: string[] } | undefined> {
+  for (const file of await resolveRouterOptions(nuxt, builtInRouterOptions)) {
+    if (file.optional) { continue }
+    const code = await readFile(file.path, 'utf-8').catch(() => undefined)
+    const fileKeys = code === undefined ? undefined : getRouterOptionsKeys(code, file.path)
+    const unsupported = fileKeys ? keys.filter(key => fileKeys.has(key)) : keys
+    if (unsupported.length) { return { file: file.path, keys: unsupported } }
+  }
+}
+
 /**
  * Statically determine whether a `router.options` file may modify `routes`.
  * Returns `true` (conservatively) when the default export is not a plain object

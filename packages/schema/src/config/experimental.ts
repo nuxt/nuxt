@@ -166,6 +166,12 @@ export default defineResolvers({
      */
     staticRoutes: false,
 
+    experimentalRouter: {
+      async $resolve (val, get) {
+        return typeof val === 'boolean' ? val : (await get('future.compatibilityVersion')) >= 5
+      },
+    },
+
     early404: false,
 
     /**

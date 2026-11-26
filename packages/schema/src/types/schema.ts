@@ -1275,6 +1275,26 @@ export interface ConfigSchema {
     staticRoutes: boolean
 
     /**
+     * Use the experimental router of vue-router (`experimental_createRouter()` from
+     * `vue-router/experimental`) with a route table resolved at build time, instead of the
+     * classic router.
+     *
+     * Page paths are compiled into matchers when the app is built, so the classic path parser
+     * and the runtime route table are not shipped, and the server shares one resolver between
+     * requests. It enables `experimental.staticRoutes`: `router.addRoute()`,
+     * `router.removeRoute()` and `router.clearRoutes()` are not available.
+     *
+     * The experimental router changes some behavior: query values are always arrays,
+     * `route.hash` and string locations stay percent-encoded, a location without `path` or
+     * `name` keeps the current query, and `strict`, `end`, `parseQuery` and `routes` in
+     * `app/router.options` are not supported. Nuxt falls back to the classic router, with a
+     * warning, when a `router.options` file sets one of these options.
+     *
+     * Defaults to `true` when `future.compatibilityVersion` is `5` or higher.
+     */
+    experimentalRouter: boolean
+
+    /**
      * Warn at build time about template mistakes the Vue compiler cannot detect:
      *
      * - a `<NuxtLink>` whose static `to` matches no page route

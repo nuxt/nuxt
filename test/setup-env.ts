@@ -3,6 +3,10 @@ import { vi } from 'vitest'
 
 consola.mockTypes(() => vi.fn())
 
+// vue-router reads the Vue feature flags a bundler defines
+;(globalThis as Record<string, unknown>).__VUE_OPTIONS_API__ ??= true
+;(globalThis as Record<string, unknown>).__VUE_PROD_DEVTOOLS__ ??= false
+
 const _warn = console.warn.bind(console)
 
 const hiddenWarns = [
