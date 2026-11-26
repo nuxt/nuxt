@@ -62,46 +62,6 @@ export function decodePayload (encoded: string, key: string): string {
   return new TextDecoder().decode(xorWithKeystream(fromBase64Url(encoded), key))
 }
 
-/**
- * Locate the inline hydration payload `<script>` element using the configured selector strategy.
- * @internal
- */
-export function findPayloadElement (appId: string, multiApp: boolean, payloadId: string | false, payloadDataAttr: string | false): HTMLElement | null {
-  if (!multiApp && payloadId) {
-    return document.getElementById(payloadId)
-  }
-  if (payloadDataAttr) {
-    return document.querySelector(`[${payloadDataAttr}="${appId}"]`) as HTMLElement | null
-  }
-  return payloadId ? document.getElementById(payloadId) : null
-}
-
-/**
- * Read initial payload/config placed on `window` (or a hidden `Symbol.for` slot when `globalName` is `false`).
- * @internal
- */
-export function readGlobalPayload (globalName: string | false, appId: string, multiApp: boolean, fallbackKey: string): Record<string, any> | undefined {
-  if (typeof window === 'undefined') { return undefined }
-  if (globalName) {
-    const slot = (window as any)[globalName]
-    return multiApp ? slot?.[appId] : slot
-  }
-  return (window as any)[Symbol.for(fallbackKey)]
-}
-
-/**
- * Remove the temporary `window` payload slot after hydration revival.
- * @internal
- */
-export function deleteGlobalPayload (globalName: string | false, fallbackKey: string): void {
-  if (typeof window === 'undefined') { return }
-  if (globalName) {
-    delete (window as any)[globalName]
-  } else {
-    delete (window as any)[Symbol.for(fallbackKey)]
-  }
-}
-
 function resolvePlainDevalueValue (values: unknown[], index: unknown): unknown {
   if (typeof index !== 'number') { return index }
   if (index === -1 || index === -2) { return undefined }

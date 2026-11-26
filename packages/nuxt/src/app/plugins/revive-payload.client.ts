@@ -4,7 +4,6 @@ import { definePayloadReviver, getNuxtClientPayload } from '../composables/paylo
 import { createError } from '../composables/error'
 import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
-import { deleteGlobalPayload } from '../internal/payload-codec'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
 import { appGlobalName, appId, appIslandRoutePrefix, appPayloadId, componentIslands } from '#build/nuxt.config.mjs'
@@ -83,7 +82,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       definePayloadReviver(reviver, fn)
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
-    deleteGlobalPayload(appGlobalName, appPayloadId || appId)
+    if (appGlobalName) {
+      delete (window as any)[appGlobalName]
+    } else {
+      delete (window as any)[Symbol.for(appPayloadId || appId)]
+    }
   },
 })
 

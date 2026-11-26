@@ -12,8 +12,7 @@ export interface NuxtAppContext<T> {
 }
 
 // keyed via Symbol.for on `globalThis` so duplicate module instances (e.g. in vitest) share the active app without exposing string globals
-const APP_CTX_SYMBOL = Symbol.for('app.ctx')
-const clientContexts: Record<string, NuxtAppContext<any>> = (globalThis as Record<symbol, Record<string, NuxtAppContext<any>>>)[APP_CTX_SYMBOL] ||= {}
+const clientContexts: Record<string, NuxtAppContext<any>> = (globalThis as Record<symbol, Record<string, NuxtAppContext<any>>>)[Symbol.for('app.ctx')] ||= {}
 
 /** Singleton stand-in for `unctx` in the browser, which has no `AsyncLocalStorage`. */
 function getClientContext<T> (key: string): NuxtAppContext<T> {

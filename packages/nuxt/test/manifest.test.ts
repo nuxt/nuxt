@@ -15,6 +15,7 @@ vi.mock('#build/nuxt.config.mjs', () => ({
   appManifest: true,
   appManifestDir: 'builds',
   appManifestMetaDir: 'meta',
+  appManifestMetaPath: 'builds/meta',
   payloadObfuscationKey: false,
 }))
 

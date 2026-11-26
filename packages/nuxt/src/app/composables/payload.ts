@@ -10,8 +10,9 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 import { stateDiagnostics } from '../diagnostics/state'
 
-import { appGlobalName, appId, appManifest, appPayloadDataAttr, appPayloadFileName, appPayloadId, multiApp, payloadExtraction, payloadObfuscationKey } from '#build/nuxt.config.mjs'
-import { decodePayload, findPayloadElement, readGlobalPayload } from '../internal/payload-codec'
+import { appManifest, appPayloadFileName, payloadExtraction, payloadObfuscationKey } from '#build/nuxt.config.mjs'
+import { findPayloadElement, readGlobalPayload } from '../internal/payload-access'
+import { decodePayload } from '../internal/payload-codec'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -289,8 +290,8 @@ export async function getNuxtClientPayload (): Promise<NuxtPayload | Partial<Nux
     return payloadCache
   }
 
-  const el = findPayloadElement(appId, multiApp, appPayloadId, appPayloadDataAttr)
-  const globalPayload = readGlobalPayload(appGlobalName, appId, multiApp, appPayloadId || appId)
+  const el = findPayloadElement()
+  const globalPayload = readGlobalPayload()
   if (!el) {
     return globalPayload ? { ...globalPayload } : {} as Partial<NuxtPayload>
   }

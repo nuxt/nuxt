@@ -2,7 +2,7 @@ import type { AppRouteRules, NuxtRequestEvent } from '@nuxt/schema'
 import { withoutBase } from 'ufo'
 import { useRuntimeConfig } from '../nuxt'
 import { manifestDiagnostics } from '../diagnostics/manifest'
-import { appManifestDir, appManifestMetaDir, appManifest as isAppManifestEnabled, payloadObfuscationKey } from '#build/nuxt.config.mjs'
+import { appManifestMetaPath, appManifest as isAppManifestEnabled, payloadObfuscationKey } from '#build/nuxt.config.mjs'
 import { buildAssetsURL } from '#internal/nuxt/paths'
 import _routeRulesMatcher from '#build/route-rules.mjs'
 
@@ -32,13 +32,15 @@ function fetchManifest (): Promise<NuxtAppManifest> {
   } else {
     // Low priority so this background warm-up does not contend with LCP-critical resources.
     // `keepalive` stops WebKit cancelling (and rejecting) the request when the page is left.
-    _manifest = fetch(buildAssetsURL(`${appManifestDir}/${appManifestMetaDir}/${useRuntimeConfig().app.buildId}.json`), { priority: 'low', keepalive: true })
+    _manifest = fetch(buildAssetsURL(`${appManifestMetaPath}/${useRuntimeConfig().app.buildId}.json`), { priority: 'low', keepalive: true })
       .then((res) => {
         // native `fetch` resolves non-2xx responses; surface them with a `status` so callers
         // (e.g. the outdated-build check) can distinguish a missing manifest from a bad payload
         if (!res.ok) {
-          const prefix = payloadObfuscationKey ? '' : '[nuxt] '
-          const error = new Error(`${prefix}Could not fetch app manifest: ${res.status} ${res.statusText}`) as Error & { status: number }
+          const message = payloadObfuscationKey
+            ? `Could not fetch app manifest: ${res.status} ${res.statusText}`
+            : `[nuxt] Could not fetch app manifest: ${res.status} ${res.statusText}`
+          const error = new Error(message) as Error & { status: number }
           error.status = res.status
           throw error
         }

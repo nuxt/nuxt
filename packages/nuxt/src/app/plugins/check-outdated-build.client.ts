@@ -4,7 +4,7 @@ import { getAppManifest } from '../composables/manifest'
 import type { NuxtAppManifestMeta } from '../composables/manifest'
 import { onNuxtReady } from '../composables/ready'
 import { buildAssetsURL } from '#internal/nuxt/paths'
-import { appManifestDir, appManifestLatestFile, outdatedBuildInterval } from '#build/nuxt.config.mjs'
+import { appManifestLatestPath, outdatedBuildInterval } from '#build/nuxt.config.mjs'
 
 const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
   if (import.meta.test) { return }
@@ -25,7 +25,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin((nuxtApp) => {
     if (timeout) { clearTimeout(timeout) }
     timeout = setTimeout(getLatestManifest, outdatedBuildInterval)
     try {
-      const res = await fetch(buildAssetsURL(`${appManifestDir}/${appManifestLatestFile}`) + `?${Date.now()}`, { priority: 'low' })
+      const res = await fetch(buildAssetsURL(appManifestLatestPath) + `?${Date.now()}`, { priority: 'low' })
       if (!res.ok) { return }
       const meta = await res.json() as NuxtAppManifestMeta
       if (meta.id !== currentManifest?.id) {

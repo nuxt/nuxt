@@ -13,7 +13,8 @@ import type { AsyncDataExecuteOptions, AsyncDataRequestStatus } from './composab
 import type { NuxtAppManifestMeta } from './composables/manifest'
 import { traceAsync } from './internal/tracing'
 import { guardedServerConfig } from './internal/runtime-config'
-import { findPayloadElement, readGlobalPayload, readInlineBootMeta } from './internal/payload-codec'
+import { findPayloadElement, readGlobalPayload } from './internal/payload-access'
+import { readInlineBootMeta } from './internal/payload-codec'
 import type { PrefetchScheduler } from './internal/prefetch'
 import type { LoadingIndicator } from './composables/loading-indicator'
 import type { NuxtAnnouncer } from './composables/announcer'
@@ -21,7 +22,7 @@ import type { ClientHeadState } from '../head/runtime/client-head-state'
 import type { AppConfig, AppConfigInput, NuxtHookCallback, NuxtHookRegistry, RuntimeConfig } from 'nuxt/schema'
 
 import { appDiagnostics } from './diagnostics/core'
-import { appExposeGlobal, appExposeVersion, appGlobalName, appId, appPayloadDataAttr, appPayloadId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, multiApp, payloadObfuscationKey, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
+import { appExposeGlobal, appExposeVersion, appGlobalName, appId, asyncCallHook, chunkErrorEvent, componentIslands, hasIslandOptOutPlugins, hasParallelPlugins, hasPluginDependencies, hasPluginHooks, payloadObfuscationKey, tracingChannelNuxt, vapor } from '#build/nuxt.config.mjs'
 
 export type { DevServerLog, NuxtPayload, NuxtSSRContext, PluginMeta } from './types'
 
@@ -323,7 +324,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
   }
 
   if (import.meta.client) {
-    const __NUXT__ = readGlobalPayload(appGlobalName, nuxtApp._id, multiApp, appPayloadId || nuxtApp._id)
+    const __NUXT__ = readGlobalPayload(nuxtApp._id)
     // TODO: remove/refactor in https://github.com/nuxt/nuxt/issues/25336
     if (__NUXT__) {
       for (const key in __NUXT__) {
@@ -340,7 +341,7 @@ export function createNuxtApp (options: CreateOptions): NuxtApp {
         }
       }
     } else if (!appGlobalName && typeof document !== 'undefined') {
-      const payloadEl = findPayloadElement(nuxtApp._id, multiApp, appPayloadId, appPayloadDataAttr)
+      const payloadEl = findPayloadElement(nuxtApp._id)
       const bootMeta = payloadEl?.textContent ? readInlineBootMeta(payloadEl.textContent, payloadObfuscationKey) : undefined
       if (bootMeta?.config) {
         nuxtApp.payload.config = bootMeta.config as typeof nuxtApp.payload.config

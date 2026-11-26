@@ -740,6 +740,8 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (isStatic || hasCachedRoutes || !!prerenderRoutes?.length || hasPrerenderRules)
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
+      `export const appManifestMetaPath = ${JSON.stringify(`${ctx.nuxt.options.app.manifestDir}/${ctx.nuxt.options.app.manifestMetaDir}`)}`,
+      `export const appManifestLatestPath = ${JSON.stringify(`${ctx.nuxt.options.app.manifestDir}/${ctx.nuxt.options.app.manifestLatestFile}`)}`,
       `export const componentIslands = ${componentIslands}`,
       `export const componentIslandsActive = ${componentIslandsActive}`,
       `export const payloadExtraction = ${payloadExtraction}`,
