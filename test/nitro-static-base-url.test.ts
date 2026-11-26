@@ -27,7 +27,12 @@ describe.skipIf(!runsOnceInMatrix)('static output base URLs', () => {
         ...overrides,
         ...nitroMajor ? { _nitroMajor: nitroMajor } : {},
         buildDir: join(cacheDir, 'build'),
-        nitro: { ...overrides.nitro, static: true, prerender: { ...overrides.nitro?.prerender, routes: initialRoutes }, output: { dir: outputDir } },
+        nitro: {
+          ...overrides.nitro,
+          static: true,
+          prerender: { ...overrides.nitro?.prerender, routes: initialRoutes },
+          output: { dir: outputDir },
+        },
         hooks: {
           'nitro:build:before' (nitro) {
             nitro.hooks.hook('prerender:routes', (entries) => { routes = [...entries] })
@@ -44,6 +49,7 @@ describe.skipIf(!runsOnceInMatrix)('static output base URLs', () => {
     if (nitroMajor !== 3) {
       expect(routes.includes('/index.html')).toBe(expectFallback)
     }
+    // A duplicate write can leave two HTML documents in the same file.
     for (const file of ['index.html', '200.html', '404.html']) {
       const html = await readFile(join(outputDir, 'public', file), 'utf8')
       expect(html.match(/<\/html>/g), file).toHaveLength(1)

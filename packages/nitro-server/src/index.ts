@@ -1174,6 +1174,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         })
         const routeMatcher = toRouteMatcher(createRadixRouter({ routes: nitro.options.routeRules }))
         const rootRules = defu({} as NitroRouteRules, ...routeMatcher.matchAll('/').reverse())
+
+        // Both routes write to index.html, so only prerender the fallback if the root won't be rendered.
         if (!routes.has('/') || rootIgnored || rootRules.prerender === false) {
           routes.add('/index.html')
         } else {
