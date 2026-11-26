@@ -487,7 +487,7 @@ describe('pages', () => {
       expect(html).toContain('Hello Nuxt 3!')
     } else {
       // the experimental router has a fixed route table: `router.addRoute()` throws in the plugin's guard
-      expect(response.status).toBe(404)
+      expect(response.status).toBe(500)
       expect(html).not.toContain('Hello Nuxt 3!')
     }
   })

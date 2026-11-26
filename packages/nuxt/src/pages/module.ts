@@ -104,12 +104,14 @@ export async function setupPages (_options: PagesModuleOptions, nuxt: Nuxt, expe
     }
   }
   nuxt.options.experimental.experimentalRouter = experimental
+  // early 404 runs before middleware, which can redirect paths that have no page
+  const enableEarly404 = nuxt.options.experimental.staticRoutes
   if (experimental) {
     // the experimental router has no `addRoute()`, so the route table is fixed
     nuxt.options.experimental.staticRoutes = true
   }
 
-  if (nuxt.options.experimental.staticRoutes) {
+  if (enableEarly404) {
     const overrides = (nuxt.options._loadOptions as { overrides?: NuxtConfig } | undefined)?.overrides
     const configs = [overrides, ...nuxt.options._layers.map(layer => layer.config)]
     if (!configs.some(config => config?.experimental?.early404 === false)) {
