@@ -34,7 +34,14 @@ export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prere
 export const islandPropCache: Storage<string> | null = import.meta.prerender ? useKV<string>('internal:nuxt:prerender:island-props') : null
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
-const ISLAND_PATH_PREFIX = appIslandRoutePrefix || '/__nuxt_island/'
+const ISLAND_PATH_PREFIX = (() => {
+  const raw = appIslandRoutePrefix || '/__nuxt_island/'
+  try {
+    return new URL('./' + raw.replace(/^\/+/, ''), 'http://localhost/').pathname
+  } catch {
+    return raw
+  }
+})()
 
 /** A response produced by the render itself (redirect, abort, ...), bound to the request that made it. */
 interface RawIslandResponse { raw: Response }

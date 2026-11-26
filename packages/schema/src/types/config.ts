@@ -104,6 +104,8 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 // - rsbuild config interface
 
 type DynamicAppInput = {
+  rootId?: string | false | (() => string | false)
+  teleportId?: string | false | (() => string | false)
   payloadId?: string | false | (() => string | false)
   payloadDataAttr?: string | false | (() => string | false)
   ssrAttr?: string | false | (() => string | false)

@@ -197,6 +197,8 @@ describe('customizable runtime identifiers and obfuscation', () => {
   it('resolves dynamic app identifiers and route overrides', async () => {
     const resolved = await resolveConfig({
       app: {
+        rootId: () => 'custom-root',
+        teleportId: () => 'custom-teleports',
         rootAttrs: { id: 'app-root' },
         payloadId: () => 'ctx_123',
         payloadDataAttr: false,
@@ -218,6 +220,10 @@ describe('customizable runtime identifiers and obfuscation', () => {
         spaLoaderAttrs: { id: false as unknown as string, class: 'loader' },
       },
     })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(resolved.app.rootId).toBe('custom-root')
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(resolved.app.teleportId).toBe('custom-teleports')
     expect(resolved.app.rootAttrs.id).toBe('app-root')
     expect(resolved.app.payloadId).toBe('ctx_123')
     expect(resolved.app.payloadDataAttr).toBe(false)
@@ -239,7 +245,7 @@ describe('customizable runtime identifiers and obfuscation', () => {
     expect(resolved.app.spaLoaderAttrs).toEqual({ id: undefined, class: 'loader' })
   })
 
-  it('keeps a fallback payloadDataAttr when both payloadId and payloadDataAttr are false', async () => {
+  it('keeps a fallback payloadDataAttr when both payloadId and payloadDataAttr are false or multiApp is enabled', async () => {
     const resolved = await resolveConfig({
       app: {
         payloadId: false,
@@ -248,6 +254,24 @@ describe('customizable runtime identifiers and obfuscation', () => {
     })
     expect(resolved.app.payloadId).toBe(false)
     expect(resolved.app.payloadDataAttr).toBe('data-app-payload')
+
+    const multiAppResolved = await resolveConfig({
+      future: { multiApp: true },
+      app: {
+        payloadId: 'custom-id',
+        payloadDataAttr: false,
+      },
+    })
+    expect(multiAppResolved.app.payloadId).toBe('custom-id')
+    expect(multiAppResolved.app.payloadDataAttr).toBe('data-app-payload')
+  })
+
+  it('canonicalizes non-ASCII islandRoutePrefix without double-encoding', async () => {
+    const nonAscii = await resolveConfig({ app: { islandRoutePrefix: () => '/îlots/' } })
+    expect(nonAscii.app.islandRoutePrefix).toBe('/%C3%AElots/')
+
+    const preEncoded = await resolveConfig({ app: { islandRoutePrefix: '/%C3%AElots/' } })
+    expect(preEncoded.app.islandRoutePrefix).toBe('/%C3%AElots/')
   })
 
   it('resolves experimental.payloadObfuscation', async () => {

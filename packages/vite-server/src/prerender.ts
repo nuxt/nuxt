@@ -361,8 +361,10 @@ export async function writeAppManifest (nuxt: Nuxt, publicDir: string, routes: s
   const manifestMetaDir = nuxt.options.app.manifestMetaDir || 'meta'
   const manifestLatestFile = nuxt.options.app.manifestLatestFile || 'latest.json'
   const dir = resolve(publicDir, joinURL(nuxt.options.app.buildAssetsDir, manifestDir).replace(/^\//, ''))
+  const latestPath = join(dir, manifestLatestFile)
   await mkdir(join(dir, manifestMetaDir), { recursive: true })
-  await writeFile(join(dir, manifestLatestFile), JSON.stringify({ id: buildId, timestamp }))
+  await mkdir(dirname(latestPath), { recursive: true })
+  await writeFile(latestPath, JSON.stringify({ id: buildId, timestamp }))
   await writeFile(join(dir, manifestMetaDir, `${buildId}.json`), JSON.stringify({ id: buildId, timestamp, prerendered: [...prerendered].sort() }))
 }
 

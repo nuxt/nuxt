@@ -34,6 +34,7 @@ export {
   anyValue as appPayloadFileName,
   anyValue as appPayloadId,
   anyValue as appPrefetchAttr,
+  anyValue as appPrefetchSelector,
   anyValue as appRouteAnnouncerClass,
   anyValue as appSpaLoaderAttrs,
   anyValue as appSsrAttr,

@@ -713,6 +713,12 @@ function shouldEnableComponentIslands (nuxt: { options: NuxtOptions }, app: Nuxt
   )
 }
 
+function escapeCssIdent (value: string): string {
+  return value.replace(/^(\d|-\d)|[^\w\-\u0080-\uFFFF]/g, (ch, digitPrefix) =>
+    digitPrefix ? `${ch.startsWith('-') ? '-' : ''}\\${ch.codePointAt(ch.startsWith('-') ? 1 : 0)!.toString(16)} ` : `\\${ch}`,
+  )
+}
+
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
   // `payloadExtraction` below is derived from nitro route rules, and `defineRouteRules`
@@ -742,6 +748,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
       `export const appManifestMetaPath = ${JSON.stringify(`${ctx.nuxt.options.app.manifestDir}/${ctx.nuxt.options.app.manifestMetaDir}`)}`,
       `export const appManifestLatestPath = ${JSON.stringify(`${ctx.nuxt.options.app.manifestDir}/${ctx.nuxt.options.app.manifestLatestFile}`)}`,
+      `export const appPrefetchSelector = ${JSON.stringify(`template[${escapeCssIdent(ctx.nuxt.options.app.prefetchAttr)}]`)}`,
       `export const componentIslands = ${componentIslands}`,
       `export const componentIslandsActive = ${componentIslandsActive}`,
       `export const payloadExtraction = ${payloadExtraction}`,

@@ -157,4 +157,19 @@ describe('payloads from another build', () => {
       unhook()
     }
   })
+
+  it('should revalidate once when a cached payload fails decoding/parsing and fall back to null if retry fails', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('not-valid-json-or-obfuscated'))
+      .mockResolvedValueOnce(new Response(payloadBody(useRuntimeConfig().app.buildId)))
+    expect(await _loadPayload('/isr/corrupted')).toMatchObject({ data: { key: 'value' } })
+    expect(fetchSpy.mock.calls.map(([, init]) => init?.cache)).toEqual(['default', 'no-cache'])
+
+    fetchSpy.mockReset()
+    fetchSpy
+      .mockResolvedValueOnce(new Response('still-corrupted-1'))
+      .mockResolvedValueOnce(new Response('still-corrupted-2'))
+    expect(await _loadPayload('/isr/still-corrupted')).toBeNull()
+    expect(fetchSpy.mock.calls.map(([, init]) => init?.cache)).toEqual(['default', 'no-cache'])
+  })
 })

@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import type { Nuxt } from '@nuxt/schema'
-import { join, resolve } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import { joinURL } from 'ufo'
 import type { NitroConfig } from 'nitro/types'
 import { addTemplate } from '@nuxt/kit'
@@ -102,8 +102,10 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
       const dir = target === 'public'
         ? join(nitro.options.output.publicDir, manifestPrefix)
         : tempDir
+      const latestPath = join(dir, manifestLatestFile)
       await fsp.mkdir(join(dir, manifestMetaDir), { recursive: true })
-      await fsp.writeFile(join(dir, manifestLatestFile), JSON.stringify({
+      await fsp.mkdir(dirname(latestPath), { recursive: true })
+      await fsp.writeFile(latestPath, JSON.stringify({
         id: buildId,
         timestamp: buildTimestamp,
       }))

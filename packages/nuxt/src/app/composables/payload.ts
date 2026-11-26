@@ -180,7 +180,14 @@ async function _importPayload (payloadURL: string, cache: RequestCache, signal?:
       return null
     }
     const text = await res.text()
-    return checkBuild ? await _parseCurrentBuildPayload(text) : await parsePayload(text)
+    try {
+      return checkBuild ? await _parseCurrentBuildPayload(text) : await parsePayload(text)
+    } catch (err) {
+      if (cache === 'default' && !signal?.aborted) {
+        return await _importPayload(payloadURL, 'no-cache', signal, promoted, checkBuild)
+      }
+      throw err
+    }
   } catch (err) {
     if (!signal?.aborted) {
       stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
@@ -195,13 +202,7 @@ function decodePayloadText (text: string): string {
 
 /** A payload from another build is returned as `{ buildId }`, as its types may have no reviver in this build. */
 async function _parseCurrentBuildPayload (text: string) {
-  let decoded: string
-  try {
-    decoded = decodePayloadText(text)
-  } catch {
-    return null
-  }
-  const flat = JSON.parse(decoded)
+  const flat = JSON.parse(decodePayloadText(text))
   const index = Array.isArray(flat) ? flat[0]?.buildId : undefined
   const buildId = typeof index === 'number' ? flat[index] : undefined
   if (typeof buildId === 'string' && isOutdatedPayload({ buildId })) {

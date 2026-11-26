@@ -10,12 +10,20 @@ function resolveDynamic (val: unknown): unknown {
   return typeof val === 'function' ? (val as () => unknown)() : val
 }
 
+function encodeCanonicalPathname (val: string): string {
+  try {
+    return new URL('./' + val.replace(/^\/+/, ''), 'http://localhost/').pathname
+  } catch {
+    return val
+  }
+}
+
 function normalizeRoutePrefix (val: string): string {
-  return val.replace(/^\/?/, '/').replace(/\/?$/, '/')
+  return encodeCanonicalPathname(val.replace(/^\/?/, '/').replace(/\/?$/, '/'))
 }
 
 function normalizeRoutePath (val: string): string {
-  return val.replace(/^\/?/, '/').replace(/\/+$/, '') || '/'
+  return encodeCanonicalPathname(val.replace(/^\/?/, '/').replace(/\/+$/, '') || '/')
 }
 
 function normalizePathSegment (val: string): string {
@@ -206,7 +214,8 @@ export default defineResolvers({
       $resolve: async (val, get) => {
         const resolved = resolveDynamic(val)
         if (resolved === false) {
-          return (await get('app.payloadId')) === false ? 'data-app-payload' : false
+          const isMultiApp = Boolean(await get('future').then(f => (f as { multiApp?: boolean } | undefined)?.multiApp))
+          return (isMultiApp || (await get('app.payloadId')) === false) ? 'data-app-payload' : false
         }
         return typeof resolved === 'string' && resolved ? resolved : 'data-nuxt-data'
       },
