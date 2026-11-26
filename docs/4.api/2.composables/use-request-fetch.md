@@ -19,8 +19,8 @@ Headers that are **not meant to be forwarded** will **not be included** in the r
 `transfer-encoding`, `connection`, `keep-alive`, `upgrade`, `expect`, `host`, `accept`
 ::
 
-::important
-Headers are only forwarded to paths starting with `/` (such as `/api/cookies`). Requests to an absolute URL, including one pointing at your own app, are sent without them.
+::warning
+Headers, including `cookie` and `authorization`, are forwarded to every URL passed to `useRequestFetch`, including absolute URLs and requests with a `baseURL` on another origin. Only call it with URLs you trust, and use [`$fetch`](/docs/api/utils/$fetch) with explicit headers for third-party APIs.
 ::
 
 ::tip
