@@ -69,6 +69,17 @@ export async function findRouterOptionsFileDefining (nuxt: Nuxt, key: RouterOpti
   }
 }
 
+/** The first `router.options` file that sets any of `keys`, or that cannot be analysed, with the keys it sets. */
+export async function findUnsupportedRouterOptions (nuxt: Nuxt, builtInRouterOptions: string, keys: string[]): Promise<{ file: string, keys: string[] } | undefined> {
+  for (const file of await resolveRouterOptions(nuxt, builtInRouterOptions)) {
+    if (file.optional) { continue }
+    const code = await fs.promises.readFile(file.path, 'utf-8').catch(() => undefined)
+    const fileKeys = code === undefined ? undefined : getRouterOptionsKeys(code, file.path)
+    const unsupported = fileKeys ? keys.filter(key => fileKeys.has(key)) : keys
+    if (unsupported.length) { return { file: file.path, keys: unsupported } }
+  }
+}
+
 /**
  * Statically determine whether a `router.options` file may define `key`.
  * Returns `true` (conservatively) when the default export is not a plain object
@@ -94,4 +105,28 @@ export function routerOptionsMayDefine (code: string, filename: string, key: Rou
     return true
   }
   return mayDefine
+}
+
+/** The keys a `router.options` file sets, or `undefined` when they cannot be read statically. */
+export function getRouterOptionsKeys (code: string, filename: string): Set<string> | undefined {
+  let keys: Set<string> | undefined
+  try {
+    parseAndWalk(code, filename, (node) => {
+      if (node.type !== 'ExportDefaultDeclaration') { return }
+      const declaration = unwrapStaticExpression(node.declaration)
+      if (declaration?.type !== 'ObjectExpression') { return }
+      const names = new Set<string>()
+      for (const property of declaration.properties) {
+        if (property.type === 'SpreadElement') { return }
+        const key = property.key
+        const name = key.type === 'Identifier' && !property.computed ? key.name : key.type === 'Literal' ? String(key.value) : undefined
+        if (name === undefined) { return }
+        names.add(name)
+      }
+      keys = names
+    })
+  } catch {
+    return undefined
+  }
+  return keys
 }

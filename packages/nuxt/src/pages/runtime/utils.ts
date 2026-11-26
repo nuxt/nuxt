@@ -2,6 +2,8 @@ import { KeepAlive, h } from 'vue'
 import type { VNode } from 'vue'
 import type { ComponentSlots } from 'vue-component-type-helpers'
 import type { RouteLocationMatched, RouteLocationNormalizedLoaded, RouterView } from 'vue-router'
+import type { MatcherPatternPathDynamic, MatcherPatternPathStatic } from 'vue-router/experimental'
+import { experimentalRouter } from '#build/nuxt.config.mjs'
 
 type RouterViewSlot = NonNullable<ComponentSlots<typeof RouterView>['default']>
 export type RouterViewSlotProps = Parameters<RouterViewSlot>[0]
@@ -27,6 +29,15 @@ const ROUTE_KEY_PARENTHESES_RE = /(:\w+)\([^)]+\)/g
 const ROUTE_KEY_SYMBOLS_RE = /(:\w+)[?+*]/g
 const ROUTE_KEY_NORMAL_RE = /:\w+/g
 const interpolatePath = (route: RouteLocationNormalizedLoaded, match: RouteLocationMatched) => {
+  // the experimental router stores a matcher as `path`: its parts are interpolated like the classic path
+  if (experimentalRouter) {
+    const matcher = match.path as unknown as MatcherPatternPathStatic | MatcherPatternPathDynamic<Record<string, unknown>>
+    if (!('pathParts' in matcher)) { return matcher.path }
+    const names = Object.keys(matcher.params)
+    let index = 0
+    const interpolate = (part: string | number) => typeof part === 'string' ? part : (route.params as Record<string, unknown>)[names[index++]!]?.toString() || ''
+    return '/' + matcher.pathParts.map(part => Array.isArray(part) ? part.map(interpolate).join('') : interpolate(part)).join('/')
+  }
   return match.path
     .replace(ROUTE_KEY_PARENTHESES_RE, '$1')
     .replace(ROUTE_KEY_SYMBOLS_RE, '$1')

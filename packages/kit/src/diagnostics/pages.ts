@@ -155,5 +155,15 @@ export const pageDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Check that the rule still covers only the paths it should. With Nitro v3, a single `*` and `(.*)` match any number of segments, so use a named parameter such as `/blog/:slug` to match exactly one. A `**` followed by more of the pattern requires that suffix. A parameter name ends at the first character that is not a letter, digit or `_`, so `:user-id` is the parameter `:user` followed by `-id`. If the rule is not in your configuration, a module or a `nitro:config` hook added it.',
       docs: false,
     },
+    NUXT_B4030: {
+      why: (p: { file: string, keys: string[] }) => `The \`router.options\` file at \`${p.file}\` sets ${p.keys.map(key => `\`${key}\``).join(', ')}, which the experimental router does not support, so the classic router is used.`,
+      fix: 'Remove the option from `router.options`: add routes with the `pages:extend` hook and handle query parsing in your components. Or set `experimental.experimentalRouter` to `false` to keep the classic router.',
+      docs: false,
+    },
+    NUXT_B4031: {
+      why: (p: { file: string, keys: string[] }) => `\`definePageMeta()\` in \`${p.file}\` sets ${p.keys.map(key => `\`${key}\``).join(', ')} with a value that cannot be read at build time, so the experimental router ignores it.`,
+      fix: 'Use a string literal, or set the route path with the `pages:extend` hook.',
+      docs: false,
+    },
   },
 })

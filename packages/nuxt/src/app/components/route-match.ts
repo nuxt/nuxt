@@ -1,4 +1,6 @@
 import type { RouteLocationGeneric } from 'vue-router'
+import type { MatcherPatternPathDynamic, MatcherPatternPathStatic } from 'vue-router/experimental'
+import { experimentalRouter } from '#build/nuxt.config.mjs'
 
 /** An absolute path with no query, hash or percent-encoding: its `href` is the history base plus the path. */
 export function isPlainAbsolutePath (to: string): boolean {
@@ -20,7 +22,8 @@ export function mayMatchCurrentRoute (currentRoute: RouteLocationGeneric, path: 
     patterns = []
     for (const record of matched) {
       if (record.aliasOf || (record as { alias?: unknown }).alias) { patterns = null; break }
-      const segments = splitSegments(record.path)
+      const segments = experimentalRouter ? matcherSegments(record.path as unknown as MatcherPatternPathStatic | MatcherPatternPathDynamic<Record<string, unknown>>) : splitSegments(record.path)
+      if (!segments) { patterns = null; break }
       for (const segment of segments) {
         if (segment.includes(':') ? !PARAM_SEGMENT_RE.test(segment) : /[?*+()]/.test(segment)) { patterns = null; break }
       }
@@ -47,6 +50,25 @@ export function mayMatchCurrentRoute (currentRoute: RouteLocationGeneric, path: 
     return true
   }
   return false
+}
+
+/**
+ * The segments of a path matcher of the experimental router, as `splitSegments` returns them for
+ * the classic path, or `undefined` for a param that is optional, repeatable or shares its segment.
+ */
+function matcherSegments (matcher: MatcherPatternPathStatic | MatcherPatternPathDynamic<Record<string, unknown>>): string[] | undefined {
+  if (!('pathParts' in matcher)) { return splitSegments(matcher.path) }
+  const names = Object.keys(matcher.params)
+  const segments: string[] = ['']
+  let index = 0
+  for (const part of matcher.pathParts) {
+    if (typeof part === 'string') { segments.push(part); continue }
+    if (Array.isArray(part)) { return }
+    const [, repeatable, optional] = matcher.params[names[index++]!]!
+    if (repeatable || optional) { return }
+    segments.push(':_()')
+  }
+  return segments
 }
 
 /** The number of segments `splitSegments` returns for `path`. */

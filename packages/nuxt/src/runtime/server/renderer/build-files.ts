@@ -12,6 +12,22 @@ import { lazyCachedFunction } from './cache'
 import { rendererDiagnostics } from './diagnostics'
 import type { NuxtRendererOptions } from './runtime'
 
+declare const __VUE_OPTIONS_API__: boolean
+declare const __VUE_PROD_DEVTOOLS__: boolean
+declare const __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: boolean
+
+// The server build replaces these flags in its own code, but vue-router stays an external module
+// and reads them as globals, so they are defined before the app is loaded. The keys are built
+// from parts so the replacement does not touch them.
+const vueFeatureFlags: Record<string, boolean> = {
+  OPTIONS_API: __VUE_OPTIONS_API__,
+  PROD_DEVTOOLS: __VUE_PROD_DEVTOOLS__,
+  PROD_HYDRATION_MISMATCH_DETAILS: __VUE_PROD_HYDRATION_MISMATCH_DETAILS__,
+}
+for (const flag in vueFeatureFlags) {
+  (globalThis as Record<string, unknown>)[`__VUE_${flag}__`] ??= vueFeatureFlags[flag]
+}
+
 export type Entry = (ssrContext: NuxtSSRContext) => Promise<App>
 
 export const APP_ROOT_OPEN_TAG: string = `<${appRootTag}${propsToString(appRootAttrs)}>`

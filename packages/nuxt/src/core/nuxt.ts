@@ -26,6 +26,7 @@ import type { DevServerHandler, NitroConfig, Nuxt, NuxtHooks, NuxtOptions, Serve
 
 import { installNuxtModule } from './features.ts'
 import pagesModule from '../pages/module.ts'
+import experimentalPagesModule from '../pages/experimental/module.ts'
 import metaModule from '../head/module.ts'
 import componentsModule from '../components/module.ts'
 import importsModule from '../imports/module.ts'
@@ -385,7 +386,7 @@ export async function loadNuxt (opts: LoadNuxtOptions): Promise<Nuxt> {
   }
 
   // Add core modules
-  options._modules.push(pagesModule, metaModule, componentsModule)
+  options._modules.push(options.experimental.experimentalRouter ? experimentalPagesModule : pagesModule, metaModule, componentsModule)
   options._modules.push(compilerModule)
   if (options.experimental.webmcp) {
     options._modules.push(webmcpModule)

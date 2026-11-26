@@ -916,7 +916,8 @@ function isSameRouteRecord (a: RouteRecordNormalized, b: RouteRecordNormalized):
   return (a.aliasOf || a) === (b.aliasOf || b)
 }
 
-function getOriginalPath (record: RouteRecordNormalized | undefined): string {
+/** The path of the record, a string or (with the experimental router) a matcher shared by records of the same path. */
+function getOriginalPath (record: RouteRecordNormalized | undefined): unknown {
   return record ? (record.aliasOf ? record.aliasOf.path : record.path) : ''
 }
 
@@ -1003,9 +1004,12 @@ function includesParams (outer: RouteParamsGeneric, inner: RouteParamsGeneric): 
   for (const key in inner) {
     const innerValue = inner[key]
     const outerValue = outer[key]
-    if (typeof innerValue === 'string') {
-      if (innerValue !== outerValue) { return false }
-    } else if (!Array.isArray(outerValue) || outerValue.length !== innerValue!.length || innerValue!.some((value, i) => value.valueOf() !== outerValue[i]!.valueOf())) {
+    if (Array.isArray(innerValue)) {
+      if (!Array.isArray(outerValue) || outerValue.length !== innerValue.length || innerValue.some((value, i) => value.valueOf() !== outerValue[i]!.valueOf())) {
+        return false
+      }
+    } else if (innerValue !== outerValue) {
+      // an optional param the experimental router leaves out is `null` on both sides
       return false
     }
   }
@@ -1021,7 +1025,7 @@ function activeRecordIndex (route: RouteLocationGeneric, currentRoute: RouteLoca
   const index = currentMatched.findIndex(isSameRouteRecord.bind(null, routeMatched))
   if (index > -1) { return index }
   const parentRecordPath = getOriginalPath(matched[length - 2])
-  return length > 1 && getOriginalPath(routeMatched) === parentRecordPath && currentMatched[currentMatched.length - 1]!.path !== parentRecordPath
+  return length > 1 && getOriginalPath(routeMatched) === parentRecordPath && (currentMatched[currentMatched.length - 1]!.path as unknown) !== parentRecordPath
     ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2]!))
     : index
 }

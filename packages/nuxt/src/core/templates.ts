@@ -763,6 +763,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!nitro?.options.prerender.crawlLinks}`,
       `export const staticRoutes = ${!!ctx.nuxt.options.experimental.staticRoutes}`,
+      `export const experimentalRouter = ${!!ctx.nuxt.options.experimental.experimentalRouter}`,
       `export const spaLoadingTemplateOutside = ${ctx.nuxt.options.experimental.spaLoadingTemplateLocation === 'body'}`,
       `export const purgeCachedData = ${!!ctx.nuxt.options.experimental.purgeCachedData}`,
       `export const granularCachedData = ${!!ctx.nuxt.options.experimental.granularCachedData}`,

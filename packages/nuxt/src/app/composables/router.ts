@@ -223,6 +223,12 @@ function encodeForHtmlAttr (value: string): string {
  * @see https://nuxt.com/docs/4.x/api/utils/navigate-to
  * @since 3.0.0
  */
+/** The full path of a location with its query stringified by the router, which may keep the encoding of a string location. */
+function normalizeFullPath (router: Router, to: string): string {
+  const target = router.resolve(to)
+  return router.resolve({ path: target.path, query: target.query, hash: target.hash }).fullPath || '/'
+}
+
 export function navigateTo (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void
 export function navigateTo (to: RouteLocationRaw | undefined | null, options?: NavigateToOptions): Promise<void | NavigationFailure | false> | false | void | RouteLocationRaw {
   to ||= '/'
@@ -321,11 +327,10 @@ export function navigateTo (to: RouteLocationRaw | undefined | null, options?: N
         // vue-router normalises queries so in this case we need to resolve instead of directly comparing
         let expectedPath = fullPath
         if (typeof to === 'string' && toPath.includes('?')) {
-          const target = router.resolve(to)
-          expectedPath = router.resolve({ path: target.path, query: target.query, hash: target.hash }).fullPath || '/'
+          expectedPath = normalizeFullPath(router, to)
           location = joinURL(useRuntimeConfig().app.baseURL, expectedPath)
         }
-        router.afterEach(final => final.fullPath === expectedPath ? redirect(false) : undefined)
+        router.afterEach(final => normalizeFullPath(router, final.fullPath) === expectedPath ? redirect(false) : undefined)
         return to
       }
       return redirect(!inMiddleware ? undefined : /* abort route navigation */ false)
