@@ -33,6 +33,8 @@ export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prere
 export const islandPropCache: Storage<string> | null = import.meta.prerender ? useKV<string>('internal:nuxt:prerender:island-props') : null
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
+const URL_DOT_SEGMENT_RE = /(?:^|\/)(?:\.|%2e){1,2}(?:\/|$)/i
+const URL_SEARCH_RE = /[?#][\s\S]*$/
 const ISLAND_PATH_PREFIX = '/__nuxt_island/'
 
 /** A response produced by the render itself (redirect, abort, ...), bound to the request that made it. */
@@ -341,8 +343,14 @@ async function getIslandContext (event: H3Event): Promise<NuxtIslandContext> {
     throw new HTTPError({ status: 400, statusText: 'Invalid island request props' })
   }
 
+  const renderURL = typeof rawContext?.url === 'string' ? rawContext.url : '/'
+  // route rules resolve the dot segments of a path that vue-router matches as written
+  if (URL_DOT_SEGMENT_RE.test(renderURL.replace(URL_SEARCH_RE, ''))) {
+    throw new HTTPError({ status: 400, statusText: 'Invalid island request url' })
+  }
+
   return {
-    url: typeof rawContext?.url === 'string' ? rawContext.url : '/',
+    url: renderURL,
     id: hashId,
     name: componentName,
     props: parsedProps,

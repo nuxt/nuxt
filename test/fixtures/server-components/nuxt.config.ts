@@ -5,6 +5,7 @@ export default withMatrix({
   ...(isNuxtPrepare ? {} : { buildDir: `.nuxt-${projectSuffix}` }),
   routeRules: {
     '/redirected-server-page': { redirect: '/server-page' },
+    '/gated-reports/**': { appMiddleware: 'island-auth' },
   },
   experimental: {
     componentIslands: {

@@ -783,6 +783,26 @@ describe.skipIf(!oncePerServer)('page-island middleware', () => {
     expect(body.html).toContain('Hello this is a server page')
   })
 
+  it('runs `appMiddleware` route rules for `page_*` islands', async () => {
+    const res = await fetch(islandURL('page_gated-reports-slug', {
+      context: { url: '/gated-reports/payroll' },
+    }), { redirect: 'manual' })
+    expect(res.status).toBe(302)
+    expect(res.headers.get('location')).toContain('/login')
+    expect(await res.text()).not.toContain('GATED-REPORT')
+  })
+
+  it.each([
+    '/gated-reports/payroll/../..',
+    '/gated-reports/payroll/%2e%2e/%2E%2e',
+    '/gated-reports/payroll/./.%2e/..?x=1',
+    '/gated-reports/payroll/../..#x',
+  ])('rejects a `page_*` island whose url has dot segments: %s', async (url) => {
+    const res = await fetch(islandURL('page_gated-reports-slug', { context: { url } }), { redirect: 'manual' })
+    expect(res.status).toBe(400)
+    expect(await res.text()).not.toContain('GATED-REPORT')
+  })
+
   it('rejects a `page_*` island whose url routes to a different page', async () => {
     // Forging `page_gated-server-page` with `url=/server-page` would render the gated
     // page's HTML while running the (empty) middleware for the unguarded page.
