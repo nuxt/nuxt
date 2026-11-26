@@ -7,7 +7,7 @@ import { join } from 'pathe'
 import { $fetch, createPage, fetch, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
-import { asyncContext, builder, isBuilt, isDev, isTestingAppManifest, isWebpack, legacyComponentResolution, legacyErrorRendering, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerEnvInMatrix as oncePerEnv, runsOncePerViteBuilderInMatrix as oncePerServer } from './matrix'
+import { asyncContext, builder, classicRouter, isBuilt, isDev, isTestingAppManifest, isWebpack, legacyComponentResolution, legacyErrorRendering, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerEnvInMatrix as oncePerEnv, runsOncePerViteBuilderInMatrix as oncePerServer } from './matrix'
 import { expectNoClientErrors, gotoPath, parseData, parsePayload, renderPage, setupFixture } from './utils'
 
 const legacyVariant = legacyErrorRendering || legacyComponentResolution
@@ -408,8 +408,15 @@ describe('pages', () => {
   })
 
   it.skipIf(!once)('allows routes to be added dynamically', async () => {
-    const html = await $fetch<string>('/add-route-test')
-    expect(html).toContain('Hello Nuxt 3!')
+    const response = await fetch('/add-route-test')
+    const html = await response.text()
+    if (classicRouter) {
+      expect(html).toContain('Hello Nuxt 3!')
+    } else {
+      // the experimental router has a fixed route table: `router.addRoute()` throws in the plugin's guard
+      expect(response.status).toBe(404)
+      expect(html).not.toContain('Hello Nuxt 3!')
+    }
   })
 
   it.skipIf(!once)('includes page metadata from pages added in pages:extend hook', async () => {
@@ -799,8 +806,9 @@ describe('pages', () => {
     const { page } = await renderPage('/prerender/query-reactivity?active=true')
 
     expect(await page.innerText('div')).toContain('true')
-    await page.waitForFunction(() => window.useNuxtApp?.()._route.query.active === 'true')
-    expect(await page.evaluate(() => window.useNuxtApp?.()._route.query.active)).toBe('true')
+    // the experimental router gives query values as arrays, which stringify to the value
+    await page.waitForFunction(() => String(window.useNuxtApp?.()._route.query.active) === 'true')
+    expect(await page.evaluate(() => String(window.useNuxtApp?.()._route.query.active))).toBe('true')
     expect(await page.$eval('div', e => getComputedStyle(e).color)).toBe('rgb(255, 0, 0)')
 
     expect(await page.innerText('#mounted-query')).toBe('true')
@@ -1087,6 +1095,8 @@ describe('nuxt links', () => {
     const scopeIds: string[] = []
     return html.match(/<div id="ssr-static-links"[^>]*>(.*?)<\/div>/s)![1]!
       .replace(/data-v-([\da-f]+)/g, (_, id) => `data-v-${scopeIds.includes(id) ? scopeIds.indexOf(id) : scopeIds.push(id) - 1}`)
+      // the experimental router percent-encodes a quote in a string location, as `new URL()` does
+      .replace('a%22b', 'a&quot;b')
       .replace(/<a /g, '\n<a ')
       .trim()
   }
@@ -1138,7 +1148,8 @@ describe('nuxt links', () => {
     await expect.poll(() => link('child').getAttribute('aria-current')).toBe('page')
     expect(await link('child').getAttribute('class')).toBe('foo-active-class bar-exact-active-class')
     expect(await link('self').getAttribute('aria-current')).toBeNull()
-    expect(await link('self').getAttribute('class')).toBe('foo-active-class')
+    // the experimental router keeps an optional param left out as `null`, which does not include the current value
+    expect(await link('self').getAttribute('class')).toBe(classicRouter ? 'foo-active-class' : null)
 
     expect(pageErrors).toEqual([])
     await page.close()

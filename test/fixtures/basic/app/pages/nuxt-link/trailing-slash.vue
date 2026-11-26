@@ -12,8 +12,9 @@ const links = [
   '/nuxt-link/trailing-slash?test=true&thing=other/thing#thing-other',
   '/nuxt-link/trailing-slash/?test=true&thing=other/thing#thing-other',
   { name: 'nuxt-link-trailing-slash' },
-  { query: { 'with-state': 'true' }, state: { foo: 'bar' } },
-  { query: { 'without-state': 'true' } },
+  // with a `path`, the current query is not merged into these locations
+  { path: '/nuxt-link/trailing-slash', query: { 'with-state': 'true' }, state: { foo: 'bar' } },
+  { path: '/nuxt-link/trailing-slash', query: { 'without-state': 'true' } },
 ] as const
 
 const route = useRoute()

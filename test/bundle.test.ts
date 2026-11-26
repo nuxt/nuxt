@@ -11,13 +11,17 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   const pagesRootDir = fileURLToPath(new URL('./fixtures/minimal-pages', import.meta.url))
   const spaRootDir = fileURLToPath(new URL('./fixtures/spa', import.meta.url))
 
+  // the classic router build of the pages fixture, for comparison
+  const classicPagesOutput = join(pagesRootDir, '.output-classic')
+
   beforeAll(async () => {
     await Promise.all([
       exec('pnpm', ['nuxt', 'build', rootDir]),
       exec('pnpm', ['nuxt', 'build', pagesRootDir]),
       exec('pnpm', ['nuxt', 'build', spaRootDir]),
     ])
-  }, 120 * 1000)
+    await exec('pnpm', ['nuxt', 'build', pagesRootDir, '--envName', 'classic'])
+  }, 240 * 1000)
 
   it('default client bundle size', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(rootDir, '.output/public'), rootDir)
@@ -81,6 +85,25 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
   it('default client bundle size (pages)', async () => {
     const clientStats = await analyzeSizes(['**/*.js'], join(pagesRootDir, '.output/public'), pagesRootDir)
 
+    expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"179k"`)
+
+    const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
+
+    expect([...files]).toMatchInlineSnapshot(`
+      [
+        "_nuxt/a.js",
+        "_nuxt/client-component.js",
+        "_nuxt/default.js",
+        "_nuxt/entry.js",
+        "_nuxt/pages.js",
+        "_nuxt/server-component.js",
+      ]
+    `)
+  })
+
+  it('default client bundle size (pages, classic router)', async () => {
+    const clientStats = await analyzeSizes(['**/*.js'], join(classicPagesOutput, 'public'), pagesRootDir)
+
     expect.soft(roundToKilobytes(clientStats!.totalBytes)).toMatchInlineSnapshot(`"187k"`)
 
     const files = clientStats!.files.map(f => f.replace(/\..*\.js/, '.js'))
@@ -128,11 +151,16 @@ describe.skipIf(process.env.SKIP_BUNDLE_SIZE === 'true' || process.env.ECOSYSTEM
     `)
   })
 
+  it('default server bundle size (pages, classic router)', async () => {
+    const serverStats = await analyzeSizes(['**/*.mjs'], join(classicPagesOutput, 'server'), pagesRootDir)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"293k"`)
+  })
+
   it('default server bundle size (pages)', async () => {
     const serverDir = join(pagesRootDir, '.output/server')
 
     const serverStats = await analyzeSizes(['**/*.mjs'], serverDir, pagesRootDir)
-    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"293k"`)
+    expect.soft(roundToKilobytes(serverStats.totalBytes)).toMatchInlineSnapshot(`"286k"`)
 
     const packages = getVendorPackages(await glob(['_libs/**/*'], { cwd: serverDir }))
     expect(packages).toMatchInlineSnapshot(`

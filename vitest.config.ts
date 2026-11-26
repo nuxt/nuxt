@@ -79,6 +79,7 @@ interface FixtureMatrixEntry {
   manifest: 'manifest-on' | 'manifest-off'
   legacyErrors?: boolean
   legacyComponentResolution?: boolean
+  classicRouter?: boolean
 }
 
 const fixtureMatrix: FixtureMatrixEntry[] = [
@@ -112,14 +113,19 @@ const legacyComponentResolutionMatrix: FixtureMatrixEntry[] = [
   { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', legacyComponentResolution: true },
 ]
 
+// re-runs the basic fixture on the classic router, with `experimental.experimentalRouter` disabled
+const classicRouterMatrix: FixtureMatrixEntry[] = [
+  { env: 'built', builder: 'vite', context: 'default', manifest: 'manifest-on', classicRouter: true },
+]
+
 function fixtureProjectInclude (entry: FixtureMatrixEntry) {
   if (entry.legacyErrors) { return legacyErrorInclude }
-  if (entry.legacyComponentResolution) { return ['test/basic.test.ts'] }
+  if (entry.legacyComponentResolution || entry.classicRouter) { return ['test/basic.test.ts'] }
   return ['test/*.test.ts']
 }
 
 function fixtureProjectName (entry: FixtureMatrixEntry) {
-  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}`
+  return `fixtures:${entry.builder}-${entry.env}-${entry.context}-${entry.manifest}${entry.legacyErrors ? '-legacy-errors' : ''}${entry.legacyComponentResolution ? '-legacy-component-resolution' : ''}${entry.classicRouter ? '-classic-router' : ''}`
 }
 
 function fixtureProjectEnv (entry: FixtureMatrixEntry) {
@@ -130,6 +136,7 @@ function fixtureProjectEnv (entry: FixtureMatrixEntry) {
     TEST_MANIFEST: entry.manifest,
     ...entry.legacyErrors ? { TEST_ERROR_RENDERING: 'legacy-errors' } : {},
     ...entry.legacyComponentResolution ? { TEST_COMPONENT_RESOLUTION: 'legacy' } : {},
+    ...entry.classicRouter ? { TEST_ROUTER: 'classic' } : {},
   }
 }
 
@@ -221,7 +228,7 @@ export default defineConfig({
           benchmark: { include: ['test/bench/renderer.bench.ts'] },
         },
       },
-      ...[...fixtureMatrix, ...legacyErrorMatrix, ...legacyComponentResolutionMatrix].map(entry => ({
+      ...[...fixtureMatrix, ...legacyErrorMatrix, ...legacyComponentResolutionMatrix, ...classicRouterMatrix].map(entry => ({
         plugins: [runtimeImportMeta({ dev: '(globalThis.__TEST_DEV__ ?? false)' })],
         test: {
           name: fixtureProjectName(entry),
