@@ -1065,9 +1065,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
 
   if (legacy.config) {
     for (const handler of nitroConfig.handlers || []) {
-      const entry = handler as { route?: string, middleware?: boolean, handler: string }
-      // Nuxt's own `route: ''` middleware is not something a user can act on
-      normalizeLegacyHandlerRoute(entry, typeof entry.handler === 'string' && normalize(entry.handler).startsWith(ownRuntime) ? [] : unrouted)
+      normalizeLegacyHandlerRoute(handler as { route?: string, middleware?: boolean, handler: string }, unrouted)
     }
   }
 
@@ -1414,10 +1412,12 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
   return registerLateScope
 }
 
-/** Nitro v3 requires a `route`; a v2 handler without one was a global middleware. */
+/**
+ * Nitro v3 requires a `route`; a v2 handler without one was a global middleware. It is
+ * reported unless it sets `middleware: true`.
+ */
 function normalizeLegacyHandlerRoute (handler: { route?: string, middleware?: boolean, handler: string }, unrouted: string[]) {
   if (!handler.route) {
-    // `middleware: true` already says it runs for every request, so it is not reported
     if (!handler.middleware) {
       unrouted.push(typeof handler.handler === 'string' ? handler.handler : (handler.handler as unknown as () => unknown).name || 'an anonymous dev server handler')
     }

@@ -219,6 +219,22 @@ describe('setupNitroCompat', () => {
     expect(report).not.toHaveBeenCalled()
   })
 
+  it('reports only route-less handlers that do not declare middleware with `nitroLegacy.config`', async () => {
+    const report = silence('NUXT_B9002')
+    const nitroConfig: NitroConfig = {
+      handlers: [
+        { handler: '/project/server/plain.ts' } as any,
+        { route: '', middleware: true, handler: '/project/server/guard.ts' } as any,
+      ],
+    }
+
+    await setupNitroCompat(createNuxt(), nitroConfig, resolveNitroLegacyOptions(true), [])
+
+    expect(nitroConfig.handlers).toMatchObject([{ route: '/**', middleware: true }, { route: '/**', middleware: true }])
+    expect(report).toHaveBeenCalledTimes(1)
+    expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, handlers: '`server/plain.ts`' })
+  })
+
   it('maps h3 v1 and nitro v2 specifiers for a declared v2 entry', async () => {
     const nitroConfig: NitroConfig = {
       handlers: [declared({ route: '/v2', handler: '/modules/handler.ts' }, 'nitro2')],
@@ -1426,7 +1442,6 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
 
     expect(options.handlers[0]).toMatchObject({ route: '/**', middleware: true })
     expect(options.handlers[1]).toMatchObject({ route: '/**', middleware: true })
-    // only the handler that does not declare middleware is reported
     expect(report).toHaveBeenCalledTimes(1)
     expect(report.mock.calls[0]![0]).toMatchObject({ count: 1, handlers: expect.stringContaining('plain.ts') })
   })
