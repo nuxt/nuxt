@@ -72,7 +72,7 @@ minimumReleaseAgeExclude:
 catalogs:
   # imported in the nuxt app runtime (packages/nuxt/src/app, head/runtime, pages/runtime)
   app-runtime:
-    '@unhead/vue': ^3.4.3
+    '@unhead/vue': ^3.5.3
     '@vue/shared': ^3.5.46
     consola: ^3.4.2
     cookie-es: ^3.1.1
@@ -91,7 +91,7 @@ catalogs:
     perfect-debounce: ^2.1.0
     ufo: ^1.6.4
     unctx: ^3.0.1
-    unhead: ^3.4.3
+    unhead: ^3.5.3
     vue: ^3.5.46
     vue-bundle-renderer: ^2.5.0
     vue-router: ^5.5.1

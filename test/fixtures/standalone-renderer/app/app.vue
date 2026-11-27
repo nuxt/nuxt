@@ -60,6 +60,29 @@ useHead({
   title: 'Standalone renderer',
 })
 
+if (path.startsWith('/head-override')) {
+  useHead({
+    htmlAttrs: { lang: 'fr', class: 'page' },
+    templateParams: { siteName: 'Page site' },
+    meta: [
+      { name: 'description', content: 'page description' },
+      { key: 'theme', name: 'theme-color', content: '#000' },
+    ],
+  })
+}
+if (path.includes('normalize-hook')) {
+  useNuxtApp().ssrContext!.head.hooks.hook('entries:normalize', () => {})
+}
+if (path.includes('rewrite-lang-hook')) {
+  useNuxtApp().ssrContext!.head.hooks.hook('entries:normalize', ({ tags }) => {
+    for (const tag of tags) {
+      if (tag.tag === 'htmlAttrs' && tag.props.lang === 'en') {
+        tag.props.lang = 'en-GB'
+      }
+    }
+  })
+}
+
 const { data } = await useAsyncData('greeting', () => Promise.resolve('rendered without nitro'))
 
 const DeferredPanel = defineAsyncComponent(() => import('./components/DeferredPanel.vue'))
