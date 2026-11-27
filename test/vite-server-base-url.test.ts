@@ -57,6 +57,18 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build under a base URL', ()
     }
   })
 
+  it('serves public files referenced from styles and scripts under the base URL', async () => {
+    const html = await (await render('/app/public-urls')).text()
+    expect(html).toContain('<a id="public-import" class="public-font" href="/app/fonts/public.woff2">')
+
+    const stylesheet = html.match(/<link rel="stylesheet" href="([^"]*public-urls[^"]*\.css)"/)?.[1]
+    expect(stylesheet).toBeDefined()
+    const css = await (await render(stylesheet!)).text()
+    const urls = Array.from(css.matchAll(/url\(([^)]+)\)/g), match => new URL(match[1]!, new URL(stylesheet!, 'http://localhost')).pathname)
+    expect(urls).toEqual(['/app/fonts/public.woff2', '/app/fonts/public.woff2'])
+    expect(await (await render(urls[0]!)).text()).toBe('public-font')
+  })
+
   it('redirects a request outside the base URL under it', async () => {
     const response = await render('/about?a=1')
 
