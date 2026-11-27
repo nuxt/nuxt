@@ -173,7 +173,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
 
   if (nuxt.options.dev) {
-    let reportFs: { allow: string[], deny: string[], strict?: boolean } | undefined
+    let reportFs: { allow: string[], deny: string[], strict?: boolean | 'extended' } | undefined
     let viteAllowedHosts: string[] | true | undefined
     nuxt.hook('vite:serverCreated', (server) => {
       const { allow, deny, strict } = server.config.server.fs

@@ -202,7 +202,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       publishedFile = undefined
       file = (error.loc?.file ?? error.id)?.split('?')[0]
       try {
-        const config = server?.config
+        const config = server?.environments.client.config
         const [{ createReport, renderAnsi }, { nuxtPreset }, fs] = await Promise.all([
           import('my-bad'),
           import('my-bad/presets'),
@@ -267,7 +267,7 @@ export function createDevErrorReporter (nuxt: Nuxt, options: { print: (rendered:
       const pending: { key: string, report?: ErrorReport } = { key, report: requestReports.get(request)?.report }
       requestReports.set(request, pending)
       try {
-        const config = server.config
+        const config = server.environments.client.config
         const [{ createReport }, { nuxtPreset }, fs] = await Promise.all([
           import('my-bad'),
           import('my-bad/presets'),
