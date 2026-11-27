@@ -196,6 +196,23 @@ describe('reportNitroPrerender', () => {
     ])
   })
 
+  it('leaves routes removed by a later `prerender:routes` listener out of the total', async () => {
+    const { nitroHooks, calls } = setup()
+    nitroHooks.hook('prerender:routes', (routes: Set<string>) => {
+      routes.add('/200.html')
+      routes.delete('/index.html')
+    })
+
+    await nitroHooks.callHook('prerender:routes', new Set(['/', '/index.html']))
+    await nitroHooks.callHook('prerender:init', {})
+    await nitroHooks.callHook('prerender:route', { route: '/', fileName: '/index.html' })
+
+    expect(calls.slice(0, 2)).toEqual([
+      ['build:prerender:start', { routes: 2 }],
+      ['build:prerender:route', { route: '/', duration: 0, total: 2, skipped: false, fileName: 'index.html' }],
+    ])
+  })
+
   it('reports a total of at least the routes reported so far', async () => {
     const { nitroHooks, calls } = setup()
 
