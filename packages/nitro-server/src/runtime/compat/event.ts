@@ -273,7 +273,6 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
 function createNodeResponseBridge (event: H3EventType) {
   const chunks: Buffer[] = []
   let sent = false
-  let ended = false
 
   function push (chunk: unknown, encoding: unknown): void {
     if (typeof chunk === 'string') {
@@ -286,7 +285,7 @@ function createNodeResponseBridge (event: H3EventType) {
   return {
     write (chunk: unknown, encoding?: unknown, callback?: unknown) {
       sent = true
-      if (!ended) {
+      if (!isResponseEnded(event)) {
         push(chunk, encoding)
       }
       const done = typeof encoding === 'function' ? encoding : callback
@@ -296,9 +295,8 @@ function createNodeResponseBridge (event: H3EventType) {
       return true
     },
     end (chunk?: unknown, encoding?: unknown, callback?: unknown) {
-      if (!ended) {
+      if (!isResponseEnded(event)) {
         push(chunk, encoding)
-        ended = true
         endResponse(event, Buffer.concat(chunks))
       }
       const done = [chunk, encoding, callback].find(arg => typeof arg === 'function')

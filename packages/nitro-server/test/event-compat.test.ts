@@ -473,6 +473,23 @@ describe('v2 event bridge', () => {
     expect(await response.text()).toContain('/login')
   })
 
+  it('keeps the response of an inner handler when an outer handler then calls `end` on an in-process request', async () => {
+    const inner = defineLegacyEventHandler(event => send(event, 'sent'))
+    const app = new H3()
+    app.get('/api/outer', defineLegacyEventHandler(async (event) => {
+      try {
+        return await inner(event)
+      } finally {
+        event.node!.res.write('late')
+        event.node!.res.end()
+      }
+    }))
+
+    const response = await app.request('/api/outer')
+
+    expect(await response.text()).toBe('sent')
+  })
+
   it('keeps the socket of a node request', () => {
     const { event, req } = nodeEvent()
 
