@@ -48,6 +48,9 @@ const testsToTriggerOn = [
 const nitroAppTests: [id: string, importer: string, isProtected: boolean][] = [
   ['#app', 'server/api/foo.ts', true],
   ['#build/utils', 'server/api/foo.ts', true],
+  // virtual Nuxt modules are matched by explicit patterns, never by resolved-path blockers
+  ['#internal/nuxt.config.mjs', 'nuxt/internal/renderer-config', false],
+  ['#internal/unhead.config.mjs', 'nuxt/internal/renderer-config', false],
   ['~/utils/foo', 'server/api/bar.ts', true],
   ['@/composables/bar', 'server/api/bar.ts', true],
   ['~~/src/utils/baz', 'server/api/bar.ts', true],
@@ -170,7 +173,7 @@ describe('import protection', () => {
       }, { context: 'nitro-app' }),
     })
     const resolveId = (id: string) => (plugin as any).resolveId.call({ error: () => {} }, id, 'server/api/bar.ts')
-    for (const id of ['h3', 'pathe', '@vue/shared', 'node:fs/promises', 'vue/server-renderer', 'nitro/h3']) {
+    for (const id of ['h3', 'pathe', '@vue/shared', 'node:fs/promises', 'vue/server-renderer', 'nitro/h3', '#internal/nuxt.config.mjs', '#internal/unhead.config.mjs']) {
       expect(resolveId(id), id).toBeFalsy()
     }
     expect(resolveId('~/utils/foo')).toContain('impound:proxy')

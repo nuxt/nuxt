@@ -30,7 +30,7 @@ export const IMPORT_PROTECTION_ALLOWED = {
   srvxPattern: /srvx(\/|$)/,
   /** Returns true if id is allowed (srvx, node_modules, .nuxt/dist, app.config.*). */
   isAllowed (id: string, normalized?: string): boolean {
-    if (id === 'srvx' || id.startsWith('srvx/') || id.includes('/srvx/')) {
+    if (isVirtualSpecifier(id) || id === 'srvx' || id.startsWith('srvx/') || id.includes('/srvx/')) {
       return true
     }
     const pathToCheck = normalized ?? id
@@ -52,11 +52,24 @@ function isSubpath (parent: string, child: string): boolean {
 const SOURCE_FILE_RE = /\.(?:[cm]?[jt]sx?|vue|json|css|s[ac]ss|wasm|svg|md|html)$/i
 
 /**
+ * Nuxt's `#internal/*` imports are virtual modules. They are not matched by the explicit
+ * patterns below, and resolving them against `rootDir` would put them under `srcDir` and
+ * proxy them with `\0impound:proxy`, losing their exports. Other `#` ids (for example a
+ * module's custom `#api` alias) are still resolved and checked by the alias patterns.
+ */
+function isVirtualSpecifier (id: string): boolean {
+  return id.startsWith('#internal/') || id.startsWith('\0')
+}
+
+/**
  * Bare package imports (`h3`, `vue/server-renderer`, `@vue/shared`, `node:fs/promises`) are not
  * files under `srcDir`. `resolve(rootDir, id)` would still place them there when `srcDir` is the
  * project root, and the blocker would replace the import with the impound proxy.
  */
 function isPackageSpecifier (id: string, blockedDir: string, rootDir: string): boolean {
+  if (isVirtualSpecifier(id)) {
+    return true
+  }
   if (
     isAbsolute(id)
     || id.startsWith('.')
@@ -194,6 +207,9 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
        * checked by createResolvedPathBlocker, so we return false here.
        */
       (id: string, _importer: string) => {
+        if (isVirtualSpecifier(id)) {
+          return false
+        }
         const resolved = resolveAlias(id, alias)
         if (!resolved || resolved === id) {
           return false
@@ -251,6 +267,9 @@ export function createImportProtectionPatterns (nuxt: { options: NuxtOptions }, 
      */
     patterns.push([
       (id: string) => {
+        if (isVirtualSpecifier(id)) {
+          return false
+        }
         const resolved = resolveAlias(id, alias)
         if (!resolved || resolved === id) {
           return false
