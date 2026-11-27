@@ -122,9 +122,10 @@ function resolveComponents (value: unknown): NuxtOptions['components'] {
   if (value === false) {
     return { dirs: [] }
   }
+  const options = objectOrEmpty(value)
   return {
-    dirs: [{ path: '~/components/global', global: true }, '~/components'],
-    ...objectOrEmpty(value),
+    ...options,
+    dirs: options.dirs ?? [{ path: '~/components/global', global: true }, '~/components'],
   }
 }
 

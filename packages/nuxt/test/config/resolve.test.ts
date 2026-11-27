@@ -130,6 +130,22 @@ describe('invalid values', () => {
   })
 })
 
+describe('components', () => {
+  const defaultDirs = [{ path: '~/components/global', global: true }, '~/components']
+
+  it.each([
+    [undefined, { dirs: defaultDirs }],
+    [true, { dirs: defaultDirs }],
+    [false, { dirs: [] }],
+    [['~/widgets'], { dirs: ['~/widgets'] }],
+    [{ global: true }, { dirs: defaultDirs, global: true }],
+    [{ dirs: undefined, global: true }, { dirs: defaultDirs, global: true }],
+    [{ dirs: [] }, { dirs: [] }],
+  ])('resolves %j', (components, expected) => {
+    expect(resolveConfig({ components }).components).toEqual(expected)
+  })
+})
+
 describe('webpack', () => {
   it.each([true, false])('keeps `url: %s` on the css loaders', (url) => {
     const { result, warnings } = withWarnings(() => resolveConfig({ webpack: { loaders: { css: { url }, cssModules: { url } } } }))
