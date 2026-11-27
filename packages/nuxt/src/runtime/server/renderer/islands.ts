@@ -11,8 +11,7 @@ export function getServerComponentHTML (body: string): string {
   return match?.[1] || body
 }
 
-const SSR_SLOT_TELEPORT_MARKER = /^uid=([^;]*);slot=(.*)$/
-const SSR_CLIENT_TELEPORT_MARKER = /^uid=([^;]*);client=(.*)$/
+const SSR_ISLAND_TELEPORT_MARKER = /^uid=([^;]*);(slot|client)=(.*)$/
 const SSR_CLIENT_SLOT_MARKER = /^island-slot=([^;]*);(.*)$/
 
 export function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['slots'] {
@@ -38,8 +37,8 @@ export function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIsland
     // when there's no matching teleport for the component UID, we use the teleport key (includes both island and component UID)
     if (!html && ssrContext.teleports) {
       for (const [key, value] of Object.entries(ssrContext.teleports)) {
-        const [, , componentUid] = key.match(SSR_CLIENT_TELEPORT_MARKER) ?? []
-        if (componentUid === clientUid) {
+        const [, , kind, componentUid] = key.match(SSR_ISLAND_TELEPORT_MARKER) ?? []
+        if (kind === 'client' && componentUid === clientUid) {
           html = value.replaceAll('<!--teleport start anchor-->', '')
           break
         }
@@ -88,19 +87,9 @@ export function renderStreamedIslandTeleports (ssrContext: NuxtSSRContext, nonce
   if (islandContext || !teleports) { return '' }
   let templates = ''
   for (const key in teleports) {
-    const matchClientComp = key.match(SSR_CLIENT_TELEPORT_MARKER)
-    if (matchClientComp) {
-      const [, uid, clientId] = matchClientComp
-      if (!uid || !clientId) { continue }
-      templates += `<template data-island-uid="${uid}" data-island-component="${clientId}">${teleports[key]}</template>`
-      continue
-    }
-    const matchSlot = key.match(SSR_SLOT_TELEPORT_MARKER)
-    if (matchSlot) {
-      const [, uid, slot] = matchSlot
-      if (!uid || !slot) { continue }
-      templates += `<template data-island-uid="${uid}" data-island-slot="${slot}">${teleports[key]}</template>`
-    }
+    const [, uid, kind, name] = key.match(SSR_ISLAND_TELEPORT_MARKER) ?? []
+    if (!uid || !name) { continue }
+    templates += `<template data-island-uid="${uid}" data-island-${kind === 'slot' ? 'slot' : 'component'}="${name}">${teleports[key]}</template>`
   }
   if (!templates) { return '' }
   return templates + `<script${nonceAttr}>${ISLAND_TELEPORT_RELOCATE_SCRIPT}</script>`
@@ -117,29 +106,10 @@ export function replaceIslandTeleports (ssrContext: NuxtSSRContext, html: string
   const uids = new Set<string>()
 
   for (const key in teleports) {
-    const matchClientComp = key.match(SSR_CLIENT_TELEPORT_MARKER)
-
-    if (matchClientComp) {
-      const [, uid, clientId] = matchClientComp
-
-      if (!uid || !clientId) { continue }
-
-      contentsByAnchor.set(`${uid};component;${clientId}`, teleports[key]!)
-      uids.add(uid)
-
-      continue
-    }
-
-    const matchSlot = key.match(SSR_SLOT_TELEPORT_MARKER)
-
-    if (matchSlot) {
-      const [, uid, slot] = matchSlot
-
-      if (!uid || !slot) { continue }
-
-      contentsByAnchor.set(`${uid};slot;${slot}`, teleports[key]!)
-      uids.add(uid)
-    }
+    const [, uid, kind, name] = key.match(SSR_ISLAND_TELEPORT_MARKER) ?? []
+    if (!uid || !name) { continue }
+    contentsByAnchor.set(`${uid};${kind === 'slot' ? 'slot' : 'component'};${name}`, teleports[key]!)
+    uids.add(uid)
   }
 
   if (!contentsByAnchor.size) { return html }
