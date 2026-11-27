@@ -31,7 +31,7 @@ export interface ErrorReportOptions {
 export interface DevErrorFsOptions {
   allow: string[]
   deny: string[]
-  strict?: boolean
+  strict?: boolean | 'extended'
 }
 
 /**
