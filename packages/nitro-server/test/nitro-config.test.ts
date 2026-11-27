@@ -681,6 +681,22 @@ describe('nitro config', () => {
     })
   }, 60_000)
 
+  it('gives the server tsconfig a build info file so `nuxt typecheck` can run incrementally', async () => {
+    await withNitro({}, (nitro) => {
+      expect(nitro.options.typescript.tsConfig?.compilerOptions?.tsBuildInfoFile).toBe('./cache/typecheck/tsconfig.server.tsbuildinfo')
+    })
+  }, 60_000)
+
+  it.each([
+    [{ typescript: { tsConfig: { compilerOptions: { tsBuildInfoFile: './global.tsbuildinfo' } } } }, './global.tsbuildinfo'],
+    [{ typescript: { serverTsConfig: { compilerOptions: { tsBuildInfoFile: './server.tsbuildinfo' } } } }, './server.tsbuildinfo'],
+    [{ nitro: { typescript: { tsConfig: { compilerOptions: { tsBuildInfoFile: './nitro.tsbuildinfo' } } } } }, './nitro.tsbuildinfo'],
+  ] satisfies Array<[NuxtConfig, string]>)('keeps a server build info file set by the project (%j)', async (overrides, tsBuildInfoFile) => {
+    await withNitro(overrides, (nitro) => {
+      expect(nitro.options.typescript.tsConfig?.compilerOptions?.tsBuildInfoFile).toBe(tsBuildInfoFile)
+    })
+  }, 60_000)
+
   it('describes the deploy command of the preset, to run from the project root', async () => {
     await withNitro({ dev: false, nitro: { commands: { deploy: 'npx wrangler --cwd ./ pages deploy' }, output: { dir: 'my output' } } }, (_nitro, _nitroConfig, nuxt) => {
       expect(nuxt.serverBuild.deploy?.command?.()).toBe('npx wrangler --cwd "my output/" pages deploy')
