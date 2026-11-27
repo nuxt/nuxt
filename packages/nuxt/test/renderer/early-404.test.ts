@@ -23,7 +23,8 @@ const options = {
 const knownMatcher = (_method: string, path: string) => path === '/known' ? 1 : undefined
 let matcher: (method: string, path: string) => unknown = knownMatcher
 
-vi.mock('nuxt/internal/renderer-config', () => ({
+vi.mock('nuxt/internal/renderer-config', async importOriginal => ({
+  ...await importOriginal<typeof import('nuxt/internal/renderer-config')>(),
   get NUXT_PAGE_MATCHER () {
     return matcher
   },

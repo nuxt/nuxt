@@ -357,7 +357,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       '/**': typeof nuxt.options.experimental.ssrStreaming === 'object' && nuxt.options.experimental.ssrStreaming.enabled
         ? { ssr: true, streaming: true }
         : { ssr: true },
-      '/__nuxt_error': { cache: false },
+      [nuxt.options.app.errorRoute || '/__nuxt_error']: { cache: false },
     },
     // nitro otherwise resolves these from the project, installing them if they are missing
     deps: {
@@ -715,7 +715,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
     assertSingleCatchAllRouteRuleKey(key)
   }
   if (nuxt.options.experimental.componentIslands) {
-    keepCachedIslandQuery(nitroConfig, !nuxt.options.router.options.sensitive)
+    keepCachedIslandQuery(nitroConfig, !nuxt.options.router.options.sensitive, nuxt.options.app.islandRoutePrefix)
   }
   if (nuxt4Host && legacy.config) {
     keepCachedQuery(nitroConfig)
@@ -1020,7 +1020,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   }
   if (!nuxt.options.experimental.nitroViteEnvironment) {
     nitro.options.handlers.unshift({
-      route: '/__nuxt_error',
+      route: nuxt.options.app.errorRoute || '/__nuxt_error',
       lazy: true,
       handler: resolve(distDir, 'runtime/handlers/renderer'),
     })
@@ -1066,7 +1066,8 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         nitro.options.errorHandler = resolve(distDir, 'runtime/handlers/error')
         return
       }
-      const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === '/__nuxt_error')
+      const errorRoute = nuxt.options.app.errorRoute || '/__nuxt_error'
+      const nuxtErrorHandler = nitro.options.handlers.findIndex(h => h.route === errorRoute)
       if (nuxtErrorHandler >= 0) {
         nitro.options.handlers.splice(nuxtErrorHandler, 1)
       }

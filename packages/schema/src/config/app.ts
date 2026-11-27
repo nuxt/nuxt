@@ -6,6 +6,30 @@ import { schemaDiagnostics } from '../diagnostics.ts'
 import type { AppHeadMetaObject } from '../types/head.ts'
 import type { NuxtAppConfig, ViewTransitionOptions } from '../types/config.ts'
 
+function resolveDynamic (val: unknown): unknown {
+  return typeof val === 'function' ? (val as () => unknown)() : val
+}
+
+function encodeCanonicalPathname (val: string): string {
+  try {
+    return new URL('./' + val.replace(/^\/+/, ''), 'http://localhost/').pathname
+  } catch {
+    return val
+  }
+}
+
+function normalizeRoutePrefix (val: string): string {
+  return encodeCanonicalPathname(val.replace(/^\/?/, '/').replace(/\/?$/, '/'))
+}
+
+function normalizeRoutePath (val: string): string {
+  return encodeCanonicalPathname(val.replace(/^\/?/, '/').replace(/\/+$/, '') || '/')
+}
+
+function normalizePathSegment (val: string): string {
+  return val.replace(/^\/+|\/+$/g, '')
+}
+
 export default defineResolvers({
   vue: {
     transformAssetUrls: {
@@ -117,7 +141,11 @@ export default defineResolvers({
     },
     keepalive: false,
     rootId: {
-      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : '__nuxt'),
+      /** @type {string | false | (() => string | false)} */
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        return resolved === false ? false : (resolved && typeof resolved === 'string' ? resolved : '__nuxt')
+      },
     },
     rootTag: {
       $resolve: val => val && typeof val === 'string' ? val : 'div',
@@ -135,7 +163,11 @@ export default defineResolvers({
       $resolve: val => val && typeof val === 'string' ? val : 'div',
     },
     teleportId: {
-      $resolve: val => val === false ? false : (val && typeof val === 'string' ? val : 'teleports'),
+      /** @type {string | false | (() => string | false)} */
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        return resolved === false ? false : (resolved && typeof resolved === 'string' ? resolved : 'teleports')
+      },
     },
     teleportAttrs: {
       $resolve: async (val, get) => {
@@ -150,7 +182,198 @@ export default defineResolvers({
       $resolve: val => val && typeof val === 'string' ? val : 'div',
     },
     spaLoaderAttrs: {
-      id: '__nuxt-loader',
+      $resolve: (val) => {
+        const resolved = val && typeof val === 'object' ? val as Record<string, unknown> : {}
+        const id = 'id' in resolved
+          ? (resolved.id === false ? undefined : resolved.id)
+          : '__nuxt-loader'
+        return {
+          ...resolved,
+          id,
+        }
+      },
+    },
+    /**
+     * `id` attribute of the inline hydration payload `<script>` tag, or `false` to omit it.
+     * Accepts a string, `false`, or a generator function evaluated once per build.
+     * @type {string | false | (() => string | false)}
+     */
+    payloadId: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false) { return false }
+        return typeof resolved === 'string' && resolved ? resolved : '__NUXT_DATA__'
+      },
+    },
+    /**
+     * Attribute name used on the payload `<script>` tag to store `appId` (defaults to `'data-nuxt-data'`),
+     * or `false` to omit the attribute when `payloadId` is set.
+     * @type {string | false | (() => string | false)}
+     */
+    payloadDataAttr: {
+      $resolve: async (val, get) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false) {
+          const isMultiApp = Boolean(await get('future').then(f => (f as { multiApp?: boolean } | undefined)?.multiApp))
+          return (isMultiApp || (await get('app.payloadId')) === false) ? 'data-app-payload' : false
+        }
+        return typeof resolved === 'string' && resolved ? resolved : 'data-nuxt-data'
+      },
+    },
+    /**
+     * Attribute name used on the payload `<script>` tag to mark SSR mode (defaults to `'data-ssr'`),
+     * or `false` to omit it and read SSR state from the payload/global instead.
+     * @type {string | false | (() => string | false)}
+     */
+    ssrAttr: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false) { return false }
+        return typeof resolved === 'string' && resolved ? resolved : 'data-ssr'
+      },
+    },
+    /**
+     * Name of the `window` global used to pass initial config (defaults to `'__NUXT__'`),
+     * or `false` to emit no `window` global and fold config into the payload script instead.
+     * @type {string | false | (() => string | false)}
+     */
+    globalName: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false) { return false }
+        return typeof resolved === 'string' && resolved ? resolved : '__NUXT__'
+      },
+    },
+    /**
+     * Filename used for extracted route payloads (defaults to `'_payload.json'`).
+     * @type {string | (() => string)}
+     */
+    payloadFileName: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        return typeof resolved === 'string' && resolved ? resolved.replace(/^\/+/, '') : '_payload.json'
+      },
+    },
+    /**
+     * URL prefix used for server component island requests (defaults to `'/__nuxt_island/'`).
+     * @type {string | (() => string)}
+     */
+    islandRoutePrefix: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        return typeof resolved === 'string' && resolved ? normalizeRoutePrefix(resolved) : '/__nuxt_island/'
+      },
+    },
+    /**
+     * Internal route path used to render SSR error pages (defaults to `'/__nuxt_error'`).
+     * @type {string | (() => string)}
+     */
+    errorRoute: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        return typeof resolved === 'string' && resolved ? normalizeRoutePath(resolved) : '/__nuxt_error'
+      },
+    },
+    /**
+     * Query parameter name carrying the serialized error payload to `errorRoute` (defaults to `'__nuxt_error_payload'`).
+     * @type {string | (() => string)}
+     */
+    errorQueryParam: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        return typeof resolved === 'string' && resolved ? resolved : '__nuxt_error_payload'
+      },
+    },
+    /**
+     * Attribute name on the inert `<template>` holding deferred prefetch links (defaults to `'data-nuxt-prefetch'`).
+     * @type {string | (() => string)}
+     */
+    prefetchAttr: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        return typeof resolved === 'string' && resolved ? resolved : 'data-nuxt-prefetch'
+      },
+    },
+    /**
+     * Global function name attached to `window` (defaults to `'useNuxtApp'`), or `false` to avoid exposing it globally.
+     * @type {string | false | (() => string | false)}
+     */
+    exposeGlobal: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false) { return false }
+        return typeof resolved === 'string' && resolved ? resolved : 'useNuxtApp'
+      },
+    },
+    /**
+     * Whether to expose the Nuxt framework version on `nuxtApp.versions.nuxt` (defaults to `true`).
+     */
+    exposeVersion: booleanOr(true),
+    /**
+     * Directory inside `buildAssetsDir` holding app build manifests (defaults to `'builds'`).
+     * @type {string | (() => string)}
+     */
+    manifestDir: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        const normalized = typeof resolved === 'string' ? normalizePathSegment(resolved) : ''
+        return normalized || 'builds'
+      },
+    },
+    /**
+     * Subdirectory inside `manifestDir` holding per-build manifest files (defaults to `'meta'`).
+     * @type {string | (() => string)}
+     */
+    manifestMetaDir: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        const normalized = typeof resolved === 'string' ? normalizePathSegment(resolved) : ''
+        return normalized || 'meta'
+      },
+    },
+    /**
+     * Filename inside `manifestDir` holding the latest build metadata (defaults to `'latest.json'`).
+     * @type {string | (() => string)}
+     */
+    manifestLatestFile: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        const normalized = typeof resolved === 'string' ? resolved.replace(/^\/+/, '') : ''
+        return normalized || 'latest.json'
+      },
+    },
+    /**
+     * CSS class applied to `<NuxtLoadingIndicator>` (defaults to `'nuxt-loading-indicator'`), or `false` to omit it.
+     * @type {string | false | (() => string | false)}
+     */
+    loadingIndicatorClass: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false || resolved === '') { return false }
+        return typeof resolved === 'string' ? resolved : 'nuxt-loading-indicator'
+      },
+    },
+    /**
+     * CSS class applied to `<NuxtAnnouncer>` (defaults to `'nuxt-announcer'`), or `false` to omit it.
+     * @type {string | false | (() => string | false)}
+     */
+    announcerClass: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false || resolved === '') { return false }
+        return typeof resolved === 'string' ? resolved : 'nuxt-announcer'
+      },
+    },
+    /**
+     * CSS class applied to `<NuxtRouteAnnouncer>` (defaults to `'nuxt-route-announcer'`), or `false` to omit it.
+     * @type {string | false | (() => string | false)}
+     */
+    routeAnnouncerClass: {
+      $resolve: (val) => {
+        const resolved = resolveDynamic(val)
+        if (resolved === false || resolved === '') { return false }
+        return typeof resolved === 'string' ? resolved : 'nuxt-route-announcer'
+      },
     },
   },
   spaLoadingTemplate: {

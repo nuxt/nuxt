@@ -5,6 +5,7 @@ import { requestIdleCallback } from '../compat/idle-callback'
 import { canPrefetch } from '../internal/prefetch-util'
 
 import { buildAssetsURL } from '#internal/nuxt/paths'
+import { appPrefetchSelector } from '#build/nuxt.config.mjs'
 
 const MIN_SLICE_MS = 4
 const TIMEOUT_MS = 2000
@@ -15,7 +16,7 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
     onNuxtReady(() => {
       if (!canPrefetch()) { return }
       const assetsURL = new URL(buildAssetsURL('/'), document.baseURI).href
-      const links = document.head.querySelector<HTMLTemplateElement>('template[data-nuxt-prefetch]')?.content.querySelectorAll<HTMLLinkElement>('link[rel=prefetch][href]') ?? []
+      const links = document.head.querySelector<HTMLTemplateElement>(appPrefetchSelector)?.content.querySelectorAll<HTMLLinkElement>('link[rel=prefetch][href]') ?? []
       let index = 0
 
       const activate = (deadline?: IdleDeadline) => {

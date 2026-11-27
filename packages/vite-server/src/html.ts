@@ -76,7 +76,15 @@ function renderPayload (nuxt: Nuxt): string {
       app: nuxt.options.runtimeConfig.app,
     },
   }
-  return `<script>window.__NUXT__=${JSON.stringify(payload).replace(/</g, '\\u003C')}</script>`
+  const serialized = JSON.stringify(payload).replace(/</g, '\\u003C')
+  const globalName = nuxt.options.app.globalName
+  if (globalName === false) {
+    return `<script>window[Symbol.for(${JSON.stringify(nuxt.options.app.payloadId || nuxt.options.appId)})]=${serialized}</script>`
+  }
+  const target = !globalName || globalName === '__NUXT__'
+    ? 'window.__NUXT__'
+    : `window[${JSON.stringify(globalName)}]`
+  return `<script>${target}=${serialized}</script>`
 }
 
 /**

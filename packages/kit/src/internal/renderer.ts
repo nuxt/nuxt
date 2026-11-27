@@ -68,6 +68,9 @@ export type RendererConfigName =
   | 'NUXT_SSR_STREAMING'
   | 'NUXT_SSR_STREAMING_BOT_RE'
   | 'NUXT_DEFER_PREFETCH_HINTS'
+  | 'NUXT_POWERED_BY'
+  | 'NUXT_PAYLOAD_OBFUSCATION_KEY'
+  | 'NUXT_PAYLOAD_SCRIPT_TYPE'
   | 'appHead'
   | 'appRootTag'
   | 'appRootAttrs'
@@ -75,6 +78,15 @@ export type RendererConfigName =
   | 'appTeleportAttrs'
   | 'appSpaLoaderTag'
   | 'appSpaLoaderAttrs'
+  | 'appPayloadId'
+  | 'appPayloadDataAttr'
+  | 'appSsrAttr'
+  | 'appGlobalName'
+  | 'appPayloadFileName'
+  | 'appIslandRoutePrefix'
+  | 'appErrorRoute'
+  | 'appErrorQueryParam'
+  | 'appPrefetchAttr'
   | 'spaLoadingTemplateOutside'
   | 'spaTemplate'
   | 'appId'
@@ -137,6 +149,21 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_SSR_STREAMING: String(streamingEnabled),
     NUXT_SSR_STREAMING_BOT_RE: streamingEnabled && streaming.botRegex instanceof RegExp ? String(streaming.botRegex) : '/^$/',
     NUXT_DEFER_PREFETCH_HINTS: String(!!nuxt.options.experimental.deferPrefetchHints),
+    NUXT_POWERED_BY: JSON.stringify(nuxt.options.features.poweredBy === false || nuxt.options.features.poweredBy === ''
+      ? false
+      : typeof nuxt.options.features.poweredBy === 'string'
+        ? nuxt.options.features.poweredBy
+        : 'Nuxt'),
+    NUXT_PAYLOAD_OBFUSCATION_KEY: JSON.stringify(
+      nuxt.options.experimental.payloadObfuscation && typeof nuxt.options.experimental.payloadObfuscation === 'object'
+        ? nuxt.options.experimental.payloadObfuscation.key
+        : false,
+    ),
+    NUXT_PAYLOAD_SCRIPT_TYPE: JSON.stringify(
+      nuxt.options.experimental.payloadObfuscation && typeof nuxt.options.experimental.payloadObfuscation === 'object'
+        ? nuxt.options.experimental.payloadObfuscation.scriptType || 'text/plain'
+        : 'application/json',
+    ),
     appHead: JSON.stringify(app.head),
     appRootTag: JSON.stringify(app.rootTag),
     appRootAttrs: JSON.stringify(app.rootAttrs),
@@ -144,6 +171,15 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     appTeleportAttrs: JSON.stringify(app.teleportAttrs),
     appSpaLoaderTag: JSON.stringify(app.spaLoaderTag),
     appSpaLoaderAttrs: JSON.stringify(app.spaLoaderAttrs),
+    appPayloadId: JSON.stringify(app.payloadId ?? '__NUXT_DATA__'),
+    appPayloadDataAttr: JSON.stringify(app.payloadDataAttr === undefined ? 'data-nuxt-data' : app.payloadDataAttr),
+    appSsrAttr: JSON.stringify(app.ssrAttr === undefined ? 'data-ssr' : app.ssrAttr),
+    appGlobalName: JSON.stringify(app.globalName === undefined ? '__NUXT__' : app.globalName),
+    appPayloadFileName: JSON.stringify(app.payloadFileName ?? '_payload.json'),
+    appIslandRoutePrefix: JSON.stringify(app.islandRoutePrefix ?? '/__nuxt_island/'),
+    appErrorRoute: JSON.stringify(app.errorRoute ?? '/__nuxt_error'),
+    appErrorQueryParam: JSON.stringify(app.errorQueryParam ?? '__nuxt_error_payload'),
+    appPrefetchAttr: JSON.stringify(app.prefetchAttr ?? 'data-nuxt-prefetch'),
     spaLoadingTemplateOutside: String(nuxt.options.experimental.spaLoadingTemplateLocation === 'body'),
     spaTemplate: '""',
     appId: JSON.stringify(nuxt.options.appId),

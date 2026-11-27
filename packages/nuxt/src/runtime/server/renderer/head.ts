@@ -4,7 +4,7 @@ import { propsToString } from '@unhead/vue/server'
 import type { RendererContext } from 'vue-bundle-renderer/runtime'
 import type { Link, Script } from '@unhead/vue/types'
 import type { NuxtSSRContext } from '#app/types'
-import { NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_PAGE_PATTERNS, NUXT_VIEW_TRANSITIONS } from 'nuxt/internal/renderer-config'
+import { NUXT_HAS_NO_SCRIPTS_ROUTES, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PATTERNS, NUXT_PAGE_PATTERNS, NUXT_VIEW_TRANSITIONS, appPrefetchAttr } from 'nuxt/internal/renderer-config'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
 import { renderPayloadJsonScript, splitPayload } from './payload'
@@ -150,5 +150,5 @@ export function renderDeferredPrefetchHints (links: Link[]): string {
   for (const link of links) {
     html += `<link${propsToString('crossorigin' in link && link.crossorigin === '' ? { ...link, crossorigin: true } : link)}>`
   }
-  return html && `<template data-nuxt-prefetch>${html}</template>`
+  return html && `<template ${appPrefetchAttr}>${html}</template>`
 }

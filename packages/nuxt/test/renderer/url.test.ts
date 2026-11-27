@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { parseRequestPath, payloadRequestToRoute, routeToPayloadURL } from '../../src/runtime/server/renderer/url.ts'
+import { isErrorRoutePath, parseRequestPath, payloadRequestToRoute, routeToPayloadURL } from '../../src/runtime/server/renderer/url.ts'
 
 describe('payload request paths', () => {
   it.each([
@@ -35,5 +35,12 @@ describe('payload request paths', () => {
     const slashes = '/'.repeat(200_000)
     expect(routeToPayloadURL('/', `/foo${slashes}x`, 'id')).toBe(`/foo${slashes}x/_payload.json?_b=id`)
     expect(routeToPayloadURL(`/base${slashes}x`, '/foo', 'id')).toBe(`/base${slashes}x/foo/_payload.json?_b=id`)
+  })
+
+  it('requires a path boundary when matching errorRoute', () => {
+    expect(isErrorRoutePath('/error', '/error')).toBe(true)
+    expect(isErrorRoutePath('/error/sub', '/error')).toBe(true)
+    expect(isErrorRoutePath('/errors', '/error')).toBe(false)
+    expect(isErrorRoutePath('/other', '/')).toBe(false)
   })
 })

@@ -12,6 +12,7 @@ import type { NuxtRendererOptions, RendererEvent, RendererHooks, RendererRouteRu
 import '../../context'
 
 import { NUXT_SHARED_DATA } from '#internal/nuxt/nitro-config.mjs'
+import { appErrorRoute } from 'nuxt/internal/renderer-config'
 import { buildAssetsURL, publicAssetsURL } from '#internal/nuxt/paths'
 import { withRouteRuleDefaults } from '#internal/nuxt/host'
 import { getRouteRules } from '../route-rules'
@@ -94,7 +95,7 @@ export const rendererOptions: NuxtRendererOptions = {
           // a `useFetch`/`$fetch` against the URL currently rendering deadlocks the
           // build: https://github.com/nuxt/nuxt/issues/33871
           if (stack?.includes(renderingURL)) {
-            const chain = [...stack, renderingURL].filter(url => !url.startsWith('/__nuxt_error')).map(url => `\`${url}\``).join(' -> ')
+            const chain = [...stack, renderingURL].filter(url => !url.startsWith(appErrorRoute || '/__nuxt_error')).map(url => `\`${url}\``).join(' -> ')
             prerenderDiagnostics.NUXT_E8018({ url: renderingURL, chain })
             return Promise.resolve(new FastResponse(null, { status: 508, statusText: 'Loop Detected' }))
           }

@@ -12,6 +12,7 @@ import { mergeIslandHead } from '../utils/island-head'
 import type { NuxtIslandContext, NuxtIslandResponse } from '#app/types'
 import { traceAsync } from '#app/internal/tracing'
 import { runtimeCompiler, tracingChannelNuxt } from '#internal/nuxt.config.mjs'
+import { NUXT_POWERED_BY, appIslandRoutePrefix } from 'nuxt/internal/renderer-config'
 import { serverDiagnostics } from '../diagnostics'
 import { prerenderDiagnostics } from 'nuxt/internal/renderer/diagnostics'
 import { createSSRContext } from 'nuxt/internal/renderer/app'
@@ -33,7 +34,14 @@ export const islandCache: Storage<NuxtIslandResponse> | null = import.meta.prere
 export const islandPropCache: Storage<string> | null = import.meta.prerender ? useKV<string>('internal:nuxt:prerender:island-props') : null
 
 const ISLAND_SUFFIX_RE = /\.json(?:\?.*)?$/
-const ISLAND_PATH_PREFIX = '/__nuxt_island/'
+const ISLAND_PATH_PREFIX = (() => {
+  const raw = appIslandRoutePrefix || '/__nuxt_island/'
+  try {
+    return new URL('./' + raw.replace(/^\/+/, ''), 'http://localhost/').pathname
+  } catch {
+    return raw
+  }
+})()
 
 /** A response produced by the render itself (redirect, abort, ...), bound to the request that made it. */
 interface RawIslandResponse { raw: Response }
@@ -52,7 +60,9 @@ export default {
     const event = createEvent(request)
     try {
       event.res.headers.set('content-type', 'application/json;charset=utf-8')
-      event.res.headers.set('x-powered-by', 'Nuxt')
+      if (NUXT_POWERED_BY) {
+        event.res.headers.set('x-powered-by', NUXT_POWERED_BY)
+      }
 
       if (!import.meta.prerender) {
         return toResponse(event, await renderIsland(event))

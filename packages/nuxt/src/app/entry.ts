@@ -9,12 +9,14 @@ import type { CreateOptions, NuxtSSRContext } from './nuxt'
 
 import { createErrorFromThrown } from './composables/error'
 import { appDiagnostics } from './diagnostics/core'
+import { findPayloadElement, readGlobalPayload } from './internal/payload-access'
+import { readInlineBootMeta } from './internal/payload-codec'
 import { waitForPaint, yieldToMain } from './internal/yield'
 
 import '#build/css'
 import plugins from '#build/plugins'
 import RootComponent from '#build/root-component.mjs'
-import { appId, appSpaLoaderAttrs, multiApp, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
+import { appSpaLoaderAttrs, appSsrAttr, payloadObfuscationKey, spaLoadingTemplateOutside, vueAppRootContainer } from '#build/nuxt.config.mjs'
 
 export type Entry = (ssrContext?: NuxtSSRContext) => Promise<App<Element>>
 
@@ -62,10 +64,15 @@ if (import.meta.client) {
   entry = async function initApp () {
     if (vueAppPromise) { return vueAppPromise }
 
-    const isSSR = Boolean(
-      (multiApp ? window.__NUXT__?.[appId] : window.__NUXT__)?.serverRendered ??
-      (multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__'))?.dataset.ssr === 'true',
+    const globalPayload = readGlobalPayload()
+    const payloadEl = findPayloadElement()
+    let isSSR = Boolean(
+      globalPayload?.serverRendered ??
+      (appSsrAttr ? payloadEl?.getAttribute(appSsrAttr) === 'true' : undefined),
     )
+    if (!appSsrAttr && globalPayload?.serverRendered === undefined && payloadEl?.textContent) {
+      isSSR = Boolean(readInlineBootMeta(payloadEl.textContent, payloadObfuscationKey)?.serverRendered)
+    }
     if (isSSR) {
       await waitForPaint()
     }

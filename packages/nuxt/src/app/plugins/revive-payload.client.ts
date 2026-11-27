@@ -6,7 +6,7 @@ import { defineNuxtPlugin, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { usePrefetchScheduler } from '../internal/prefetch-scheduler'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 
-import { componentIslands } from '#build/nuxt.config.mjs'
+import { appGlobalName, appId, appIslandRoutePrefix, appPayloadId, componentIslands } from '#build/nuxt.config.mjs'
 
 function parseRevivedData (data: string) {
   try {
@@ -34,7 +34,7 @@ if (componentIslands) {
   revivers.push(['Island', ({ key, params, result }: any) => {
     const nuxtApp = useNuxtApp()
     if (!nuxtApp.isHydrating && !nuxtApp.payload.data[key]) {
-      const url = withQuery(joinURL(useRuntimeConfig().app.baseURL ?? '', `/__nuxt_island/${key}.json`), params ?? {})
+      const url = withQuery(joinURL(useRuntimeConfig().app.baseURL ?? '', `${appIslandRoutePrefix}${key}.json`), params ?? {})
       // an island-heavy payload has one of these per island, and each is a server render
       // rather than a static asset
       const promise = new Promise((resolve, reject) => {
@@ -82,7 +82,11 @@ const plugin: Plugin & ObjectPlugin = defineNuxtPlugin({
       definePayloadReviver(reviver, fn)
     }
     Object.assign(nuxtApp.payload, await nuxtApp.runWithContext(getNuxtClientPayload))
-    delete window.__NUXT__
+    if (appGlobalName) {
+      delete (window as any)[appGlobalName]
+    } else {
+      delete (window as any)[Symbol.for(appPayloadId || appId)]
+    }
   },
 })
 

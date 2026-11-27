@@ -17,7 +17,7 @@ import { createInlinedCSSFilter } from './inlined-css'
 import { throwIfUnmatchedPagePath, toPageMatcherPath } from './early-404'
 import { replaceIslandTeleports } from './islands'
 import { warnNoScriptsClientReliance } from './no-scripts'
-import { PAYLOAD_FILENAME, payloadRequestToRoute, routeToPayloadURL } from './url'
+import { ENCODED_PAYLOAD_FILENAME, isErrorRoutePath, payloadRequestToRoute, routeToPayloadURL, toEncodedPathname } from './url'
 import { addPrerenderRoutes, appEvent, getRequestState } from './runtime'
 import { createRendererInstance } from './instance'
 import type { NuxtRendererInstance } from './instance'
@@ -27,14 +27,16 @@ import { normalizeChunks, renderAppTeleports, renderDevBadge, renderHTMLDocument
 import { extractCspNonce } from './csp-nonce'
 import { inlinesStyles, isDevInlineStyle, pushEntryImportMap, pushEntryScripts, pushNoScriptsHints, pushPayloadPreload, pushPayloadScript, renderDeferredPrefetchHints } from './head'
 import { renderStreamedResponse } from './stream'
-import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appComponentHead, appHead, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
+import { NUXT_DEFER_PREFETCH_HINTS, NUXT_EARLY_404, NUXT_EARLY_HINTS, NUXT_INLINE_ERROR_RENDERING, NUXT_INLINE_STYLES, NUXT_NO_SCRIPTS, NUXT_NO_SCRIPTS_PROD, NUXT_PAYLOAD_EXTRACTION, NUXT_PAYLOAD_INLINE, NUXT_POWERED_BY, NUXT_PRERENDER_NO_SSR_ROUTES, NUXT_RUNTIME_PAYLOAD_EXTRACTION, NUXT_SPA_PAGE_MATCHER, NUXT_SSR_STREAMING, NUXT_SSR_STREAMING_BOT_RE, PARSE_ERROR_DATA, appComponentHead, appErrorRoute, appHead, appIslandRoutePrefix, componentIslands, componentIslandsActive, renderSSRHeadOptions, tracingChannelNuxt } from 'nuxt/internal/renderer-config'
 import entryIds from 'nuxt/internal/entry-ids'
 import { entryFileName } from 'nuxt/internal/entry-chunk'
 
 export type { NuxtRendererOptions, RendererEvent, RendererHooks, RendererRouteRules, CachedResponse, PayloadCache, NuxtRequestState } from './runtime'
 export { appEvent } from './runtime'
 
-const PAYLOAD_URL_RE = /^[^?]*\/_payload\.json(?:\?.*)?$/
+const PAYLOAD_URL_RE = new RegExp(`^[^?]*\\/${ENCODED_PAYLOAD_FILENAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\?.*)?$`)
+const ISLAND_PREFIX = toEncodedPathname(appIslandRoutePrefix || '/__nuxt_island/')
+const ERROR_ROUTE = toEncodedPathname(appErrorRoute || '/__nuxt_error')
 
 /**
  * Create a Nuxt SSR renderer, returning a web-standard handler for the requests a Nuxt
@@ -56,11 +58,11 @@ export function createNuxtRenderer (optionsOrInstance: NuxtRendererOptions | Nux
 function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<Response> {
   const runtime = instance.options
 
-  if (componentIslands && runtime.renderIsland && event.url.pathname.startsWith('/__nuxt_island/')) {
+  if (componentIslands && runtime.renderIsland && event.url.pathname.startsWith(ISLAND_PREFIX)) {
     return Promise.resolve(runtime.renderIsland(event))
   }
 
-  const isErrorRoute = event.url.pathname.startsWith('/__nuxt_error')
+  const isErrorRoute = isErrorRoutePath(event.url.pathname, ERROR_ROUTE)
 
   // a render the runtime re-entered to build *its* error page keeps throwing back to it, as does
   // a payload render
@@ -73,7 +75,7 @@ function fetch (instance: NuxtRendererInstance, event: RendererEvent): Promise<R
   if (isErrorRoute && !getRequestState(event)?.['~rendering-error']) {
     const error = runtime.createError({
       status: 404,
-      statusText: 'Page Not Found: /__nuxt_error',
+      statusText: `Page Not Found: ${appErrorRoute}`,
     })
     return inlineErrors ? renderErrorPage(error) : Promise.reject(error)
   }
@@ -259,7 +261,7 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
 
   if (payloadExtraction && import.meta.prerender) {
     // the payload for this route is prerendered alongside it
-    addPrerenderRoutes(event, joinURL(ssrContext.url.replace(/\?.*$/, ''), PAYLOAD_FILENAME))
+    addPrerenderRoutes(event, joinURL(ssrContext.url.replace(/\?.*$/, ''), ENCODED_PAYLOAD_FILENAME))
     // Use same ssr context to generate payload for this route
     await runtime.prerender!.payloadCache.setItem((ssrContext.url === '/' ? '/' : ssrContext.url.replace(/\/$/, '')) + '.json', renderPayloadResponse(ssrContext, event))
   }
@@ -410,7 +412,9 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   if (renderDocumentResult instanceof Promise) { await renderDocumentResult }
 
   event.res.headers.set('content-type', 'text/html;charset=utf-8')
-  event.res.headers.set('x-powered-by', 'Nuxt')
+  if (NUXT_POWERED_BY) {
+    event.res.headers.set('x-powered-by', NUXT_POWERED_BY)
+  }
 
   // the app markup is sent as rendered chunks unless a listener changed it
   const chunks = ssrContext['~htmlChunks']

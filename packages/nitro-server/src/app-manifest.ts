@@ -1,6 +1,6 @@
 import { promises as fsp } from 'node:fs'
 import type { Nuxt } from '@nuxt/schema'
-import { join, resolve } from 'pathe'
+import { dirname, join, resolve } from 'pathe'
 import { joinURL } from 'ufo'
 import type { NitroConfig } from 'nitro/types'
 import { addTemplate } from '@nuxt/kit'
@@ -17,7 +17,10 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
   const buildId = nuxt.options.runtimeConfig.app.buildId ||= nuxt.options.buildId
   const buildTimestamp = Date.now()
 
-  const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, 'builds')
+  const manifestDir = nuxt.options.app.manifestDir || 'builds'
+  const manifestMetaDir = nuxt.options.app.manifestMetaDir || 'meta'
+  const manifestLatestFile = nuxt.options.app.manifestLatestFile || 'latest.json'
+  const manifestPrefix = joinURL(nuxt.options.app.buildAssetsDir, manifestDir)
   const tempDir = join(nuxt.options.buildDir, 'manifest')
 
   nitroConfig.prerender ||= {}
@@ -27,9 +30,9 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
   nitroConfig.publicAssets!.unshift(
     // build manifest
     {
-      dir: join(tempDir, 'meta'),
+      dir: join(tempDir, manifestMetaDir),
       maxAge: 31536000 /* 1 year */,
-      baseURL: joinURL(manifestPrefix, 'meta'),
+      baseURL: joinURL(manifestPrefix, manifestMetaDir),
     },
     // latest build
     {
@@ -39,7 +42,7 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
     },
   )
 
-  nuxt.options.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+  nuxt.options.alias['#app-manifest'] = join(tempDir, manifestMetaDir, `${buildId}.json`)
 
   // keeps the generated tsconfigs independent of the build id
   addTemplate({
@@ -56,8 +59,8 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
   // write stub manifest before build so external import of #app-manifest can be resolved
   if (!nuxt.options._prepare && (!nuxt.options.dev || nuxt.options.experimental.nitroViteEnvironment)) {
     nuxt.hook('build:before', async () => {
-      await fsp.mkdir(join(tempDir, 'meta'), { recursive: true })
-      await fsp.writeFile(join(tempDir, `meta/${buildId}.json`), JSON.stringify({
+      await fsp.mkdir(join(tempDir, manifestMetaDir), { recursive: true })
+      await fsp.writeFile(join(tempDir, manifestMetaDir, `${buildId}.json`), JSON.stringify({
         id: buildId,
         timestamp: buildTimestamp,
         prerendered: [],
@@ -67,7 +70,7 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
 
   nuxt.hook('nitro:config', (config) => {
     config.alias ||= {}
-    config.alias['#app-manifest'] = join(tempDir, `meta/${buildId}.json`)
+    config.alias['#app-manifest'] = join(tempDir, manifestMetaDir, `${buildId}.json`)
   })
 
   nuxt.hook('nitro:init', (nitro) => {
@@ -76,7 +79,7 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
       // Add pages prerendered but not covered by route rules
       const prerenderedRoutes = new Set<string>()
       if (nitro._prerenderedRoutes?.length) {
-        const payloadSuffix = '/_payload.json'
+        const payloadSuffix = `/${nuxt.options.app.payloadFileName || '_payload.json'}`
         const caseSensitiveRouteRules = !!nuxt.options.router.options.sensitive
         const routeRulesMatcher = createNormalizedRouteRulesRouter(nitro.routing.routeRules.routes, nitro.options.baseURL, !caseSensitiveRouteRules)
         for (const route of nitro._prerenderedRoutes) {
@@ -99,12 +102,14 @@ export function setupAppManifest (nuxt: Nuxt, nitroConfig: NitroConfig, options:
       const dir = target === 'public'
         ? join(nitro.options.output.publicDir, manifestPrefix)
         : tempDir
-      await fsp.mkdir(join(dir, 'meta'), { recursive: true })
-      await fsp.writeFile(join(dir, 'latest.json'), JSON.stringify({
+      const latestPath = join(dir, manifestLatestFile)
+      await fsp.mkdir(join(dir, manifestMetaDir), { recursive: true })
+      await fsp.mkdir(dirname(latestPath), { recursive: true })
+      await fsp.writeFile(latestPath, JSON.stringify({
         id: buildId,
         timestamp: buildTimestamp,
       }))
-      await fsp.writeFile(join(dir, `meta/${buildId}.json`), JSON.stringify(manifest))
+      await fsp.writeFile(join(dir, manifestMetaDir, `${buildId}.json`), JSON.stringify(manifest))
     }
     // seed the manifest so `#app-manifest` resolves during bundling,
     // and refresh it after prerendering with the actual prerendered routes.
@@ -143,13 +148,15 @@ export function setupPayloadRouteRules (nuxt: Nuxt): void {
   nuxt.hook('nitro:init', (nitro) => {
     nitro.hooks.hook('build:before', (nitro) => {
       const updatedRules: Record<string, Record<string, any>> = {}
-      const payloadSuffixes = (nuxt.options.experimental as { renderJsonPayloads?: boolean }).renderJsonPayloads === false ? ['/_payload.json', '/_payload.js'] : ['/_payload.json']
+      const payloadSuffix = `/${nuxt.options.app.payloadFileName || '_payload.json'}`
+      const payloadSuffixes = (nuxt.options.experimental as { renderJsonPayloads?: boolean }).renderJsonPayloads === false ? [payloadSuffix, '/_payload.js'] : [payloadSuffix]
+      const errorRoute = nuxt.options.app.errorRoute || '/__nuxt_error'
       const fold = !nuxt.options.router.options.sensitive
       const routes = mergeMethodRouteRulesRoutes(nitro.routing.routeRules.routes)
       const matcher = createNormalizedRouteRulesRouter(routes, '', fold)
       const resolveRules = (path: string) => defu({}, ...matcher.matchAll('', normalizeRouteRuleLookupPath(path, fold)).reverse()) as Record<string, any>
       for (const { route, data: value } of routes) {
-        if (route === '/__nuxt_error' || CATCH_ALL_RE.test(route) || payloadSuffixes.some(suffix => route.endsWith(suffix))) { continue }
+        if (route === errorRoute || CATCH_ALL_RE.test(route) || payloadSuffixes.some(suffix => route.endsWith(suffix))) { continue }
         const ssr = defu(value, resolveRules(route)).ssr !== false
         const keys = [...PAYLOAD_RULE_KEYS, ...nuxt.options.dev && ssr ? ['prerender'] : []].filter(key => key in value)
         const defaults: Record<string, any> = { ssr }

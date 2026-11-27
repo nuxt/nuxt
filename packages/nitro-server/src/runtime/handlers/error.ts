@@ -10,7 +10,7 @@ import { serverFetch } from 'nitro'
 import { appendVary, isJsonRequest } from 'nuxt/internal/renderer/error'
 import { NUXT_ERROR_SIGNATURE, errorPageQuery, toJSONErrorBody } from '#internal/nuxt/host'
 import type { SSRErrorInput } from '../host/nuxt4'
-import { NUXT_INLINE_ERROR_RENDERING } from 'nuxt/internal/renderer-config'
+import { NUXT_INLINE_ERROR_RENDERING, appErrorRoute } from 'nuxt/internal/renderer-config'
 import { withBaseURL } from '../utils/base'
 import { applyPrerenderHints } from '../utils/prerender'
 import { arrivalRequest } from '../utils/arrival-request'
@@ -128,7 +128,7 @@ async function renderError (...[_error, event, { defaultHandler }]: Parameters<N
 
   // HTML response (via SSR)
   const res = !isRenderingError && await serverFetch(
-    withQuery(withBaseURL('/__nuxt_error'), errorPageQuery(errorObject, errorCause)),
+    withQuery(withBaseURL(appErrorRoute || '/__nuxt_error'), errorPageQuery(errorObject, errorCause)),
     {
       headers: event.req.headers,
       redirect: 'manual',

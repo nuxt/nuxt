@@ -103,10 +103,41 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 // - vite config interface (#4772)
 // - rsbuild config interface
 
+type DynamicAppInput = {
+  rootId?: string | false | (() => string | false)
+  teleportId?: string | false | (() => string | false)
+  payloadId?: string | false | (() => string | false)
+  payloadDataAttr?: string | false | (() => string | false)
+  ssrAttr?: string | false | (() => string | false)
+  globalName?: string | false | (() => string | false)
+  payloadFileName?: string | (() => string)
+  islandRoutePrefix?: string | (() => string)
+  errorRoute?: string | (() => string)
+  errorQueryParam?: string | (() => string)
+  prefetchAttr?: string | (() => string)
+  exposeGlobal?: string | false | (() => string | false)
+  manifestDir?: string | (() => string)
+  manifestMetaDir?: string | (() => string)
+  manifestLatestFile?: string | (() => string)
+  loadingIndicatorClass?: string | false | (() => string | false)
+  announcerClass?: string | false | (() => string | false)
+  routeAnnouncerClass?: string | false | (() => string | false)
+}
+
+type PayloadObfuscationInput = boolean | {
+  enabled?: boolean
+  key?: string | (() => string)
+  scriptType?: string
+}
+
 /**
  * User configuration in `nuxt.config` file
  */
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'rsbuild' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'rsbuild' | 'runtimeConfig' | 'webpack' | 'nitro' | 'app' | 'experimental'>> {
+  app?: DeepPartial<Omit<ConfigSchema['app'], keyof DynamicAppInput>> & DynamicAppInput
+  experimental?: DeepPartial<Omit<ConfigSchema['experimental'], 'payloadObfuscation'>> & {
+    payloadObfuscation?: PayloadObfuscationInput
+  }
   components?: ConfigSchema['components']
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
   vite?: ConfigSchema['vite']

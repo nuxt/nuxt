@@ -400,12 +400,32 @@ export const clientConfigTemplate: NuxtTemplate = {
   dependsOn: [],
   getContents: ({ nuxt }) => {
     const appId = JSON.stringify(nuxt.options.appId)
+    const globalName = nuxt.options.app.globalName
+    const exposeGlobal = nuxt.options.app.exposeGlobal
+    const fallbackSlot = JSON.stringify(nuxt.options.app.payloadId || nuxt.options.appId)
+    const globalLookup = globalName === false
+      ? `window?.[Symbol.for(${fallbackSlot})]?.config || `
+      : !nuxt.options.future.multiApp
+          ? `window?.[${JSON.stringify(globalName)}]?.config || `
+          : `window?.[${JSON.stringify(globalName)}]?.[${appId}]?.config || `
+    if (exposeGlobal === false) {
+      return [
+        `import { tryUseNuxtApp } from '#app/nuxt'`,
+        'export const useRuntimeConfig = () => ',
+        `${globalLookup}tryUseNuxtApp(${nuxt.options.future.multiApp ? appId : ''})?.payload?.config || {}`,
+      ].join('\n')
+    }
+    const appFn = exposeGlobal === 'useNuxtApp' ? 'useNuxtApp' : `[${JSON.stringify(exposeGlobal)}]`
+    const appCall = exposeGlobal === 'useNuxtApp'
+      ? (!nuxt.options.future.multiApp
+          ? 'window?.useNuxtApp?.().payload?.config'
+          : `window?.useNuxtApp?.(${appId}).payload?.config`)
+      : (!nuxt.options.future.multiApp
+          ? `window?.${appFn}?.().payload?.config`
+          : `window?.${appFn}?.(${appId}).payload?.config`)
     return [
       'export const useRuntimeConfig = () => ',
-      (!nuxt.options.future.multiApp
-        ? 'window?.__NUXT__?.config || window?.useNuxtApp?.().payload?.config'
-        : `window?.__NUXT__?.[${appId}]?.config || window?.useNuxtApp?.(${appId}).payload?.config`)
-        || {},
+      `${globalLookup}${appCall} || {}`,
     ].join('\n')
   },
 }
@@ -693,6 +713,12 @@ function shouldEnableComponentIslands (nuxt: { options: NuxtOptions }, app: Nuxt
   )
 }
 
+function escapeCssIdent (value: string): string {
+  return value.replace(/^(\d|-\d)|[^\w\-\u0080-\uFFFF]/g, (ch, digitPrefix) =>
+    digitPrefix ? `${ch.startsWith('-') ? '-' : ''}\\${ch.codePointAt(ch.startsWith('-') ? 1 : 0)!.toString(16)} ` : `\\${ch}`,
+  )
+}
+
 export const nuxtConfigTemplate: NuxtTemplate = {
   filename: 'nuxt.config.mjs',
   // `payloadExtraction` below is derived from nitro route rules, and `defineRouteRules`
@@ -720,6 +746,9 @@ export const nuxtConfigTemplate: NuxtTemplate = {
     const payloadExtraction = !!ctx.nuxt.options.experimental.payloadExtraction && (isStatic || hasCachedRoutes || !!prerenderRoutes?.length || hasPrerenderRules)
     return [
       ...Object.entries(ctx.nuxt.options.app).map(([k, v]) => `export const ${camelCase('app-' + k)} = ${JSON.stringify(v)}`),
+      `export const appManifestMetaPath = ${JSON.stringify(`${ctx.nuxt.options.app.manifestDir}/${ctx.nuxt.options.app.manifestMetaDir}`)}`,
+      `export const appManifestLatestPath = ${JSON.stringify(`${ctx.nuxt.options.app.manifestDir}/${ctx.nuxt.options.app.manifestLatestFile}`)}`,
+      `export const appPrefetchSelector = ${JSON.stringify(`template[${escapeCssIdent(ctx.nuxt.options.app.prefetchAttr)}]`)}`,
       `export const componentIslands = ${componentIslands}`,
       `export const componentIslandsActive = ${componentIslandsActive}`,
       `export const payloadExtraction = ${payloadExtraction}`,
@@ -742,6 +771,7 @@ export const nuxtConfigTemplate: NuxtTemplate = {
       `export const appId = ${JSON.stringify(ctx.nuxt.options.appId)}`,
       `export const outdatedBuildInterval = ${ctx.nuxt.options.experimental.checkOutdatedBuildInterval}`,
       `export const multiApp = ${!!ctx.nuxt.options.future.multiApp}`,
+      `export const payloadObfuscationKey = ${JSON.stringify(ctx.nuxt.options.experimental.payloadObfuscation && typeof ctx.nuxt.options.experimental.payloadObfuscation === 'object' ? ctx.nuxt.options.experimental.payloadObfuscation.key : false)}`,
       `export const chunkErrorEvent = ${ctx.nuxt.options.experimental.emitRouteChunkError ? ctx.nuxt.options.builder === '@nuxt/vite-builder' ? '"vite:preloadError"' : '"nuxt:preloadError"' : 'false'}`,
       `export const crawlLinks = ${!!nitro?.options.prerender.crawlLinks}`,
       `export const staticRoutes = ${!!ctx.nuxt.options.experimental.staticRoutes}`,
@@ -850,8 +880,9 @@ export const routeRulesTemplate: NuxtTemplate = {
   getContents ({ nuxt }) {
     const allRoutes = resolveRouteRulesRoutes(nuxt).routes
     for (const { route } of allRoutes) { assertEncodingIndependentRouteRuleKey(route) }
+    const errorRoute = nuxt.options.app.errorRoute || '/__nuxt_error'
     const routes = allRoutes
-      .filter(({ route, data }) => route !== '/__nuxt_error' && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
+      .filter(({ route, data }) => route !== errorRoute && VALID_MANIFEST_KEYS.some(key => data[key] !== undefined))
     const hasRedirects = `export const hasRedirects = ${routes.some(({ data }) => !!data.redirect)}`
     if (!routes.length) {
       return [hasRedirects, `export default () => ({})`].join('\n')

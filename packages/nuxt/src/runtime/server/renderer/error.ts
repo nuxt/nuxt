@@ -1,11 +1,12 @@
 import type { NuxtPayload } from '#app/types'
+import { appErrorQueryParam } from 'nuxt/internal/renderer-config'
 
 /**
- * Query parameter carrying the JSON-encoded error to `/__nuxt_error`.
+ * Query parameter carrying the JSON-encoded error to the configured error route.
  *
  * @internal
  */
-export const SSR_ERROR_PARAM = '__nuxt_error_payload'
+export const SSR_ERROR_PARAM = appErrorQueryParam || '__nuxt_error_payload'
 
 /**
  * Mirror of `NUXT_ERROR_SIGNATURE` in `#app/composables/error`, redeclared so

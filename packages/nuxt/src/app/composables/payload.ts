@@ -10,7 +10,9 @@ import { useRoute } from './router'
 import { getAppManifest, getRouteRules } from './manifest'
 import { stateDiagnostics } from '../diagnostics/state'
 
-import { appId, appManifest, multiApp, payloadExtraction } from '#build/nuxt.config.mjs'
+import { appManifest, appPayloadFileName, payloadExtraction, payloadObfuscationKey } from '#build/nuxt.config.mjs'
+import { findPayloadElement, readGlobalPayload } from '../internal/payload-access'
+import { decodePayload } from '../internal/payload-codec'
 
 interface LoadPayloadOptions {
   fresh?: boolean
@@ -142,7 +144,7 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 // --- Internal ---
 
 const preloadedPayloads = new Map<string, Promise<void>>()
-const filename = '_payload.json'
+const filename = appPayloadFileName || '_payload.json'
 const payloadBuildIdParam = '_b'
 async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}, rules = getRouteRules({ path: _getRoutePath(url) })) {
   const u = new URL(url, 'http://localhost')
@@ -178,7 +180,14 @@ async function _importPayload (payloadURL: string, cache: RequestCache, signal?:
       return null
     }
     const text = await res.text()
-    return checkBuild ? await _parseCurrentBuildPayload(text) : await parsePayload(text)
+    try {
+      return checkBuild ? await _parseCurrentBuildPayload(text) : await parsePayload(text)
+    } catch (err) {
+      if (cache === 'default' && !signal?.aborted) {
+        return await _importPayload(payloadURL, 'no-cache', signal, promoted, checkBuild)
+      }
+      throw err
+    }
   } catch (err) {
     if (!signal?.aborted) {
       stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
@@ -187,9 +196,13 @@ async function _importPayload (payloadURL: string, cache: RequestCache, signal?:
   return null
 }
 
+function decodePayloadText (text: string): string {
+  return payloadObfuscationKey && text ? decodePayload(text, payloadObfuscationKey) : text
+}
+
 /** A payload from another build is returned as `{ buildId }`, as its types may have no reviver in this build. */
 async function _parseCurrentBuildPayload (text: string) {
-  const flat = JSON.parse(text)
+  const flat = JSON.parse(decodePayloadText(text))
   const index = Array.isArray(flat) ? flat[0]?.buildId : undefined
   const buildId = typeof index === 'number' ? flat[index] : undefined
   if (typeof buildId === 'string' && isOutdatedPayload({ buildId })) {
@@ -278,9 +291,10 @@ export async function getNuxtClientPayload (): Promise<NuxtPayload | Partial<Nux
     return payloadCache
   }
 
-  const el = multiApp ? document.querySelector(`[data-nuxt-data="${appId}"]`) as HTMLElement : document.getElementById('__NUXT_DATA__')
+  const el = findPayloadElement()
+  const globalPayload = readGlobalPayload()
   if (!el) {
-    return {} as Partial<NuxtPayload>
+    return globalPayload ? { ...globalPayload } : {} as Partial<NuxtPayload>
   }
 
   const inlineData = await parsePayload(el.textContent || '')
@@ -293,7 +307,7 @@ export async function getNuxtClientPayload (): Promise<NuxtPayload | Partial<Nux
   payloadCache = {
     ...inlineData,
     ...externalData,
-    ...(multiApp ? window.__NUXT__?.[appId] : window.__NUXT__),
+    ...globalPayload,
   }
 
   if (payloadCache!.config?.public) {
@@ -304,7 +318,7 @@ export async function getNuxtClientPayload (): Promise<NuxtPayload | Partial<Nux
 }
 
 export async function parsePayload (payload: string): Promise<any> {
-  return await parse(payload, useNuxtApp()._payloadRevivers)
+  return await parse(decodePayloadText(payload), useNuxtApp()._payloadRevivers)
 }
 
 /**

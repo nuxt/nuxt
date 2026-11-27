@@ -1,3 +1,5 @@
+import { appPayloadFileName } from 'nuxt/internal/renderer-config'
+
 /**
  * The fragment of a request URL, avoiding the lazy URL parse that reading `hash` triggers when
  * there is none. A fragment is never sent over the wire, so it can only appear on a URL the
@@ -7,7 +9,21 @@ export function urlHash (url: URL): string {
   return url.href.includes('#') ? url.hash : ''
 }
 
-export const PAYLOAD_FILENAME = '_payload.json'
+export function toEncodedPathname (path: string): string {
+  try {
+    return new URL('./' + path.replace(/^\/+/, ''), 'http://localhost/').pathname
+  } catch {
+    return path.startsWith('/') ? path : `/${path}`
+  }
+}
+
+/** Whether a request pathname matches `errorRoute` exactly or beneath a `/` boundary. */
+export function isErrorRoutePath (pathname: string, errorRoute: string): boolean {
+  return pathname === errorRoute || (errorRoute !== '/' && pathname.startsWith(`${errorRoute}/`))
+}
+
+export const PAYLOAD_FILENAME = appPayloadFileName || '_payload.json'
+export const ENCODED_PAYLOAD_FILENAME = toEncodedPathname(PAYLOAD_FILENAME).slice(1)
 export const PAYLOAD_BUILD_ID_PARAM = '_b'
 
 /** Parse a request path without treating a leading `//` as an authority. */
@@ -18,7 +34,7 @@ export function parseRequestPath (path: string): URL {
 /** The page route a `_payload.json` request renders, without the build id param. */
 export function payloadRequestToRoute (path: string): string {
   const payloadURL = parseRequestPath(path)
-  const url = payloadURL.pathname.slice(0, -`/${PAYLOAD_FILENAME}`.length) || '/'
+  const url = payloadURL.pathname.slice(0, -`/${ENCODED_PAYLOAD_FILENAME}`.length) || '/'
   payloadURL.searchParams.delete(PAYLOAD_BUILD_ID_PARAM)
   return url + payloadURL.search
 }
