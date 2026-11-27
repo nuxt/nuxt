@@ -5,11 +5,49 @@ import type { NuxtConfig } from 'nuxt/schema'
 import { join } from 'pathe'
 import { describe, expect, it, vi } from 'vitest'
 
-import { nitroMajor, runsOnceInMatrix } from './matrix'
+import { isNitroV3, nitroMajor, runsOnceInMatrix } from './matrix'
 
 const rootDir = fileURLToPath(new URL('./fixtures/spa', import.meta.url))
 
 describe.skipIf(!runsOnceInMatrix)('static output base URLs', () => {
+  it.skipIf(isNitroV3).each<[name: string, overrides: NuxtConfig, routes: string[], indexRoute: string]>([
+    ['root enabled', {}, ['/'], '/'],
+    ['both index routes configured', {}, ['/', '/index.html'], '/'],
+    ['root ignored', { nitro: { prerender: { ignore: [/^\/$/] } } }, ['/'], '/index.html'],
+    ['root ignored by function', { nitro: { prerender: { ignore: [(path: string) => path === '/'] } } }, ['/'], '/index.html'],
+    ['root disabled by route rule', { routeRules: { '/': { prerender: false } } }, ['/'], '/index.html'],
+  ])('renders index.html from a single route when %s', async (name, overrides, routes, indexRoute) => {
+    const cacheDir = join(rootDir, 'node_modules/.cache/nuxt', `static-index-${name.replaceAll(' ', '-')}`)
+    const indexRoutes: string[] = []
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        ...overrides,
+        buildDir: join(cacheDir, 'build'),
+        nitro: {
+          ...overrides.nitro,
+          static: true,
+          prerender: { ...overrides.nitro?.prerender, routes },
+          output: { dir: join(cacheDir, 'output') },
+        },
+        hooks: {
+          'nitro:build:before' (nitro) {
+            nitro.hooks.hook('prerender:generate', (route) => {
+              if (route.fileName === '/index.html') { indexRoutes.push(route.route) }
+            })
+          },
+        },
+      },
+    })
+    try {
+      await buildNuxt(nuxt)
+    } finally {
+      await nuxt.close()
+    }
+    expect(indexRoutes).toEqual([indexRoute])
+  }, 240_000)
+
   it.each<[name: string, baseURL: string, overrides: NuxtConfig]>([
     ['relative-spa', './', { nitro: { static: true } }],
     ['relative-spa-preset', './', { nitro: { preset: 'static' } }],
