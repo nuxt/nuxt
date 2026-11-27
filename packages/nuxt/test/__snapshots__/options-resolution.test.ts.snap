@@ -1,0 +1,1604 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`options resolution > resolves aliases, ignore, extensions and watch 1`] = `
+{
+  "changes": {
+    "alias.#custom": "/custom",
+    "extensions": [
+      ".mjs",
+      ".js",
+      ".cjs",
+      ".mts",
+      ".ts",
+      ".cts",
+      ".tsx",
+      ".jsx",
+      ".vue",
+      ".md",
+    ],
+    "ignore": [
+      "**/*.stories.{js,cts,mts,ts,jsx,tsx}",
+      "**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}",
+      "**/*.d.{cts,mts,ts}",
+      "**/*.d.vue.{cts,mts,ts}",
+      "**/.{pnpm-store,vercel,netlify,wrangler,output,git,cache,data,direnv}",
+      "/vendor",
+      "**/node-compile-cache",
+      "**/test-results",
+      "**/*.sock",
+      ".nuxt/analyze",
+      ".nuxt",
+      "**/_*.*",
+      "**/*.foo",
+    ],
+    "ignorePrefix": "_",
+    "watch": [
+      "a",
+      /b/,
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves allowed hosts 1`] = `
+{
+  "changes": {
+    "devServer.allowedHosts": [
+      "a.example.com",
+      "b.example.com",
+      "example.com",
+    ],
+    "devServer.host": "example.com",
+    "vite.server.allowedHosts": [
+      "b.example.com",
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves analyze enabled 1`] = `
+{
+  "changes": {
+    "build.analyze.enabled": true,
+    "webpack.analyze.enabled": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves base URL and assets dir 1`] = `
+{
+  "changes": {
+    "app.baseURL": "/base/",
+    "app.buildAssetsDir": "/assets/",
+    "app.cdnURL": "https://cdn.example.com",
+    "nitro.runtimeConfig.app.baseURL": "/base/",
+    "nitro.runtimeConfig.app.buildAssetsDir": "/assets/",
+    "nitro.runtimeConfig.app.cdnURL": "https://cdn.example.com",
+    "runtimeConfig.app.baseURL": "/base/",
+    "runtimeConfig.app.buildAssetsDir": "/assets/",
+    "runtimeConfig.app.cdnURL": "https://cdn.example.com",
+    "vite.build.assetsDir": "assets/",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves compatibility version 4 1`] = `
+{
+  "changes": {},
+  "diagnostics": [
+    "NUXT_B5029",
+  ],
+}
+`;
+
+exports[`options resolution > resolves component islands local 1`] = `
+{
+  "changes": {
+    "experimental.componentIslands": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves component islands local and remote 1`] = `
+{
+  "changes": {
+    "experimental.componentIslands": "<removed>",
+    "experimental.componentIslands.remoteIsland": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves components as array 1`] = `
+{
+  "changes": {
+    "components.dirs": [
+      "~/widgets",
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves components as object 1`] = `
+{
+  "changes": {
+    "components.global": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves components disabled 1`] = `
+{
+  "changes": {
+    "components.dirs": [],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves custom buildDir 1`] = `
+{
+  "changes": {
+    "alias.#build": "<tmp>/project/build/",
+    "alias.#internal/nuxt/paths": "<tmp>/project/build/paths.mjs",
+    "analyzeDir": "<tmp>/project/build/analyze",
+    "build.analyze.filename": "<tmp>/project/build/analyze/{name}.html",
+    "buildDir": "<tmp>/project/build",
+    "ignore": [
+      "**/*.stories.{js,cts,mts,ts,jsx,tsx}",
+      "**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}",
+      "**/*.d.{cts,mts,ts}",
+      "**/*.d.vue.{cts,mts,ts}",
+      "**/.{pnpm-store,vercel,netlify,wrangler,output,git,cache,data,direnv}",
+      "/vendor",
+      "**/node-compile-cache",
+      "**/test-results",
+      "**/*.sock",
+      "build/analyze",
+      "build",
+      "**/-*.*",
+    ],
+    "typesDir": "<tmp>/project/build",
+    "vite.server.fs.allow": [
+      "<tmp>/project/build",
+      "<tmp>/project/app",
+      "<tmp>/project",
+    ],
+    "webpack.analyze.filename": "<tmp>/project/build/analyze/{name}.html",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves custom builder object 1`] = `
+{
+  "changes": {
+    "builder": "<removed>",
+    "builder.bundle": "[Function bundle]",
+    "experimental.nitroViteEnvironment": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves custom serverDir and dirs 1`] = `
+{
+  "changes": {
+    "alias.#server": "<tmp>/project/api/",
+    "alias.#shared": "<tmp>/project/common/",
+    "dir.app": "<tmp>/project/app/client",
+    "dir.modules": "<tmp>/project/mods",
+    "dir.public": "<tmp>/project/static",
+    "dir.shared": "common",
+    "serverDir": "<tmp>/project/api",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves custom srcDir 1`] = `
+{
+  "changes": {
+    "alias.@": "<tmp>/project/src/",
+    "alias.~": "<tmp>/project/src/",
+    "dir.app": "<tmp>/project/src",
+    "srcDir": "<tmp>/project/src",
+    "vite.root": "<tmp>/project/src",
+    "vite.server.fs.allow": [
+      "<tmp>/project/.nuxt",
+      "<tmp>/project/src",
+      "<tmp>/project",
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves debug enabled 1`] = `
+{
+  "changes": {
+    "debug": "<removed>",
+    "debug.hooks.client": true,
+    "debug.hooks.server": true,
+    "debug.hydration": true,
+    "debug.modules": true,
+    "debug.nitro": true,
+    "debug.perf": true,
+    "debug.router": true,
+    "debug.templates": true,
+    "debug.watchers": true,
+    "experimental.debugModuleMutation": true,
+    "vite.define.__VUE_PROD_HYDRATION_MISMATCH_DETAILS__": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves debug object 1`] = `
+{
+  "changes": {
+    "debug": "<removed>",
+    "debug.templates": true,
+    "experimental.debugModuleMutation": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves defaults 1`] = `
+{
+  "diagnostics": [],
+  "options": {
+    "_build": false,
+    "_cli": false,
+    "_generate": false,
+    "_installedModules": [],
+    "_legacyGenerate": false,
+    "_majorVersion": 4,
+    "_modules": [],
+    "_nitroMajor": 3,
+    "_noScriptsPageSources": [],
+    "_nuxtConfigFiles": [],
+    "_prepare": false,
+    "_rendererPlugins": [],
+    "_requiredModules": {},
+    "_serverPlugins": [],
+    "_serverTemplates": {},
+    "_spaOnlyPageSources": [],
+    "_start": false,
+    "alias": {
+      "#build": "<tmp>/project/.nuxt/",
+      "#internal/nuxt/paths": "<tmp>/project/.nuxt/paths.mjs",
+      "#server": "<tmp>/project/server/",
+      "#shared": "<tmp>/project/shared/",
+      "@": "<tmp>/project/app/",
+      "@@": "<tmp>/project/",
+      "~": "<tmp>/project/app/",
+      "~~": "<tmp>/project/",
+    },
+    "analyzeDir": "<tmp>/project/.nuxt/analyze",
+    "app": {
+      "baseURL": "/",
+      "buildAssetsDir": "/_nuxt/",
+      "cdnURL": "",
+      "head": {
+        "link": [],
+        "meta": [
+          {
+            "content": "width=device-width, initial-scale=1",
+            "name": "viewport",
+          },
+          {
+            "charset": "utf-8",
+          },
+        ],
+        "noscript": [],
+        "script": [],
+        "style": [],
+      },
+      "keepalive": false,
+      "layoutTransition": false,
+      "pageTransition": false,
+      "rootAttrs": {
+        "id": "__nuxt",
+      },
+      "rootId": "__nuxt",
+      "rootTag": "div",
+      "spaLoaderAttrs": {
+        "id": "__nuxt-loader",
+      },
+      "spaLoaderTag": "div",
+      "teleportAttrs": {
+        "id": "teleports",
+      },
+      "teleportId": "teleports",
+      "teleportTag": "div",
+      "viewTransition": {
+        "enabled": false,
+      },
+    },
+    "appConfig": {
+      "nuxt": {},
+    },
+    "appDir": "",
+    "appId": "nuxt-app",
+    "build": {
+      "analyze": {
+        "filename": "<tmp>/project/.nuxt/analyze/{name}.html",
+        "projectRoot": "<tmp>/project",
+        "template": "treemap",
+      },
+      "templates": [],
+      "transpile": [],
+    },
+    "buildDir": "<tmp>/project/.nuxt",
+    "buildId": "<uuid>",
+    "builder": "@nuxt/vite-builder",
+    "components": {
+      "dirs": [
+        {
+          "global": true,
+          "path": "~/components/global",
+        },
+        "~/components",
+      ],
+    },
+    "css": [],
+    "debug": false,
+    "dev": false,
+    "devServer": {
+      "allowedHosts": [],
+      "cors": {
+        "origin": [
+          /\\^https\\?:\\\\/\\\\/\\(\\?:\\(\\?:\\[\\^:\\]\\+\\\\\\.\\)\\?localhost\\|127\\\\\\.0\\\\\\.0\\\\\\.1\\|\\\\\\[::1\\\\\\]\\)\\(\\?::\\\\d\\+\\)\\?\\$/,
+        ],
+      },
+      "errorChannel": "/__nuxt_dev__/error",
+      "https": false,
+      "loadingTemplate": "[Function template]",
+      "port": 3000,
+      "url": "http://localhost:3000",
+    },
+    "devServerHandlers": [],
+    "devtools": {},
+    "dir": {
+      "app": "<tmp>/project/app",
+      "assets": "assets",
+      "layouts": "layouts",
+      "middleware": "middleware",
+      "modules": "<tmp>/project/modules",
+      "pages": "pages",
+      "plugins": "plugins",
+      "public": "<tmp>/project/public",
+      "shared": "shared",
+    },
+    "envName": "production",
+    "esbuild": {
+      "options": {
+        "jsxFactory": "h",
+        "jsxFragment": "Fragment",
+        "target": "esnext",
+        "tsconfigRaw": {},
+      },
+    },
+    "experimental": {
+      "alwaysRunFetchOnKeyChange": false,
+      "appManifest": true,
+      "asyncCallHook": false,
+      "asyncContext": false,
+      "asyncEntry": false,
+      "browserDevtoolsTiming": false,
+      "buildCache": false,
+      "checkOutdatedBuildInterval": 3600000,
+      "chromeDevtoolsProjectSettings": true,
+      "clearBuildHooks": true,
+      "clientFallback": false,
+      "clientNodeCompat": false,
+      "clientNodePlaceholder": true,
+      "compileHints": true,
+      "compilerComponentResolution": true,
+      "componentIslands": "auto",
+      "cookieStore": true,
+      "crossOriginPrefetch": false,
+      "debugModuleMutation": false,
+      "decorators": false,
+      "defaults": {
+        "navigateTo": {
+          "noopener": true,
+        },
+        "nuxtLink": {
+          "componentName": "NuxtLink",
+          "prefetch": true,
+          "prefetchOn": {
+            "visibility": true,
+          },
+        },
+        "useAsyncData": {
+          "deep": false,
+        },
+        "useFetch": {},
+        "useState": {
+          "resetOnClear": true,
+        },
+      },
+      "deferPrefetchHints": true,
+      "early404": false,
+      "emitRouteChunkError": "automatic",
+      "enforceModuleCompatibility": false,
+      "entryImportMap": true,
+      "extraPageMetaExtractionKeys": [],
+      "extractAsyncDataHandlers": false,
+      "extractSerializablePageMeta": true,
+      "granularCachedData": true,
+      "headNext": true,
+      "inlineErrorRendering": true,
+      "inlineRouteRules": false,
+      "layoutChunk": true,
+      "lazyHydration": true,
+      "localLayerAliases": true,
+      "navigateToEarlyReturn": true,
+      "navigationRepaint": true,
+      "nitroAutoImports": false,
+      "nitroViteEnvironment": true,
+      "noVueServer": false,
+      "normalizeComponentNames": true,
+      "normalizePageNames": true,
+      "parallelBuild": true,
+      "parseErrorData": true,
+      "payloadExtraction": "client",
+      "pendingWhenIdle": false,
+      "prefetchPreloadTags": false,
+      "prerenderErrorPages": false,
+      "purgeCachedData": true,
+      "restoreState": false,
+      "runtimeBaseURL": false,
+      "scanPageMeta": "after-resolve",
+      "serverAppConfig": true,
+      "serverPathFallback": true,
+      "sharedPrerenderData": true,
+      "spaLoadingTemplateLocation": "body",
+      "ssrErrorBoundary": true,
+      "ssrStreaming": {
+        "botRegex": /bot\\\\b\\|crawl\\|spider\\|slurp\\|facebookexternalhit\\|google\\\\b\\|bing\\\\b\\|yandex\\\\b\\|baidu\\\\b\\|duckduck/i,
+        "enabled": false,
+      },
+      "staticRoutes": false,
+      "strictRouteTypes": false,
+      "stripNeverHydratedData": false,
+      "templateDiagnostics": true,
+      "templateImportResolution": true,
+      "templateRouteInjection": true,
+      "typedPages": true,
+      "typescriptPlugin": false,
+      "viewTransition": false,
+      "watcher": "builder",
+      "webmcp": false,
+      "writeEarlyHints": false,
+    },
+    "extensions": [
+      ".mjs",
+      ".js",
+      ".cjs",
+      ".mts",
+      ".ts",
+      ".cts",
+      ".tsx",
+      ".jsx",
+      ".vue",
+    ],
+    "features": {
+      "devLogs": false,
+      "inlineStyles": "[Function anonymous]",
+      "noScripts": false,
+    },
+    "future": {
+      "compatibilityVersion": 5,
+      "multiApp": false,
+      "typescriptBundlerResolution": true,
+    },
+    "generate": {
+      "exclude": [],
+      "routes": [],
+    },
+    "ignore": [
+      "**/*.stories.{js,cts,mts,ts,jsx,tsx}",
+      "**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}",
+      "**/*.d.{cts,mts,ts}",
+      "**/*.d.vue.{cts,mts,ts}",
+      "**/.{pnpm-store,vercel,netlify,wrangler,output,git,cache,data,direnv}",
+      "/vendor",
+      "**/node-compile-cache",
+      "**/test-results",
+      "**/*.sock",
+      ".nuxt/analyze",
+      ".nuxt",
+      "**/-*.*",
+    ],
+    "ignorePrefix": "-",
+    "imports": {
+      "dirs": [],
+      "global": false,
+      "scan": true,
+    },
+    "logLevel": "info",
+    "modules": [],
+    "modulesDir": [
+      "<tmp>/project/node_modules",
+    ],
+    "nitro": {
+      "prerender": {},
+      "routeRules": {},
+      "runtimeConfig": {
+        "app": {
+          "baseURL": "/",
+          "buildAssetsDir": "/_nuxt/",
+          "buildId": "<uuid>",
+          "cdnURL": "",
+        },
+        "appSecret": "",
+        "nitro": {
+          "envPrefix": "NUXT_",
+        },
+        "public": {},
+      },
+      "tracingChannel": false,
+    },
+    "nitroLegacy": false,
+    "optimization": {
+      "asyncTransforms": {
+        "asyncFunctions": [
+          "defineNuxtPlugin",
+          "defineNuxtRouteMiddleware",
+        ],
+        "objectDefinitions": {
+          "defineNuxtComponent": [
+            "asyncData",
+            "setup",
+          ],
+          "defineNuxtPlugin": [
+            "setup",
+          ],
+          "definePageMeta": [
+            "middleware",
+            "validate",
+          ],
+        },
+      },
+      "keyedComposableFactories": [
+        {
+          "argumentLength": 3,
+          "name": "createUseFetch",
+          "source": "#app/composables/fetch",
+        },
+        {
+          "argumentLength": 3,
+          "name": "createUseAsyncData",
+          "source": "#app/composables/asyncData",
+        },
+      ],
+      "keyedComposables": [
+        {
+          "argumentLength": 3,
+          "name": "callOnce",
+          "source": "#app/composables/once",
+        },
+        {
+          "argumentLength": 2,
+          "name": "defineNuxtComponent",
+          "source": "#app/composables/component",
+        },
+        {
+          "argumentLength": 2,
+          "name": "useState",
+          "source": "#app/composables/state",
+        },
+        {
+          "argumentLength": 3,
+          "name": "useFetch",
+          "source": "#app/composables/fetch",
+        },
+        {
+          "argumentLength": 3,
+          "name": "useAsyncData",
+          "source": "#app/composables/asyncData",
+        },
+        {
+          "argumentLength": 3,
+          "name": "useLazyAsyncData",
+          "source": "#app/composables/asyncData",
+        },
+        {
+          "argumentLength": 3,
+          "name": "useLazyFetch",
+          "source": "#app/composables/fetch",
+        },
+      ],
+      "treeShake": {
+        "composables": {
+          "client": {
+            "#app": [
+              "definePayloadReducer",
+              "definePageMeta",
+              "onPrehydrate",
+            ],
+            "vue": [
+              "onRenderTracked",
+              "onRenderTriggered",
+              "onServerPrefetch",
+            ],
+          },
+          "server": {
+            "#app": [
+              "definePayloadReviver",
+              "definePageMeta",
+            ],
+            "vue": [
+              "onMounted",
+              "onUpdated",
+              "onUnmounted",
+              "onBeforeMount",
+              "onBeforeUpdate",
+              "onBeforeUnmount",
+              "onRenderTracked",
+              "onRenderTriggered",
+              "onActivated",
+              "onDeactivated",
+            ],
+          },
+        },
+      },
+    },
+    "oxc": {
+      "transform": {
+        "options": {
+          "jsxFactory": "h",
+          "jsxFragment": "Fragment",
+          "target": "esnext",
+        },
+      },
+    },
+    "plugins": [],
+    "postcss": {
+      "order": "[Function autoprefixerAndCssnanoLast]",
+      "plugins": {},
+    },
+    "prerender": {},
+    "rootDir": "<tmp>/project",
+    "routeRules": {},
+    "router": {
+      "options": {
+        "hashMode": false,
+        "scrollBehaviorType": "auto",
+        "sensitive": true,
+      },
+    },
+    "rsbuild": {},
+    "runtimeConfig": {
+      "app": {
+        "baseURL": "/",
+        "buildAssetsDir": "/_nuxt/",
+        "buildId": "<uuid>",
+        "cdnURL": "",
+      },
+      "appSecret": "",
+      "public": {},
+    },
+    "server": {
+      "builder": "@nuxt/nitro-server",
+    },
+    "serverDir": "<tmp>/project/server",
+    "serverHandlers": [],
+    "sourcemap": {
+      "client": false,
+      "server": true,
+    },
+    "spaLoadingTemplate": null,
+    "srcDir": "<tmp>/project/app",
+    "ssr": true,
+    "test": false,
+    "tracingChannel": false,
+    "typesDir": "<tmp>/project/.nuxt",
+    "typescript": {
+      "builder": null,
+      "hoist": [
+        "@unhead/vue",
+        "@nuxt/devtools",
+        "vue",
+        "@vue/runtime-core",
+        "@vue/compiler-sfc",
+        "vue-router",
+        "vue-router/auto-routes",
+        "@nuxt/schema",
+        "nuxt",
+      ],
+      "includeWorkspace": false,
+      "shim": false,
+      "strict": true,
+      "tsConfig": {},
+      "typeCheck": false,
+    },
+    "unhead": {
+      "legacy": false,
+      "renderSSRHeadOptions": {
+        "omitLineBreaks": true,
+      },
+      "vite": {},
+    },
+    "vite": {
+      "build": {
+        "assetsDir": "_nuxt/",
+        "emptyOutDir": false,
+      },
+      "cacheDir": "<tmp>/project/node_modules/.cache/vite",
+      "clearScreen": true,
+      "define": {
+        "__VUE_OPTIONS_API__": false,
+        "__VUE_PROD_DEVTOOLS__": false,
+        "__VUE_PROD_HYDRATION_MISMATCH_DETAILS__": false,
+        "import.meta.dev": false,
+        "import.meta.test": false,
+        "process.dev": false,
+        "process.test": false,
+      },
+      "mode": "production",
+      "optimizeDeps": {
+        "exclude": [
+          "vue-demi",
+        ],
+      },
+      "publicDir": false,
+      "resolve": {
+        "extensions": [
+          ".mjs",
+          ".js",
+          ".cjs",
+          ".mts",
+          ".ts",
+          ".cts",
+          ".tsx",
+          ".jsx",
+          ".vue",
+          ".json",
+        ],
+      },
+      "root": "<tmp>/project/app",
+      "server": {
+        "fs": {
+          "allow": [
+            "<tmp>/project/.nuxt",
+            "<tmp>/project/app",
+            "<tmp>/project",
+          ],
+        },
+      },
+      "vue": {
+        "features": {
+          "propsDestructure": true,
+        },
+        "isProduction": true,
+        "script": {
+          "hoistStatic": {},
+        },
+        "template": {
+          "compilerOptions": {},
+          "transformAssetUrls": {
+            "image": [
+              "xlink:href",
+              "href",
+            ],
+            "img": [
+              "src",
+            ],
+            "source": [
+              "src",
+            ],
+            "use": [
+              "xlink:href",
+              "href",
+            ],
+            "video": [
+              "src",
+              "poster",
+            ],
+          },
+        },
+      },
+      "vueJsx": {
+        "defineComponentName": [
+          "defineComponent",
+          "defineNuxtComponent",
+        ],
+      },
+    },
+    "vue": {
+      "compilerOptions": {},
+      "config": {},
+      "optionsApi": false,
+      "propsDestructure": true,
+      "runtimeCompiler": false,
+      "transformAssetUrls": {
+        "image": [
+          "xlink:href",
+          "href",
+        ],
+        "img": [
+          "src",
+        ],
+        "source": [
+          "src",
+        ],
+        "use": [
+          "xlink:href",
+          "href",
+        ],
+        "video": [
+          "src",
+          "poster",
+        ],
+      },
+      "vapor": false,
+    },
+    "watch": [],
+    "watchers": {
+      "chokidar": {
+        "ignoreInitial": true,
+        "ignorePermissionErrors": true,
+      },
+      "webpack": {
+        "aggregateTimeout": 1000,
+      },
+    },
+    "webpack": {
+      "aggressiveCodeRemoval": false,
+      "analyze": {
+        "filename": "<tmp>/project/.nuxt/analyze/{name}.html",
+        "projectRoot": "<tmp>/project",
+        "template": "treemap",
+      },
+      "cssSourceMap": false,
+      "devMiddleware": {
+        "stats": "none",
+      },
+      "experiments": {},
+      "extractCSS": true,
+      "filenames": {
+        "app": "[Function app]",
+        "chunk": "[Function chunk]",
+        "css": "[Function css]",
+        "font": "[Function font]",
+        "img": "[Function img]",
+        "video": "[Function video]",
+      },
+      "friendlyErrors": true,
+      "hotMiddleware": {},
+      "loaders": {
+        "css": {
+          "esModule": false,
+          "importLoaders": 0,
+          "sourceMap": false,
+          "url": {
+            "filter": "[Function filter]",
+          },
+        },
+        "cssModules": {
+          "esModule": false,
+          "importLoaders": 0,
+          "modules": {
+            "localIdentName": "[local]_[hash:base64:5]",
+          },
+          "sourceMap": false,
+          "url": {
+            "filter": "[Function filter]",
+          },
+        },
+        "esbuild": {
+          "jsxFactory": "h",
+          "jsxFragment": "Fragment",
+          "target": "esnext",
+          "tsconfigRaw": {},
+        },
+        "file": {
+          "esModule": false,
+          "limit": 1000,
+        },
+        "fontUrl": {
+          "esModule": false,
+          "limit": 1000,
+        },
+        "imgUrl": {
+          "esModule": false,
+          "limit": 1000,
+        },
+        "less": {
+          "sourceMap": false,
+        },
+        "pugPlain": {},
+        "sass": {
+          "sassOptions": {
+            "indentedSyntax": true,
+          },
+          "sourceMap": false,
+        },
+        "scss": {
+          "sourceMap": false,
+        },
+        "stylus": {
+          "sourceMap": false,
+        },
+        "vue": {
+          "compilerOptions": {},
+          "propsDestructure": true,
+          "transformAssetUrls": {
+            "image": [
+              "xlink:href",
+              "href",
+            ],
+            "img": [
+              "src",
+            ],
+            "source": [
+              "src",
+            ],
+            "use": [
+              "xlink:href",
+              "href",
+            ],
+            "video": [
+              "src",
+              "poster",
+            ],
+          },
+        },
+        "vueStyle": {
+          "sourceMap": false,
+        },
+      },
+      "optimization": {
+        "minimize": true,
+        "runtimeChunk": "single",
+        "splitChunks": {
+          "automaticNameDelimiter": "/",
+          "cacheGroups": {},
+          "chunks": "all",
+        },
+      },
+      "optimizeCSS": false,
+      "plugins": [],
+      "postcss": {
+        "postcssOptions": {
+          "plugins": {},
+        },
+      },
+      "profile": false,
+      "serverURLPolyfill": "url",
+      "warningIgnoreFilters": [],
+    },
+    "workspaceDir": "<tmp>/project",
+  },
+}
+`;
+
+exports[`options resolution > resolves dev 1`] = `
+{
+  "changes": {
+    "buildId": "dev",
+    "dev": true,
+    "envName": "development",
+    "experimental.browserDevtoolsTiming": true,
+    "features.devLogs": true,
+    "features.inlineStyles": false,
+    "nitro.runtimeConfig.app.buildId": "dev",
+    "optimization.treeShake.composables.client": {},
+    "optimization.treeShake.composables.client.#app": "<removed>",
+    "optimization.treeShake.composables.client.vue": "<removed>",
+    "optimization.treeShake.composables.server": {},
+    "optimization.treeShake.composables.server.#app": "<removed>",
+    "optimization.treeShake.composables.server.vue": "<removed>",
+    "runtimeConfig.app.buildId": "dev",
+    "sourcemap.client": true,
+    "vite.define.import.meta.dev": true,
+    "vite.define.process.dev": true,
+    "vite.mode": "development",
+    "vite.vue.isProduction": false,
+    "webpack.cssSourceMap": true,
+    "webpack.optimization.minimize": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves devtools enabled 1`] = `
+{
+  "changes": {
+    "devtools": "<removed>",
+    "devtools.enabled": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves head with viewport 1`] = `
+{
+  "changes": {
+    "app.head.charset": "latin1",
+    "app.head.meta": [
+      {
+        "charset": "latin1",
+      },
+      {
+        "content": "width=500",
+        "name": "viewport",
+      },
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves inline styles disabled 1`] = `
+{
+  "changes": {
+    "features.inlineStyles": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves invalid booleans 1`] = `
+{
+  "changes": {},
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves invalid css entries 1`] = `
+{
+  "changes": {
+    "css": [
+      "~/a.css",
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves invalid log level 1`] = `
+{
+  "changes": {
+    "logLevel": "loud",
+  },
+  "diagnostics": [
+    "NUXT_B5012",
+  ],
+}
+`;
+
+exports[`options resolution > resolves invalid vite publicDir 1`] = `
+{
+  "changes": {},
+  "diagnostics": [
+    "NUXT_B5014",
+  ],
+}
+`;
+
+exports[`options resolution > resolves invalid watcher 1`] = `
+{
+  "changes": {},
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves log level verbose 1`] = `
+{
+  "changes": {
+    "logLevel": "verbose",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves modules with falsy entries 1`] = `
+{
+  "changes": {
+    "modules": [
+      "a",
+      [
+        "b",
+        {
+          "c": 1,
+        },
+      ],
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves nitro legacy enabled 1`] = `
+{
+  "changes": {
+    "nitroLegacy": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves nitro legacy object 1`] = `
+{
+  "changes": {
+    "nitroLegacy": "<removed>",
+    "nitroLegacy.h3": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves nitro vite environment with webpack 1`] = `
+{
+  "changes": {
+    "builder": "@nuxt/webpack-builder",
+    "experimental.nitroViteEnvironment": false,
+  },
+  "diagnostics": [
+    "NUXT_B5027",
+  ],
+}
+`;
+
+exports[`options resolution > resolves no app directory 1`] = `
+{
+  "changes": {
+    "alias.#build": "<tmp>/project-without-app/.nuxt/",
+    "alias.#internal/nuxt/paths": "<tmp>/project-without-app/.nuxt/paths.mjs",
+    "alias.#server": "<tmp>/project-without-app/server/",
+    "alias.#shared": "<tmp>/project-without-app/shared/",
+    "alias.@": "<tmp>/project-without-app/",
+    "alias.@@": "<tmp>/project-without-app/",
+    "alias.~": "<tmp>/project-without-app/",
+    "alias.~~": "<tmp>/project-without-app/",
+    "analyzeDir": "<tmp>/project-without-app/.nuxt/analyze",
+    "build.analyze.filename": "<tmp>/project-without-app/.nuxt/analyze/{name}.html",
+    "build.analyze.projectRoot": "<tmp>/project-without-app",
+    "buildDir": "<tmp>/project-without-app/.nuxt",
+    "dir.app": "<tmp>/project-without-app/app",
+    "dir.modules": "<tmp>/project-without-app/modules",
+    "dir.public": "<tmp>/project-without-app/public",
+    "modulesDir": [
+      "<tmp>/project-without-app/node_modules",
+    ],
+    "rootDir": "<tmp>/project-without-app",
+    "serverDir": "<tmp>/project-without-app/server",
+    "srcDir": "<tmp>/project-without-app",
+    "typesDir": "<tmp>/project-without-app/.nuxt",
+    "vite.cacheDir": "<tmp>/project-without-app/node_modules/.cache/vite",
+    "vite.root": "<tmp>/project-without-app",
+    "vite.server.fs.allow": [
+      "<tmp>/project-without-app/.nuxt",
+      "<tmp>/project-without-app",
+    ],
+    "webpack.analyze.filename": "<tmp>/project-without-app/.nuxt/analyze/{name}.html",
+    "webpack.analyze.projectRoot": "<tmp>/project-without-app",
+    "workspaceDir": "<tmp>/project-without-app",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves no scripts enabled 1`] = `
+{
+  "changes": {
+    "features.noScripts": "production",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves pages as object 1`] = `
+{
+  "changes": {
+    "pages.pattern": [
+      "**/*.vue",
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves pages enabled 1`] = `
+{
+  "changes": {
+    "pages": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves parse error data disabled 1`] = `
+{
+  "changes": {},
+  "diagnostics": [
+    "NUXT_B5016",
+  ],
+}
+`;
+
+exports[`options resolution > resolves payload extraction enabled 1`] = `
+{
+  "changes": {
+    "experimental.payloadExtraction": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves postcss order preset 1`] = `
+{
+  "changes": {
+    "postcss.order": "[Function anonymous]",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves prerender error pages 1`] = `
+{
+  "changes": {
+    "experimental.prerenderErrorPages": [
+      404,
+      500,
+    ],
+  },
+  "diagnostics": [
+    "NUXT_B5020",
+  ],
+}
+`;
+
+exports[`options resolution > resolves root and teleport ids disabled 1`] = `
+{
+  "changes": {
+    "app.rootAttrs": {},
+    "app.rootAttrs.id": "<removed>",
+    "app.rootId": false,
+    "app.teleportAttrs": {},
+    "app.teleportAttrs.id": "<removed>",
+    "app.teleportId": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves route chunk error legacy reload 1`] = `
+{
+  "changes": {},
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves route chunk error legacy true 1`] = `
+{
+  "changes": {
+    "experimental.emitRouteChunkError": "manual",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves route rules and prerender 1`] = `
+{
+  "changes": {
+    "nitro.prerender": "<removed>",
+    "nitro.prerender.crawlLinks": true,
+    "nitro.prerender.routes": [
+      "/a",
+    ],
+    "nitro.routeRules": "<removed>",
+    "nitro.routeRules./a.ssr": false,
+    "nitro.routeRules./b.prerender": true,
+    "prerender": "<removed>",
+    "prerender.routes": [
+      "/a",
+    ],
+    "routeRules": "<removed>",
+    "routeRules./a.ssr": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves rsbuild builder 1`] = `
+{
+  "changes": {
+    "builder": "@nuxt/rsbuild-builder",
+    "experimental.nitroViteEnvironment": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves rspack builder 1`] = `
+{
+  "changes": {
+    "builder": "@nuxt/rspack-builder",
+    "experimental.nitroViteEnvironment": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves runtime config 1`] = `
+{
+  "changes": {
+    "nitro.runtimeConfig.public": "<removed>",
+    "nitro.runtimeConfig.public.nested.value": "",
+    "nitro.runtimeConfig.public.value": "",
+    "nitro.runtimeConfig.secret": "",
+    "runtimeConfig.public": "<removed>",
+    "runtimeConfig.public.nested.value": "",
+    "runtimeConfig.public.value": "",
+    "runtimeConfig.secret": "",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves sourcemap disabled 1`] = `
+{
+  "changes": {
+    "sourcemap.server": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves sourcemap enabled 1`] = `
+{
+  "changes": {
+    "sourcemap.client": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves sourcemap object 1`] = `
+{
+  "changes": {
+    "sourcemap.client": "hidden",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves spaLoadingTemplate enabled 1`] = `
+{
+  "changes": {
+    "spaLoadingTemplate": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves spaLoadingTemplate path 1`] = `
+{
+  "changes": {
+    "spaLoadingTemplate": "<tmp>/project/app/loading.html",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves ssr disabled 1`] = `
+{
+  "changes": {
+    "experimental.payloadExtraction": false,
+    "features.inlineStyles": false,
+    "ssr": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves ssr streaming enabled 1`] = `
+{
+  "changes": {
+    "experimental.ssrStreaming.enabled": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves test 1`] = `
+{
+  "changes": {
+    "buildId": "test",
+    "logLevel": "silent",
+    "nitro.runtimeConfig.app.buildId": "test",
+    "runtimeConfig.app.buildId": "test",
+    "test": true,
+    "vite.define.import.meta.test": true,
+    "vite.define.process.test": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves tracing channel enabled 1`] = `
+{
+  "changes": {
+    "nitro.tracingChannel": "<removed>",
+    "nitro.tracingChannel.h3": true,
+    "nitro.tracingChannel.nuxt": true,
+    "nitro.tracingChannel.srvx": true,
+    "nitro.tracingChannel.unstorage": true,
+    "tracingChannel": "<removed>",
+    "tracingChannel.h3": true,
+    "tracingChannel.nuxt": true,
+    "tracingChannel.srvx": true,
+    "tracingChannel.unstorage": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves tracing channel in nitro 1`] = `
+{
+  "changes": {
+    "nitro.tracingChannel": "<removed>",
+    "nitro.tracingChannel.h3": false,
+    "nitro.tracingChannel.nuxt": true,
+    "nitro.tracingChannel.srvx": false,
+    "nitro.tracingChannel.unstorage": true,
+    "tracingChannel": "<removed>",
+    "tracingChannel.h3": false,
+    "tracingChannel.nuxt": true,
+    "tracingChannel.srvx": true,
+    "tracingChannel.unstorage": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves typescript bundler resolution from tsconfig 1`] = `
+{
+  "changes": {
+    "future.typescriptBundlerResolution": false,
+    "typescript.tsConfig": "<removed>",
+    "typescript.tsConfig.compilerOptions.moduleResolution": "node",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves typescript hoist disabled 1`] = `
+{
+  "changes": {
+    "typescript.builder": "vite",
+    "typescript.hoist": [],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves unhead legacy 1`] = `
+{
+  "changes": {},
+  "diagnostics": [
+    "NUXT_B5013",
+  ],
+}
+`;
+
+exports[`options resolution > resolves unknown keys 1`] = `
+{
+  "changes": {
+    "myModule.option": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves view transitions in app 1`] = `
+{
+  "changes": {
+    "app.viewTransition.enabled": true,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves view transitions in experimental 1`] = `
+{
+  "changes": {
+    "app.viewTransition.enabled": "always",
+    "app.viewTransition.types": [
+      "slide",
+    ],
+    "experimental.viewTransition": "<removed>",
+    "experimental.viewTransition.enabled": "always",
+    "experimental.viewTransition.types": [
+      "slide",
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves vite overrides 1`] = `
+{
+  "changes": {
+    "vite.build.assetsDir": "static",
+    "vite.define.FOO": "1",
+    "vite.mode": "staging",
+    "vite.optimizeDeps.exclude": [
+      "x",
+      "vue-demi",
+    ],
+    "vite.root": "/custom-root",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves vite server builder 1`] = `
+{
+  "changes": {
+    "server.builder": "@nuxt/vite-server",
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves vue options 1`] = `
+{
+  "changes": {
+    "vite.vue.features.propsDestructure": false,
+    "vite.vue.template.compilerOptions": "<removed>",
+    "vite.vue.template.compilerOptions.comments": true,
+    "vite.vue.template.transformAssetUrls.img": [
+      "data-src",
+    ],
+    "vue.compilerOptions": "<removed>",
+    "vue.compilerOptions.comments": true,
+    "vue.propsDestructure": false,
+    "vue.transformAssetUrls.img": [
+      "data-src",
+    ],
+    "webpack.loaders.vue.compilerOptions": "<removed>",
+    "webpack.loaders.vue.compilerOptions.comments": true,
+    "webpack.loaders.vue.transformAssetUrls.img": [
+      "data-src",
+    ],
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves webpack builder 1`] = `
+{
+  "changes": {
+    "builder": "@nuxt/webpack-builder",
+    "experimental.nitroViteEnvironment": false,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`options resolution > resolves webpack overrides 1`] = `
+{
+  "changes": {
+    "builder": "@nuxt/webpack-builder",
+    "experimental.nitroViteEnvironment": false,
+    "webpack.analyze.enabled": false,
+    "webpack.cssSourceMap": true,
+  },
+  "diagnostics": [],
+}
+`;
