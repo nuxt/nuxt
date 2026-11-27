@@ -37,7 +37,7 @@ export default defineNuxtConfig({
 ```
 
 ::note
-When running [`nuxt build`](/docs/api/commands/build), the home page will be pre-rendered in `.output/public/index.html` and statically served.
+When running [`nuxt build`](/docs/api/commands/build), the home page will be prerendered in `.output/public/index.html` and statically served.
 ::
 
 ## Notes

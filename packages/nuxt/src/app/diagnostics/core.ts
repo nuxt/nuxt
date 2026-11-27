@@ -3,7 +3,7 @@ import { docsBase, prodReporters, reporters } from './_shared'
 
 /**
  * E1xxx
- * Core / Nuxt-instance / lifecycle runtime diagnostics.
+ * Runtime diagnostics for the Nuxt app and its lifecycle.
  */
 export const appDiagnostics = !import.meta.dev
   ? /* #__PURE__ */ defineProdDiagnostics({ docsBase, reporters: prodReporters })
@@ -12,8 +12,8 @@ export const appDiagnostics = !import.meta.dev
       reporters,
       codes: {
         NUXT_E1001: {
-          why: 'A composable that requires access to the Nuxt instance was called outside of a plugin, Nuxt hook, Nuxt middleware, or Vue setup function. This is probably not a Nuxt bug.',
-          fix: 'Move this call inside a Vue `setup()` function, a Nuxt plugin, or a Nuxt middleware.',
+          why: 'A composable that requires access to the Nuxt app was called outside of a plugin, Nuxt hook, route middleware, or Vue setup function. This is probably not a Nuxt bug.',
+          fix: 'Move this call inside a Vue `setup()` function, a Nuxt plugin, or route middleware.',
         },
         NUXT_E1003: {
           why: (p: { key: string, keys: string, lastKey: string }) => `Could not access \`${p.key}\`. The only available runtime config keys on the client side are ${p.keys} and ${p.lastKey}.`,

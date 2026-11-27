@@ -7,6 +7,7 @@ import perfectionist from 'eslint-plugin-perfectionist'
 import { importX } from 'eslint-plugin-import-x'
 import parser from '@typescript-eslint/parser'
 import markdown from '@eslint/markdown'
+import glosslint from 'glosslint/eslint'
 import { runtimeDependencies } from 'nuxt/meta'
 import { generatedTemplateCopies } from './packages/ui-templates/lib/paths.mjs'
 
@@ -372,6 +373,10 @@ export default createConfigForNuxt({
         'vue/multi-word-component-names': 'off',
       },
     },
+    ...glosslint({
+      files: ['packages/*/src/**/*.{ts,mts,vue}'],
+      glossary: new URL('./GLOSSARY.md', import.meta.url),
+    }),
     {
       files: ['**/*.md'],
       language: 'markdown/commonmark',

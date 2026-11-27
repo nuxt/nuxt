@@ -205,7 +205,7 @@ token.value = 'new-token'
 
 ### Cookies in API Routes
 
-You can use `getCookie` and `setCookie` from [`h3`](https://github.com/h3js/h3) package to set cookies in server API routes.
+You can use `getCookie` and `setCookie` from [`h3`](https://github.com/h3js/h3) package to set cookies in server routes.
 
 ```ts [server/api/counter.ts]
 export default defineEventHandler((event) => {
