@@ -1415,13 +1415,9 @@ function widenLegacyHandlerRoute (handler: { route?: string, middleware?: boolea
     return
   }
   const base = route.replace(/\/+$/, '')
-  // `/` and `/**` are global middleware, which nitro v3 runs for every path already
-  if (!base || base === '/') {
-    return
-  }
   handler.route = `${base}/**`
   widened.push(`\`${route}\` as \`${handler.route}\``)
-  return base
+  return base || undefined
 }
 
 interface ResolvePluginContext {
