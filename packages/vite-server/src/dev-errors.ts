@@ -11,7 +11,7 @@ import type { RemoteDevError, RemoteDevErrorReport } from './runtime/remote-dev-
 
 /** Whether a report may quote a file from disk, as the dev server would load it. */
 export function reportFileAccess (server: ViteDevServer): (file: string) => boolean {
-  return file => isFileLoadingAllowed(server.config, file)
+  return file => isFileLoadingAllowed(server.environments.client.config, file)
 }
 
 /** What the channel may open, as the dev server would load it, and the hosts it may be reached through. */
