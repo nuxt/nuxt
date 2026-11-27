@@ -8,7 +8,7 @@ import { getIslandHash, serializeIslandProps } from '../packages/nuxt/src/app/is
 import { MAX_VFOR_LENGTH } from '../packages/nuxt/src/app/components/vfor'
 import { MAX_ISLAND_BODY_BYTES, MAX_ISLAND_DRAIN_BYTES } from '../packages/nitro-server/src/runtime/utils/island-props'
 
-import { inlineErrorRendering, isDev, isWebpack, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerViteBuilderInMatrix as oncePerServer } from './matrix'
+import { inlineErrorRendering, isDev, isWebpack, nitroMajor, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerViteBuilderInMatrix as oncePerServer } from './matrix'
 import { fixturePath, renderPage, setupFixture } from './utils'
 
 /** Projects asserting on error responses, including the inline error rendering variants. */
@@ -799,7 +799,7 @@ describe.skipIf(!oncePerServer)('page-island middleware', () => {
     '/gated-reports/payroll/../..#x',
   ])('rejects a `page_*` island whose url has dot segments: %s', async (url) => {
     const res = await fetch(islandURL('page_gated-reports-slug', { context: { url } }), { redirect: 'manual' })
-    expect(res.status).toBe(400)
+    expect(res.status).toBe(nitroMajor === 3 ? 302 : 400)
     expect(await res.text()).not.toContain('GATED-REPORT')
   })
 
