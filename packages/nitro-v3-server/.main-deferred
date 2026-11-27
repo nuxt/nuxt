@@ -1,2 +1,3 @@
 # held back from 4.x patch releases until 4.8 (features)
 7ae7b02206 feat(nitro): drain the previous dev worker on reload (#37255)
+b19192bc36 feat(kit,nuxt,schema): resolve server templates with any server builder (#37264)
