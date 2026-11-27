@@ -8,8 +8,7 @@ export { getNuxtModuleVersion, hasNuxtModule, hasNuxtModuleCompatibility } from 
 
 // Loader
 export { diffNuxtConfig, loadNuxtConfig } from './loader/config.ts'
-export type { NuxtConfigDiffEntry } from './loader/config.ts'
-export type { LoadNuxtConfigOptions, ResolvedNuxtConfigContext } from '@nuxt/schema'
+export type { LoadNuxtConfigOptions, NuxtConfigDiffEntry, ResolvedNuxtConfigContext } from './loader/config.ts'
 export { extendNuxtSchema } from './loader/schema.ts'
 export { buildNuxt, loadNuxt } from './loader/nuxt.ts'
 export type { LoadNuxtOptions } from './loader/nuxt.ts'

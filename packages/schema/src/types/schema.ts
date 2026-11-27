@@ -6,7 +6,7 @@ import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { LoadNuxtConfigOptions, NuxtLayerSourceOptions } from './layers.ts'
+import type { NuxtDotenvOptions, NuxtLayerSourceOptions } from './layers.ts'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
@@ -34,7 +34,7 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { NuxtAppConfig, NuxtOptions, RsbuildOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtAppConfig, NuxtConfig, NuxtOptions, RsbuildOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
@@ -2027,7 +2027,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: LoadNuxtConfigOptions | undefined
+  _loadOptions: { dotenv?: boolean | NuxtDotenvOptions, envName?: string | false, overrides?: NuxtConfig } | undefined
 
   /**
    *

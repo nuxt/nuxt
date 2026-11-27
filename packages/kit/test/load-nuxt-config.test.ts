@@ -5,8 +5,9 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { basename, join } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 
-import type { LoadNuxtConfigOptions, NitroConfig, Nuxt, NuxtConfig } from '@nuxt/schema'
+import type { NitroConfig, Nuxt, NuxtConfig } from '@nuxt/schema'
 
+import type { LoadNuxtConfigOptions } from '../src/loader/config.ts'
 import { diffNuxtConfig, loadNuxtConfig } from '../src/loader/config.ts'
 import { getLayerDirectories } from '../src/layers.ts'
 import { fakePackage, withTempDir, writeFiles } from './utils.ts'

@@ -3,7 +3,7 @@ export type { NuxtCompatibility, NuxtCompatibilityIssue, NuxtCompatibilityIssues
 export type { Component, ComponentMeta, ComponentsDir, ComponentsOptions, ScanDir } from './types/components.ts'
 export type { NuxtCompilerOptions, KeyedFunction, KeyedFunctionFactory, CompilerScanDir } from './types/compiler.ts'
 export type { AppConfig, AppConfigInput, CustomAppConfig, DefineNuxtConfig, NuxtAppConfig, NuxtBuilder, NuxtConfig, NuxtConfigInput, NuxtOptions, PublicRuntimeConfig, RsbuildConfig, RsbuildOptions, RsbuildPlugin, RuntimeConfig, RuntimeConfigApp, RuntimeConfigSchema, RuntimeValue, SchemaDefinition, SharedAppConfig, UpperSnakeCase, ViteConfig, VitePlugin, ViteOptions, WebpackConfig, WebpackPluginInstance, ViewTransitionOptions, ViewTransitionPageOptions } from './types/config.ts'
-export type { LoadNuxtConfigOptions, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtLayerResolverContext, NuxtLayerSourceOptions, ResolvedNuxtConfigContext, ResolvedNuxtLayer } from './types/layers.ts'
+export type { NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtLayerSourceOptions } from './types/layers.ts'
 // eslint-disable-next-line @typescript-eslint/no-deprecated
 export type { ImportPresetWithDeprecation } from './types/hooks.ts'
 export type { GenerateAppOptions, HookResult, ModuleInstallInfo, NuxtAnalyzeMeta, NuxtBuildEnvironment, NuxtBuildEnvironmentResult, NuxtBuildFile, NuxtHookName, NuxtPrerenderFailure, NuxtPrerenderResult, NuxtPrerenderRoute, NuxtHooks, NuxtLayout, NuxtMiddleware, NuxtPage, NuxtPageMeta, TSReference, VueTSConfig, WatchEvent } from './types/hooks.ts'
