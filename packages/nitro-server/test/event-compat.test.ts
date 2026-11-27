@@ -8,7 +8,7 @@ import plugin from '../src/runtime/compat/event-plugin.ts'
 import { decorateLegacyEvent } from '../src/runtime/compat/decorate.ts'
 import { fromLegacyBody, prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 import { defineEventHandler as defineLegacyEventHandler } from '../src/runtime/compat/h3-v1.ts'
-import { sendStream } from '../src/runtime/compat/h3-v1-app.ts'
+import { send, sendError, sendRedirect, sendStream } from '../src/runtime/compat/h3-v1-app.ts'
 import { wrapLegacyHandler } from '../src/runtime/compat/wrapper.ts'
 import { getRouteRules } from '../src/runtime/utils/route-rules.ts'
 
@@ -398,6 +398,77 @@ describe('v2 event bridge', () => {
 
     expect(await response.text()).toBe('abc')
     expect(bytes).toBe(3)
+  })
+
+  it('runs `write` and `end` callbacks and ignores writes after `end` on the response of an in-process request', async () => {
+    const callbacks: string[] = []
+    const app = new H3()
+    app.get('/api/ended', defineLegacyEventHandler((event) => {
+      const res = event.node!.res as any
+      res.write('a', () => callbacks.push('write'))
+      res.end('b', () => callbacks.push('end'))
+      res.write('c')
+      res.end('d')
+    }))
+
+    const response = await app.request('/api/ended')
+
+    expect(await response.text()).toBe('ab')
+    expect(callbacks).toEqual(['write', 'end'])
+  })
+
+  it.each([
+    ['write', (res: ServerResponse) => res.write('a')],
+    ['writeHead', (res: ServerResponse) => res.writeHead(200)],
+  ])('reports the response of an in-process request as sent after `%s`, and as ended once ended', (_method, call) => {
+    const res = prepareLegacyEvent(mockEvent('http://nuxt/api/test')).node!.res as ServerResponse
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([false, false, false])
+
+    call(res)
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, false, false])
+
+    res.end()
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
+  })
+
+  it('reports the response of an in-process request as ended once a v1 helper has ended it', () => {
+    const event = prepareLegacyEvent(mockEvent('http://nuxt/api/test'))
+    const res = event.node!.res as ServerResponse
+
+    send(event, 'sent')
+
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
+  })
+
+  it.each([
+    ['send', (event: H3Event) => send(event, 'sent', 'application/json')],
+    ['sendRedirect', (event: H3Event) => sendRedirect(event, '/login')],
+    ['sendError', (event: H3Event) => sendError(event, new Error('failed'))],
+  ])('keeps the response a handler ended an in-process request with when it then calls `%s`', async (_helper, call) => {
+    const app = new H3()
+    app.get('/api/written-first', defineLegacyEventHandler((event) => {
+      event.node!.res.end('written')
+      return call(event)
+    }))
+
+    const response = await app.request('/api/written-first')
+
+    expect(response.status).toBe(200)
+    expect(Object.fromEntries(response.headers)).toEqual({ 'content-length': '7' })
+    expect(await response.text()).toBe('written')
+  })
+
+  it('keeps the response a v1 helper ended an in-process request with when the handler then calls `end`', async () => {
+    const app = new H3()
+    app.get('/api/sent-first', defineLegacyEventHandler((event) => {
+      sendRedirect(event, '/login')
+      event.node!.res.end()
+    }))
+
+    const response = await app.request('/api/sent-first')
+
+    expect(response.status).toBe(302)
+    expect(await response.text()).toContain('/login')
   })
 
   it('keeps the socket of a node request', () => {

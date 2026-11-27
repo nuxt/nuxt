@@ -3,7 +3,7 @@ import { H3Event, HTTPResponse } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
 
-import { endResponse, takeEndedResponse } from './ended-response.ts'
+import { endResponse, getEndedResponse, takeEndedResponse } from './ended-response.ts'
 
 export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
@@ -272,7 +272,10 @@ function bridgeNodeResponse (event: H3EventType, res: ServerResponse): ServerRes
 
 function createNodeResponseBridge (event: H3EventType) {
   const chunks: Buffer[] = []
+  let sent = false
   let ended = false
+
+  const isEnded = () => ended || getEndedResponse(event) !== undefined
 
   function push (chunk: unknown, encoding: unknown): void {
     if (typeof chunk === 'string') {
@@ -284,6 +287,7 @@ function createNodeResponseBridge (event: H3EventType) {
 
   return {
     write (chunk: unknown, encoding?: unknown, callback?: unknown) {
+      sent = true
       if (!ended) {
         push(chunk, encoding)
       }
@@ -318,7 +322,13 @@ function createNodeResponseBridge (event: H3EventType) {
       event.res.statusText = statusText
     },
     get headersSent () {
-      return false
+      return sent || isEnded()
+    },
+    get writableEnded () {
+      return isEnded()
+    },
+    get finished () {
+      return isEnded()
     },
     setHeader (name: string, value: string | string[]) {
       replaceHeader(event, name, value)
@@ -355,6 +365,7 @@ function createNodeResponseBridge (event: H3EventType) {
       event.res.headers.delete(name)
     },
     writeHead (status: number, arg1?: string | Record<string, string | string[] | number>, arg2?: Record<string, string | string[] | number>) {
+      sent = true
       event.res.status = status
       if (typeof arg1 === 'string') {
         event.res.statusText = arg1

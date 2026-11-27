@@ -23,7 +23,7 @@ import { destr } from 'destr'
 
 import { createError, toLegacyError } from './error-shape.ts'
 import type { H3ErrorInput } from './error-shape.ts'
-import { endResponse } from './ended-response.ts'
+import { endResponse, getEndedResponse } from './ended-response.ts'
 
 export { createError, toLegacyError, withLegacyErrorShape } from './error-shape.ts'
 export type { H3ErrorInput } from './error-shape.ts'
@@ -208,9 +208,11 @@ export const MIMES = {
 /** v1 `sendError`, which sets the status and responds with the serialised error. */
 export function sendError (event: H3Event, error: Error | H3ErrorInput, debug?: boolean): string {
   const httpError = toLegacyError(error)
-  event.res.status = httpError.status
-  event.res.statusText = httpError.statusText
-  event.res.headers.set('content-type', MIMES.json)
+  if (getEndedResponse(event) === undefined) {
+    event.res.status = httpError.status
+    event.res.statusText = httpError.statusText
+    event.res.headers.set('content-type', MIMES.json)
+  }
   return endResponse(event, JSON.stringify({
     ...httpError.toJSON(),
     stack: debug && httpError.stack ? httpError.stack.split('\n').map(line => line.trim()) : undefined,
@@ -219,14 +221,16 @@ export function sendError (event: H3Event, error: Error | H3ErrorInput, debug?: 
 
 /** v1 `sendRedirect`, which set the status and `location` header on the event as well as returning a response. */
 export function sendRedirect (event: H3Event, location: string, code = 302): any {
-  event.res.status = code
-  event.res.headers.set('location', location)
+  if (getEndedResponse(event) === undefined) {
+    event.res.status = code
+    event.res.headers.set('location', location)
+  }
   return endResponse(event, redirect(location, code))
 }
 
 /** v1 `send`. Sets an optional content type and responds with the body. */
 export function send (event: H3Event, data?: any, type?: string): any {
-  if (type) {
+  if (type && getEndedResponse(event) === undefined) {
     event.res.headers.set('content-type', type)
   }
   return endResponse(event, data ?? '')
