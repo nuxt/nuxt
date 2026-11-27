@@ -431,12 +431,14 @@ describe('v2 event bridge', () => {
     expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
   })
 
-  it('reports the response of an in-process request as ended once a v1 helper has ended it', () => {
+  it('reports the response of an in-process request as ended once a v1 helper has ended it, and after that response is sent', () => {
     const event = prepareLegacyEvent(mockEvent('http://nuxt/api/test'))
     const res = event.node!.res as ServerResponse
 
     send(event, 'sent')
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
 
+    expect(fromLegacyBody(event, undefined)).toBe('sent')
     expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
   })
 

@@ -3,7 +3,7 @@ import { H3Event, HTTPResponse } from 'nitro/h3'
 import { useRequest } from 'nitro/context'
 import type { H3Event as H3EventType } from 'nitro/h3'
 
-import { endResponse, getEndedResponse, takeEndedResponse } from './ended-response.ts'
+import { endResponse, isResponseEnded, takeEndedResponse } from './ended-response.ts'
 
 export type RouteRulesResolver = (event: H3EventType) => Record<string, any>
 
@@ -275,8 +275,6 @@ function createNodeResponseBridge (event: H3EventType) {
   let sent = false
   let ended = false
 
-  const isEnded = () => ended || getEndedResponse(event) !== undefined
-
   function push (chunk: unknown, encoding: unknown): void {
     if (typeof chunk === 'string') {
       chunks.push(Buffer.from(chunk, encoding as BufferEncoding))
@@ -322,13 +320,13 @@ function createNodeResponseBridge (event: H3EventType) {
       event.res.statusText = statusText
     },
     get headersSent () {
-      return sent || isEnded()
+      return sent || isResponseEnded(event)
     },
     get writableEnded () {
-      return isEnded()
+      return isResponseEnded(event)
     },
     get finished () {
-      return isEnded()
+      return isResponseEnded(event)
     },
     setHeader (name: string, value: string | string[]) {
       replaceHeader(event, name, value)
