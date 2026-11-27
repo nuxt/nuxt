@@ -1168,7 +1168,6 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       }
       if (clientOnlyApp) {
         const rootIgnored = nitro.options.prerender.ignore.some((pattern) => {
-          if (typeof pattern === 'string') { return '/'.startsWith(pattern) }
           if (typeof pattern === 'function') { return pattern('/') === true }
           return pattern instanceof RegExp && new RegExp(pattern.source, pattern.flags).test('/')
         })
