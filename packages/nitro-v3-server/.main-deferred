@@ -1,2 +1,2 @@
 # held back from 4.x patch releases until 4.8 (features)
-b19192bc36 feat(kit,nuxt,schema): resolve server templates with any server builder (#37264)
+b19192bc365d200c21928cd305ac1e3a00a8dfc0 feat(kit,nuxt,schema): resolve server templates with any server builder (#37264)

@@ -3,7 +3,7 @@
  * into `packages/nitro-v3-server` (everything but `package.json`), and `packages/kit/src` as
  * is. The commit they were taken from is recorded in `packages/nitro-v3-server/.main-ref`.
  *
- * Commits listed in `packages/nitro-v3-server/.main-deferred` (one sha per line, oldest first,
+ * Commits listed in `packages/nitro-v3-server/.main-deferred` (one full sha per line, oldest first,
  * `#` starts a comment) are reverted from the mirrored files, so a change on `main` can be held
  * back from 4.x while the mirror moves past it. Each must be an ancestor of the recorded commit.
  *
@@ -65,7 +65,12 @@ function ensureCommit (sha: string, depth: number) {
 function readDeferred (): string[] {
   const file = resolve(repoRoot, BUILDER, DEFERRED_FILE)
   if (!existsSync(file)) { return [] }
-  return readFileSync(file, 'utf8').split('\n').map(line => line.replace(/#.*$/, '').trim().split(/\s+/)[0]!).filter(Boolean)
+  const shas = readFileSync(file, 'utf8').split('\n').map(line => line.replace(/#.*$/, '').trim().split(/\s+/)[0]!).filter(Boolean)
+  const abbreviated = shas.filter(sha => !/^[0-9a-f]{40}$/.test(sha))
+  if (abbreviated.length) {
+    throw new Error(`${BUILDER}/${DEFERRED_FILE} must list full commit shas, so they can be fetched in a shallow clone: ${abbreviated.join(', ')}`)
+  }
+  return shas
 }
 
 /** The mirrored files the deferred commits touch, as they are at `ref` with those commits reverted (`null` when reverting removes the file). */
