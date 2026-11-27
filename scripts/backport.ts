@@ -3,18 +3,20 @@
  *
  * `packages/nitro-v3-server` and `packages/kit/src` mirror `main` as a whole, so a commit that
  * touches them cannot be cherry-picked: the mirror is moved forward to that commit with
- * `sync-nitro-v3-server.ts`, and the rest of the commit is cherry-picked. The lockfile is
- * never taken from `main`.
+ * `sync-nitro-v3-server.ts`, and the rest of the commit is cherry-picked. A commit listed in
+ * `packages/nitro-v3-server/.main-deferred` is removed from that list and its mirrored part
+ * restored. The lockfile is never taken from `main`.
  *
  * Usage: node scripts/backport.ts <commit on main>
  */
 import process from 'node:process'
 import { execFileSync, spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 const MIRRORED = ['packages/nitro-server', 'packages/kit/src']
 const REF_FILE = 'packages/nitro-v3-server/.main-ref'
+const DEFERRED_FILE = 'packages/nitro-v3-server/.main-deferred'
 const NOT_APPLIED = [...MIRRORED, 'pnpm-lock.yaml']
 
 const repoRoot = resolve(import.meta.dirname, '..')
@@ -40,12 +42,21 @@ git('restore', '--source=HEAD', '--staged', '--worktree', '--', ...NOT_APPLIED)
 
 const mirrored = git('diff', '--name-only', `${commit}^`, commit, '--', ...MIRRORED)
 const recorded = readFileSync(resolve(repoRoot, REF_FILE), 'utf8').trim()
+const deferredFile = resolve(repoRoot, DEFERRED_FILE)
+const deferredLines = existsSync(deferredFile) ? readFileSync(deferredFile, 'utf8').split('\n') : []
+const isDeferredLine = (line: string) => {
+  const sha = line.replace(/#.*$/, '').trim().split(/\s+/)[0]
+  return !!sha && commit.startsWith(sha)
+}
 if (mirrored && !succeeds('merge-base', '--is-ancestor', commit, recorded)) {
   const others = git('log', '--format=%h %s', `${recorded}..${commit}^`, '--', ...MIRRORED)
   execFileSync('node', ['scripts/sync-nitro-v3-server.ts', commit], { cwd: repoRoot, stdio: 'inherit' })
   if (others) {
     log(`Mirrored with it, from earlier commits on main:\n${others.split('\n').map(line => `  ${line}`).join('\n')}`)
   }
+} else if (deferredLines.some(isDeferredLine)) {
+  writeFileSync(deferredFile, deferredLines.filter(line => !isDeferredLine(line)).join('\n'))
+  execFileSync('node', ['scripts/sync-nitro-v3-server.ts', recorded], { cwd: repoRoot, stdio: 'inherit' })
 }
 
 git('add', '--', 'packages/nitro-v3-server', 'packages/kit/src')

@@ -12,7 +12,7 @@ This is a map of the `nuxt/nuxt` monorepo for contributors: what each package do
 | `packages/vite` | `@nuxt/vite-builder` | Default bundler for the app (client and SSR bundles) |
 | `packages/webpack`, `packages/rsbuild`, `packages/rspack` | `@nuxt/webpack-builder`, `@nuxt/rsbuild-builder`, `@nuxt/rspack-builder` | Alternative bundlers (`builder: 'webpack' \| 'rsbuild' \| 'rspack'`); rspack is deprecated in favour of rsbuild |
 | `packages/nitro-server` | `@nuxt/nitro-server` | Default server builder: builds the server with Nitro and adapts Nitro to the renderer |
-| `packages/nitro-v3-server` | `@nuxt/nitro-v3-server` | The same server builder for a project on Nitro v3 (`_nitroMajor: 3`), loaded in place of `@nuxt/nitro-server`. Mirrored from `packages/nitro-server` on `main` by `scripts/sync-nitro-v3-server.ts`, so only its `package.json` is edited here. `scripts/backport.ts` cherry-picks a commit from `main` and moves the mirror forward with it |
+| `packages/nitro-v3-server` | `@nuxt/nitro-v3-server` | The same server builder for a project on Nitro v3 (`_nitroMajor: 3`), loaded in place of `@nuxt/nitro-server`. Mirrored from `packages/nitro-server` on `main` by `scripts/sync-nitro-v3-server.ts`, so only its `package.json` is edited here (commits listed in its `.main-deferred` are held back from the mirror). `scripts/backport.ts` cherry-picks a commit from `main` and moves the mirror forward with it |
 | `packages/vite-server` | `@nuxt/vite-server` | Experimental server builder that builds the server with Vite alone (`server.builder: 'vite'`) |
 | `packages/ui-templates` | private | Source of the HTML templates (error pages, loading screen, welcome page); the build writes them into `nuxt`, `kit` and `schema`, where they are committed |
 
