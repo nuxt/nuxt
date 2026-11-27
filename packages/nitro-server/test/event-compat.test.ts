@@ -8,7 +8,7 @@ import plugin from '../src/runtime/compat/event-plugin.ts'
 import { decorateLegacyEvent } from '../src/runtime/compat/decorate.ts'
 import { fromLegacyBody, prepareLegacyEvent } from '../src/runtime/compat/event.ts'
 import { defineEventHandler as defineLegacyEventHandler } from '../src/runtime/compat/h3-v1.ts'
-import { sendStream } from '../src/runtime/compat/h3-v1-app.ts'
+import { send, sendError, sendRedirect, sendStream } from '../src/runtime/compat/h3-v1-app.ts'
 import { wrapLegacyHandler } from '../src/runtime/compat/wrapper.ts'
 import { getRouteRules } from '../src/runtime/utils/route-rules.ts'
 
@@ -352,6 +352,142 @@ describe('v2 event bridge', () => {
 
     const secure = prepareLegacyEvent(mockEvent('https://nuxt/api/test')).node!.req as any
     expect(secure.socket.encrypted).toBe(true)
+  })
+
+  it('sends what a handler writes to the response of an in-process request', async () => {
+    const app = new H3()
+    app.get('/api/written', defineLegacyEventHandler((event) => {
+      const res = event.node!.res as any
+      res.writeHead(201, { 'x-legacy': 'yes' })
+      res.write('a')
+      res.write(new TextEncoder().encode('b'))
+      res.end('c')
+    }))
+
+    const response = await app.request('/api/written')
+
+    expect(response.status).toBe(201)
+    expect(response.headers.get('x-legacy')).toBe('yes')
+    expect(response.headers.has('content-type')).toBe(false)
+    expect(await response.text()).toBe('abc')
+  })
+
+  it('lets a request hook wrap `write` and `end` on the response of an in-process request', async () => {
+    let bytes = 0
+    const app = new H3({
+      onRequest (event) {
+        const res = prepareLegacyEvent(event).node!.res as any
+        const write = res.write.bind(res)
+        const end = res.end.bind(res)
+        res.write = (chunk: string, ...args: unknown[]) => {
+          bytes += chunk.length
+          return write(chunk, ...args)
+        }
+        res.end = (chunk?: string, ...args: unknown[]) => {
+          bytes += chunk?.length ?? 0
+          return end(chunk, ...args)
+        }
+      },
+    })
+    app.get('/api/counted', defineLegacyEventHandler((event) => {
+      event.node!.res.write('ab')
+      event.node!.res.end('c')
+    }))
+
+    const response = await app.request('/api/counted')
+
+    expect(await response.text()).toBe('abc')
+    expect(bytes).toBe(3)
+  })
+
+  it('runs `write` and `end` callbacks and ignores writes after `end` on the response of an in-process request', async () => {
+    const callbacks: string[] = []
+    const app = new H3()
+    app.get('/api/ended', defineLegacyEventHandler((event) => {
+      const res = event.node!.res as any
+      res.write('a', () => callbacks.push('write'))
+      res.end('b', () => callbacks.push('end'))
+      res.write('c')
+      res.end('d')
+    }))
+
+    const response = await app.request('/api/ended')
+
+    expect(await response.text()).toBe('ab')
+    expect(callbacks).toEqual(['write', 'end'])
+  })
+
+  it.each([
+    ['write', (res: ServerResponse) => res.write('a')],
+    ['writeHead', (res: ServerResponse) => res.writeHead(200)],
+  ])('reports the response of an in-process request as sent after `%s`, and as ended once ended', (_method, call) => {
+    const res = prepareLegacyEvent(mockEvent('http://nuxt/api/test')).node!.res as ServerResponse
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([false, false, false])
+
+    call(res)
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, false, false])
+
+    res.end()
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
+  })
+
+  it('reports the response of an in-process request as ended once a v1 helper has ended it, and after that response is sent', () => {
+    const event = prepareLegacyEvent(mockEvent('http://nuxt/api/test'))
+    const res = event.node!.res as ServerResponse
+
+    send(event, 'sent')
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
+
+    expect(fromLegacyBody(event, undefined)).toBe('sent')
+    expect([res.headersSent, res.writableEnded, res.finished]).toEqual([true, true, true])
+  })
+
+  it.each([
+    ['send', (event: H3Event) => send(event, 'sent', 'application/json')],
+    ['sendRedirect', (event: H3Event) => sendRedirect(event, '/login')],
+    ['sendError', (event: H3Event) => sendError(event, new Error('failed'))],
+  ])('keeps the response a handler ended an in-process request with when it then calls `%s`', async (_helper, call) => {
+    const app = new H3()
+    app.get('/api/written-first', defineLegacyEventHandler((event) => {
+      event.node!.res.end('written')
+      return call(event)
+    }))
+
+    const response = await app.request('/api/written-first')
+
+    expect(response.status).toBe(200)
+    expect(Object.fromEntries(response.headers)).toEqual({ 'content-length': '7' })
+    expect(await response.text()).toBe('written')
+  })
+
+  it('keeps the response a v1 helper ended an in-process request with when the handler then calls `end`', async () => {
+    const app = new H3()
+    app.get('/api/sent-first', defineLegacyEventHandler((event) => {
+      sendRedirect(event, '/login')
+      event.node!.res.end()
+    }))
+
+    const response = await app.request('/api/sent-first')
+
+    expect(response.status).toBe(302)
+    expect(await response.text()).toContain('/login')
+  })
+
+  it('keeps the response of an inner handler when an outer handler then calls `end` on an in-process request', async () => {
+    const inner = defineLegacyEventHandler(event => send(event, 'sent'))
+    const app = new H3()
+    app.get('/api/outer', defineLegacyEventHandler(async (event) => {
+      try {
+        return await inner(event)
+      } finally {
+        event.node!.res.write('late')
+        event.node!.res.end()
+      }
+    }))
+
+    const response = await app.request('/api/outer')
+
+    expect(await response.text()).toBe('sent')
   })
 
   it('keeps the socket of a node request', () => {
