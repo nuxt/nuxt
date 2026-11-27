@@ -12,7 +12,6 @@ import { MODE_RE } from './utils.ts'
  */
 export function addComponentsDir (dir: ComponentsDir, opts: { prepend?: boolean } = {}): void {
   const nuxt = useNuxt()
-  nuxt.options.components ||= []
   dir.priority ||= 0
   nuxt.hook('components:dirs', (dirs) => { dirs[opts.prepend ? 'unshift' : 'push'](dir) })
 }
@@ -49,7 +48,6 @@ export function addComponent (opts: AddComponentOptions): void {
 
 function addComponents (addedComponents: Component[]) {
   const nuxt = useNuxt()
-  nuxt.options.components ||= []
 
   nuxt.hook('components:extend', (components: Component[]) => {
     for (const component of addedComponents) {

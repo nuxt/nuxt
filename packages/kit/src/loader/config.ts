@@ -4,7 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import { loadConfig, setupDotenv } from 'c12'
-import type { NitroConfig, NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtOptions } from '@nuxt/schema'
+import type { LoadNuxtConfigOptions, NitroConfig, NuxtConfig, NuxtConfigLayer, NuxtOptions, ResolvedNuxtLayer } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
 import microdiff from 'microdiff'
@@ -24,107 +24,6 @@ import { ensureDependencyInstalled, getAddDependencyCommand } from '../dependenc
  */
 interface LoadedConfigLayer extends Omit<ResolvedNuxtLayer, 'config'> {
   config: NuxtConfig | null
-}
-
-/**
- * Context handed to `onConfigResolved` after configuration has loaded successfully.
- */
-export interface ResolvedNuxtConfigContext {
-  /**
-   * User configuration merged across all layers, with no schema defaults applied and with
-   * `overrides`, `defaults` and `defaultConfig` from the load options excluded, so repeated
-   * loads of an unchanged project produce an unchanged snapshot. Two snapshots from separate
-   * `loadNuxtConfig` calls can be compared with `diffNuxtConfig`.
-   */
-  rawConfig: NuxtConfig
-  /** Resolved config layers, highest priority first. */
-  layers: NuxtConfigLayer[]
-  /** Absolute path of the root `nuxt.config` file, if one was found. */
-  configFile?: string
-  /** Directory the configuration was loaded from. */
-  cwd: string
-}
-
-/** A layer produced by a custom {@link LoadNuxtConfigOptions.resolve} implementation. */
-export interface ResolvedNuxtLayer {
-  /** The layer's configuration. Return an empty object to contribute nothing to the merge. */
-  config: NuxtConfig
-  /** Absolute path of the directory the layer was loaded from. */
-  cwd?: string
-  /** Absolute path of the layer's config file, if it has one. */
-  configFile?: string
-  /** The `extends` entry this layer was resolved from. */
-  source?: string
-  /** Metadata to attach to the layer. */
-  meta?: NuxtConfigLayerMeta
-}
-
-/** Context passed to a custom {@link LoadNuxtConfigOptions.resolve} implementation. */
-export interface NuxtLayerResolverContext {
-  /** Directory the layer source should be resolved relative to. */
-  cwd?: string
-  /**
-   * The importer in use for the current load, if one has been established. Pass it to any
-   * nested load so a layer is not loaded through a second, differently configured importer.
-   */
-  import?: (id: string) => Promise<unknown>
-}
-
-export interface LoadNuxtConfigOptions {
-  /** Directory to load `nuxt.config` from. @default process.cwd() */
-  cwd?: string
-  /**
-   * Name of the config file to load, without an extension.
-   * @default 'nuxt.config'
-   */
-  configFile?: string
-  /**
-   * Name of the `.rc` file to load alongside the config file, or `false` to load none.
-   * @default '.nuxtrc'
-   */
-  rcFile?: string | false
-  /**
-   * Also load the user-level and workspace-level `.nuxtrc` files.
-   * @default true
-   */
-  globalRc?: boolean
-  /**
-   * Configuration applied above every layer, including the root project's own `nuxt.config`.
-   * Excluded from the `rawConfig` snapshot passed to `onConfigResolved`.
-   */
-  overrides?: NuxtConfig
-  /**
-   * Configuration applied below every layer, before schema defaults. Excluded from the
-   * `rawConfig` snapshot passed to `onConfigResolved`.
-   */
-  defaults?: NuxtConfig
-  /**
-   * Load `.env` files into `process.env` before resolving configuration. Set to `false` when
-   * the environment has already been populated.
-   * @default true
-   */
-  dotenv?: boolean | NuxtDotenvOptions
-  /**
-   * Environment name used to select `$env.*` configuration overrides. Takes precedence over
-   * `envName` set in `nuxt.config`.
-   */
-  envName?: string | false
-  /**
-   * Resolve an `extends` entry to a layer yourself. Return a nullish value to fall back to the
-   * default resolution for that source.
-   */
-  resolve?: (source: string, context: NuxtLayerResolverContext) => ResolvedNuxtLayer | null | undefined | Promise<ResolvedNuxtLayer | null | undefined>
-  /**
-   * Import config files with a custom loader rather than the default one. Supply this to load
-   * TypeScript config without Nuxt reaching for `jiti`.
-   */
-  import?: (id: string) => Promise<unknown>
-  /**
-   * Called once, awaited, after configuration has loaded successfully. Callers watching config
-   * files themselves can keep the previous `rawConfig` and pass both snapshots to
-   * `diffNuxtConfig` to find out which keys changed. Not called if loading throws.
-   */
-  onConfigResolved?: (context: ResolvedNuxtConfigContext) => void | Promise<void>
 }
 
 interface NuxtConfigDiffLocation {

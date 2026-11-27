@@ -283,7 +283,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // `noExternals: false` adds nothing to the entries below, which the server build needs
   const nitroConfig: NitroConfig = defu({ ...nuxt.options.nitro, noExternals: nuxt.options.nitro.noExternals || undefined }, {
-    debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
+    debug: nuxt.options.debug ? nuxt.options.debug.nitro ?? false : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
     serverDir: nuxt.options.serverDir,

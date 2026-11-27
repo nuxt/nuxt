@@ -29,7 +29,7 @@ import { checkPeerVersion } from '../core/peer-version.ts'
 import { createScanProblems } from '../core/scan-problems.ts'
 import type { ScanReporter } from '../core/scan-problems.ts'
 import { getBuiltinComponentMeta } from '../components/builtin-metadata.ts'
-import type { NitroInstance, NitroInstanceOptions, NuxtConfig, NuxtPage } from 'nuxt/schema'
+import type { NitroInstance, NitroInstanceOptions, NuxtPage } from 'nuxt/schema'
 import type { InlinePreset } from 'unimport'
 
 const ufoPath = resolveModulePath('ufo', { try: true, from: import.meta.url }) ?? 'ufo'
@@ -78,7 +78,7 @@ export default defineNuxtModule({
     options.pattern = Array.isArray(options.pattern) ? [...new Set(options.pattern)] : options.pattern
 
     if (nuxt.options.experimental.staticRoutes) {
-      const overrides = (nuxt.options._loadOptions as { overrides?: NuxtConfig } | undefined)?.overrides
+      const overrides = nuxt.options._loadOptions?.overrides
       const configs = [overrides, ...nuxt.options._layers.map(layer => layer.config)]
       if (!configs.some(config => config?.experimental?.early404 === false)) {
         nuxt.options.experimental.early404 = true

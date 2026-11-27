@@ -6,7 +6,7 @@ import type { UnheadVueViteOptions } from '@unhead/vue/vite'
 import type { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer'
 import type { PluginVisualizerOptions } from 'rollup-plugin-visualizer'
 import type { TransformerOptions } from 'unctx/transform'
-import type { NuxtDotenvOptions, NuxtLayerSourceOptions } from './layers.ts'
+import type { LoadNuxtConfigOptions, NuxtLayerSourceOptions } from './layers.ts'
 import type { CompatibilityDateSpec } from 'compatx'
 import type { ChokidarOptions } from 'chokidar'
 // @ts-expect-error compatibility import for h3 (v1 + v2)
@@ -39,7 +39,7 @@ import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
-import type { DevServerHandler, NitroConfig, PrerenderOptions, RendererPluginEntry, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
+import type { DevServerHandler, NitroConfig, NitroLegacyOptions, PrerenderOptions, RendererPluginEntry, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -49,7 +49,7 @@ export interface ConfigSchema {
    *
    * @see [`components/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/app/components)
    */
-  components: boolean | ComponentsOptions | ComponentsOptions['dirs']
+  components: boolean | Partial<ComponentsOptions> | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
@@ -2027,7 +2027,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | NuxtDotenvOptions, envName?: string | false }
+  _loadOptions: LoadNuxtConfigOptions | undefined
 
   /**
    *
@@ -2168,6 +2168,24 @@ export interface ConfigSchema {
    * @see [Untracing naming registry](https://github.com/unjs/untracing)
    */
   tracingChannel: boolean | TracingChannelOptions
+
+  /**
+   * Opt-in Nitro v2 compatibility for your own server code (the `server/` directory
+   * and project code it imports). Pass `true` to enable every toggle, or an object to
+   * disable individual ones. Modules registering Nitro v2 server code through
+   * `@nuxt/kit` are handled automatically and are unaffected by this option.
+   *
+   * Transitional: this option and the compatibility layer behind it are removed in
+   * Nuxt 6. Prefer importing from `nuxt/server`.
+   *
+   * @note Enabling this, or installing any module whose server code gets the
+   * compatibility layer, also turns on Nitro v2 error-shape recovery app-wide: an error
+   * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
+   * scrubbed to a 500.
+   *
+   * @default false
+   */
+  nitroLegacy: boolean | NitroLegacyOptions
 
   postcss: {
   /**

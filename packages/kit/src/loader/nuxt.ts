@@ -1,5 +1,5 @@
 import { pathToFileURL } from 'node:url'
-import type { Nuxt, NuxtConfig } from '@nuxt/schema'
+import type { LoadNuxtConfigOptions, Nuxt, NuxtConfig } from '@nuxt/schema'
 import { resolve } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { directoryToURL, importModule, tryImportModule } from '../internal/esm.ts'
@@ -7,7 +7,6 @@ import { interopDefault } from '../internal/interop.ts'
 import { runWithNuxtContext } from '../context.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
-import type { LoadNuxtConfigOptions } from './config.ts'
 
 export interface LoadNuxtOptions extends LoadNuxtConfigOptions {
   /** Load nuxt with development mode */
