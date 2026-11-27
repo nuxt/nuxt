@@ -86,7 +86,6 @@ export function reportNitroPrerender (nitro: { hooks: NitroPrerenderHooks, optio
 
   nitro.hooks.hook('prerender:routes', (queue: Set<string>) => {
     routes = queue
-    queued = queue.size
     // Nitro adds crawled routes to this set and removes each route as it starts rendering it,
     // so only counting additions tells how many routes have been queued in total
     const add = queue.add.bind(queue)
@@ -98,7 +97,8 @@ export function reportNitroPrerender (nitro: { hooks: NitroPrerenderHooks, optio
   nitro.hooks.hook('prerender:init', () => {
     start = performance.now()
     emitted = 0
-    return nuxt.callHook('build:prerender:start', { routes: routes?.size ?? 0 })
+    queued = routes?.size ?? 0
+    return nuxt.callHook('build:prerender:start', { routes: queued })
   })
   nitro.hooks.hook('prerender:route', (route: NitroPrerenderRoute) => {
     emitted++
