@@ -52,6 +52,7 @@ import { checkPeerVersion } from './peer-version.ts'
 import { checkVueVersion } from './vue-version.ts'
 import { addAppPlugin, addBuiltinsAfterModules, addBuiltinsAfterServer, addBuiltinsBeforeModules } from './builtins.ts'
 import { stripDebugProxies, trackModuleMutations } from './debug-module-mutation.ts'
+import { serveBuildDir } from './dev-build-dir.ts'
 
 export function createNuxt (options: NuxtOptions): Nuxt {
   const hooks = createHooks<NuxtHooks>()
@@ -135,6 +136,7 @@ async function initNuxt (nuxt: Nuxt) {
     nuxt.hook('listen', (server) => {
       nuxt._devServerListener = server
     })
+    serveBuildDir(nuxt)
   }
 
   nuxt.options.compatibilityDate = resolveCompatibilityDatesFromEnv(nuxt.options.compatibilityDate)
