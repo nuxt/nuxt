@@ -1,7 +1,7 @@
 import type { HeadTag, SerializableHead } from '@unhead/vue/types'
 import { SafeInputPlugin } from '@unhead/vue/plugins'
 import { createHead } from '@unhead/vue/server'
-import { resolveTags } from '@unhead/vue/utils'
+import { VueResolver, resolveTags, walkResolver } from '@unhead/vue/utils'
 
 const TAG_CONFIG_KEYS = ['key', 'tagPosition', 'tagPriority'] as const
 
@@ -31,6 +31,25 @@ export function toSafeHeadInput (input: SerializableHead): SerializableHead {
     }
   }
   return safe
+}
+
+/**
+ * Merge resolved head entries into a single serializable head input for an island response.
+ */
+export function mergeIslandHead (entries: Iterable<{ input: unknown, options?: { _safe?: boolean } }>): SerializableHead {
+  const islandHead: Record<string, any> = {}
+  for (const entry of entries) {
+    const input = walkResolver(entry.input, VueResolver) as SerializableHead
+    for (const [key, value] of Object.entries(entry.options?._safe ? toSafeHeadInput(input) : input)) {
+      const currentValue = islandHead[key]
+      if (Array.isArray(currentValue)) {
+        currentValue.push(...value)
+      } else {
+        islandHead[key] = Array.isArray(value) ? [...value] : value
+      }
+    }
+  }
+  return islandHead
 }
 
 function toInputValue (tag: HeadTag): Record<string, unknown> {

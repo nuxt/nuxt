@@ -2,12 +2,13 @@ import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { relative, resolve } from 'pathe'
 import { resolvePath } from '@nuxt/kit'
+import { buildClientAndServer, resolveSpaLoadingTemplate } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import { joinURL } from 'ufo'
 import type { Plugin } from 'vite'
 
 import { renderIndexHtml } from './html.ts'
-import { spaLoadingTemplate } from './output.ts'
+import { rendersSpaDocument } from './spa-document.ts'
 
 /**
  * Path of the SPA document, at the root of the Vite project so that it is emitted at the
@@ -29,7 +30,7 @@ export async function resolveDocument (nuxt: Nuxt): Promise<string> {
   // request URL rather than from the document's own location
   const src = nuxt.options.dev ? joinURL('/@fs', entry) : './' + relative(resolve(path, '..'), entry)
 
-  return renderIndexHtml(nuxt, src, await spaLoadingTemplate(nuxt))
+  return renderIndexHtml(nuxt, src, await resolveSpaLoadingTemplate(nuxt))
 }
 
 /**
@@ -84,8 +85,9 @@ export function EntryImportMapPlugin (): Plugin {
 }
 
 /**
- * Builds the client environment, and marks the ssr environment as built when nothing
- * will render on the server, so that the orchestrator skips it.
+ * Builds the client and ssr environments, concurrently with `experimental.parallelBuild`,
+ * and marks the ssr environment as built when nothing will render on the server, so that
+ * the orchestrator skips it.
  *
  * A `buildApp` hook rather than a `builder.buildApp` config option, so that a plugin
  * bringing its own deploy target (`@cloudflare/vite-plugin`, for one) keeps its own
@@ -105,11 +107,17 @@ export function BuildEnvironmentsPlugin (nuxt: Nuxt): Plugin {
       order: 'pre',
       async handler (builder) {
         const ssr = builder.environments.ssr
-        if (ssr && nuxt.options.ssr === false) {
+        const client = builder.environments.client
+        if (ssr && nuxt.options.ssr === false && !rendersSpaDocument(nuxt)) {
           // nothing renders on the server, so the orchestrator can skip the environment
           ssr.isBuilt = true
         }
-        for (const environment of [builder.environments.client, ssr]) {
+        if (nuxt.options.experimental.parallelBuild && !rendersSpaDocument(nuxt) && client && ssr && !client.isBuilt && !ssr.isBuilt) {
+          await buildClientAndServer(builder, client, ssr, nuxt)
+          return
+        }
+        // the document the client build emits is rendered with what the ssr environment builds
+        for (const environment of rendersSpaDocument(nuxt) ? [ssr, client] : [client, ssr]) {
           if (environment && !environment.isBuilt) {
             await builder.build(environment)
           }

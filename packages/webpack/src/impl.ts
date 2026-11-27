@@ -12,7 +12,6 @@ import { setBuilderImpl } from './builder-registry.ts'
 export const impl: BuilderImpl = {
   builder: 'webpack',
   webpack,
-  createRsbuild: undefined,
   WebpackBarPlugin,
   MiniCssExtractPlugin,
   TsCheckerPlugin,

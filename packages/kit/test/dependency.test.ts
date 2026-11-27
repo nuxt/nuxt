@@ -1,11 +1,13 @@
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { rm } from 'node:fs/promises'
+import process from 'node:process'
 import { join } from 'pathe'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { x } from 'tinyexec'
+import nuxt from '../../nuxt/package.json' with { type: 'json' }
 
 import { ensureDependencyInstalled, findPackageMissingSubpath, getAddDependencyCommand, toPackageName } from '../src/dependency.ts'
 import { logger } from '../src/logger.ts'
+import { createTempDir, fakePackage, writeFiles } from './utils.ts'
 
 vi.mock('std-env', async original => ({ ...await original<typeof import('std-env')>(), isCI: false, hasTTY: true, provider: '' }))
 vi.mock('tinyexec', () => ({ x: vi.fn(() => Promise.resolve({ exitCode: 0, stdout: '', stderr: '' })) }))
@@ -16,20 +18,15 @@ vi.mock('package-manager-detector', async original => ({
 
 let rootDir: string
 
-async function createPackage (name: string, exports: Record<string, string>) {
-  const dir = join(rootDir, 'node_modules', name)
-  await mkdir(dir, { recursive: true })
-  await writeFile(join(dir, 'package.json'), JSON.stringify({ name, type: 'module', exports }))
-  await writeFile(join(dir, 'index.js'), 'export default {}\n')
-}
+const createPackage = (name: string, exports: Record<string, string>) => writeFiles(rootDir, fakePackage(name, 'export default {}\n', { exports }))
 
 function installCreatesPackage (name: string, exports: Record<string, string>) {
   vi.mocked(x).mockImplementationOnce((() => createPackage(name, exports).then(() => ({ exitCode: 0, stdout: '', stderr: '' }))) as any)
 }
 
 beforeAll(async () => {
-  rootDir = await mkdtemp(join(tmpdir(), 'nuxt-dependency-'))
-  await writeFile(join(rootDir, 'package.json'), JSON.stringify({ name: 'app', private: true }))
+  rootDir = await createTempDir('nuxt-dependency-')
+  await writeFiles(rootDir, { 'package.json': { name: 'app', private: true } })
   await createPackage('tailwindcss', { '.': './index.js' })
   await createPackage('subpath-only', { './a': './index.js' })
 })
@@ -97,6 +94,15 @@ describe('ensureDependencyInstalled', () => {
     expect(x).not.toHaveBeenCalled()
   })
 
+  it.each(['~~/postcss/plugin', './postcss.js', '/abs/postcss.js', '#build/postcss'])('does not offer to install %s', async (specifier) => {
+    const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+
+    await expect(ensureDependencyInstalled(specifier, { rootDir, searchPaths: [] })).resolves.toBe(false)
+
+    expect(prompt).not.toHaveBeenCalled()
+    expect(x).not.toHaveBeenCalled()
+  })
+
   it('installs the package a missing subpath belongs to', async () => {
     const prompt = vi.spyOn(logger, 'prompt').mockResolvedValue(true)
     installCreatesPackage('@scope/missing', { './plugin': './index.js' })
@@ -122,11 +128,63 @@ describe('ensureDependencyInstalled', () => {
     expect(args).not.toContain('tailwindcss')
   })
 
+  it('installs a dev dependency unless asked for a regular one', async () => {
+    vi.spyOn(logger, 'prompt').mockResolvedValue(true)
+    installCreatesPackage('dev-dependency', { '.': './index.js' })
+    installCreatesPackage('regular-dependency', { '.': './index.js' })
+
+    await expect(ensureDependencyInstalled('dev-dependency', { rootDir, searchPaths: [] })).resolves.toBe(true)
+    await expect(ensureDependencyInstalled('regular-dependency', { rootDir, searchPaths: [], dev: false })).resolves.toBe(true)
+
+    const calls = vi.mocked(x).mock.calls
+    expect(calls[0]![1]).toContain('-D')
+    expect(calls[1]![1]).not.toContain('-D')
+  })
+
   it('returns false when the installed package does not provide the subpath', async () => {
     vi.spyOn(logger, 'prompt').mockResolvedValue(true)
     installCreatesPackage('@scope/other', { '.': './index.js' })
 
     await expect(ensureDependencyInstalled('@scope/other/plugin', { rootDir, searchPaths: [] })).resolves.toBe(false)
     expect(x).toHaveBeenCalledOnce()
+  })
+})
+
+describe('install advice', () => {
+  const nodeVersion = process.versions.node
+
+  afterEach(() => {
+    Object.defineProperty(process.versions, 'node', { value: nodeVersion })
+  })
+
+  async function requestPackage (name: string, { version, typescript }: { version: string, typescript: 'strip' | false }) {
+    Object.defineProperty(process.versions, 'node', { value: version })
+    vi.spyOn(process.features, 'typescript', 'get').mockReturnValue(typescript)
+    vi.spyOn(logger, 'prompt').mockResolvedValue(false)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    await expect(ensureDependencyInstalled(name, { rootDir, searchPaths: [] })).resolves.toBe(false)
+    const message = warn.mock.calls.map(args => String(args[0])).find(message => message.includes('NUXT_B5010'))
+    return message?.split('fix: ')[1]
+  }
+
+  it('suggests upgrading Node.js before installing jiti on a Node.js that cannot strip types', async () => {
+    const fix = await requestPackage('jiti', { version: '22.12.0', typescript: false })
+    expect(fix).toMatch(/^Upgrade Node\.js to a supported version \(`(.+)`\)\. Alternatively, run `pnpm add .*jiti` to install them\.$/)
+    expect(fix).toContain(`(\`${nuxt.engines.node}\`)`)
+  })
+
+  it('suggests turning type stripping back on for a supported Node.js', async () => {
+    const fix = await requestPackage('jiti', { version: '24.15.0', typescript: false })
+    expect(fix).toMatch(/^Type stripping is turned off in this Node\.js process\. .* Alternatively, run `pnpm add .*jiti` to install them\.$/)
+  })
+
+  it('only suggests installing jiti on a Node.js that strips types', async () => {
+    const fix = await requestPackage('jiti', { version: '22.18.0', typescript: 'strip' })
+    expect(fix).toMatch(/^Run `pnpm add .*jiti` to install them\.$/)
+  })
+
+  it('only suggests installing any other package', async () => {
+    const fix = await requestPackage('not-jiti', { version: '22.12.0', typescript: false })
+    expect(fix).toMatch(/^Run `pnpm add .*not-jiti` to install them\.$/)
   })
 })

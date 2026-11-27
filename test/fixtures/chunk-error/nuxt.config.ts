@@ -1,5 +1,6 @@
-export default defineNuxtConfig({
-  devtools: { enabled: false },
+import { withMatrix } from '../../matrix.ts'
+
+export default withMatrix({
   css: ['~/assets/global.css'],
   features: {
     inlineStyles: false,
@@ -7,5 +8,4 @@ export default defineNuxtConfig({
   experimental: {
     restoreState: true,
   },
-  compatibilityDate: 'latest',
 })

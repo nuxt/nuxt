@@ -19,7 +19,7 @@ permissions: {}
 
 jobs:
   link-checker:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     if: github.event_name != 'schedule' || github.repository == 'nuxt/nuxt'
     steps:
       # Cache lychee results (e.g. to avoid hitting rate limits)
@@ -35,6 +35,11 @@ jobs:
         with:
           persist-credentials: false
 
+      # check unversioned docs links against the docs for this branch's major version
+      - name: Resolve docs version
+        id: docs
+        run: echo "version=$(jq -r '.version | split(".")[0]' packages/nuxt/package.json).x" >> "$GITHUB_OUTPUT"
+
       # on pull requests, only check internal docs links to avoid
       # failures caused by flaky external sites
       - name: Lychee link checker (internal links)
@@ -46,6 +51,7 @@ jobs:
             '-c=lychee.toml'
             --exclude '^https?://'
             --include 'https://nuxt\.com/docs'
+            --remap '^https://nuxt\.com/docs/([^0-9].*)$ https://nuxt.com/docs/${{ steps.docs.outputs.version }}/$1'
             './docs/**/*.md'
             './docs/**/*.html'
           # fail the action on broken links
@@ -61,6 +67,7 @@ jobs:
           # arguments with file types to check
           args: >-
             '-c=lychee.toml'
+            --remap '^https://nuxt\.com/docs/([^0-9].*)$ https://nuxt.com/docs/${{ steps.docs.outputs.version }}/$1'
             './docs/**/*.md'
             './docs/**/*.html'
             './packages/*/src/**/*.ts'

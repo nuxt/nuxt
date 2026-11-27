@@ -40,14 +40,19 @@ export function usePrefetchScheduler (nuxtApp: NuxtApp = useNuxtApp()): Prefetch
   if (nuxtApp._prefetch) { return nuxtApp._prefetch }
   // a hidden tab shows nothing to speculate about, and a navigation waits on a request of its own
   let navigating = false
+  let watchingConnection = false
   const scheduler = createPrefetchScheduler({
-    canPrefetch: () => canPrefetch() && !navigating && document.visibilityState !== 'hidden',
+    canPrefetch: () => {
+      if (canPrefetch()) { return !navigating && document.visibilityState !== 'hidden' }
+      if (!watchingConnection) {
+        watchingConnection = true
+        ;(navigator as NavigatorWithConnection).connection?.addEventListener?.('change', () => scheduler.resume())
+      }
+      return false
+    },
     defer,
   })
   nuxtApp._prefetch = scheduler
-  // browsers without `connection` never hold for it
-  const connection = (navigator as NavigatorWithConnection).connection
-  connection?.addEventListener?.('change', () => scheduler.resume())
   document.addEventListener('visibilitychange', () => scheduler.resume())
   const router = nuxtApp.$router as unknown as Router
   router.beforeEach(() => { navigating = true })

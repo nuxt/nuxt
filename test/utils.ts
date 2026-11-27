@@ -1,10 +1,55 @@
-import { expect, vi } from 'vitest'
+import { fileURLToPath } from 'node:url'
+import { expect } from 'vitest'
 import type { Page } from 'playwright-core'
 import { parse } from 'devalue'
 import { reactive, ref, shallowReactive, shallowRef } from 'vue'
 import { createError } from 'h3'
-import { getBrowser, url, useTestContext } from '@nuxt/test-utils/e2e'
-import { isCI } from 'std-env'
+import { buildNuxt, loadNuxt } from '@nuxt/kit'
+import type { Nuxt, NuxtConfig } from 'nuxt/schema'
+import { getBrowser, setup, url, useTestContext } from '@nuxt/test-utils/e2e'
+import type { TestOptions } from '@nuxt/test-utils/e2e'
+import { isCI, isWindows } from 'std-env'
+
+import { isDev } from './matrix'
+
+/** Absolute path of `test/fixtures/<name>`. */
+export function fixturePath (name: string) {
+  return fileURLToPath(new URL(`./fixtures/${name}`, import.meta.url))
+}
+
+/**
+ * Build and serve a fixture (by name under `test/fixtures`, or by URL) for the current test file,
+ * in dev or built as the matrix project is. Does nothing unless `runs`, so a suite skipped in this
+ * project starts no server.
+ */
+export async function setupFixture (fixture: string | URL, runs: boolean, options: Partial<TestOptions> = {}) {
+  if (!runs) {
+    return
+  }
+  await setup({
+    rootDir: typeof fixture === 'string' ? fixturePath(fixture) : fileURLToPath(fixture),
+    dev: isDev,
+    server: true,
+    setupTimeout: (isWindows ? 360 : 240) * 1000,
+    serverStartTimeout: 240 * 1000,
+    ...options,
+  })
+}
+
+/**
+ * Build `rootDir` in-process with `overrides`, and return the Nuxt instance once it has closed.
+ * `beforeBuild` is called with the loaded instance before it builds.
+ */
+export async function buildInProcess (rootDir: string, overrides: NuxtConfig = {}, beforeBuild?: (nuxt: Nuxt) => void) {
+  const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides })
+  try {
+    beforeBuild?.(nuxt)
+    await buildNuxt(nuxt)
+  } finally {
+    await nuxt.close()
+  }
+  return nuxt
+}
 
 export async function renderPage (path = '/', opts?: { retries?: number }) {
   const ctx = useTestContext()
@@ -73,17 +118,56 @@ function expectNoErrorsOrWarnings (consoleLogs: Array<{ type: string, text: stri
   expect(consoleLogWarnings).toEqual([])
 }
 
-const BASE_TIMEOUT = isCI ? 6_000 : 3_000
+const BASE_TIMEOUT = isCI ? (isWindows ? 15_000 : 6_000) : 3_000
 export async function gotoPath (page: Page, path: string, retries = 2, onRetry?: () => void) {
-  await vi.waitFor(async () => {
-    try {
-      return await page.goto(url(path), { timeout: BASE_TIMEOUT })
-    } catch (error) {
-      onRetry?.()
-      throw error
+  const attempts = Math.max(1, retries)
+  if (!isDev) {
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+      try {
+        await page.goto(url(path), { timeout: BASE_TIMEOUT })
+        break
+      } catch (error) {
+        if (attempt >= attempts) {
+          throw error
+        }
+        onRetry?.()
+      }
     }
-  }, { timeout: BASE_TIMEOUT * retries || BASE_TIMEOUT })
-  await page.waitForFunction(path => window.useNuxtApp?.()?._route?.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
+    await page.waitForFunction(path => window.useNuxtApp?.()?._route?.fullPath === path && !window.useNuxtApp?.().isHydrating, path)
+    return
+  }
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    let outdatedOptimizeDep = false
+    const onResponse = (res: { status: () => number }) => {
+      if (res.status() === 504) {
+        outdatedOptimizeDep = true
+      }
+    }
+    page.on('response', onResponse)
+    try {
+      await page.goto(url(path), { timeout: BASE_TIMEOUT })
+      if (outdatedOptimizeDep) {
+        throw new Error('Vite returned 504 Outdated Optimize Dep')
+      }
+      await page.waitForFunction(
+        path => window.useNuxtApp?.()?._route?.fullPath === path && !window.useNuxtApp?.().isHydrating,
+        path,
+        { timeout: attempt < attempts ? BASE_TIMEOUT : 30_000 },
+      )
+      if (outdatedOptimizeDep) {
+        throw new Error('Vite returned 504 Outdated Optimize Dep')
+      }
+      return
+    } catch (error) {
+      if (attempt >= attempts) {
+        throw error
+      }
+      onRetry?.()
+    } finally {
+      page.off('response', onResponse)
+    }
+  }
 }
 
 const revivers = {

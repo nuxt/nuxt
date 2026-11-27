@@ -2,7 +2,7 @@ import { existsSync, promises as fsp, lstatSync } from 'node:fs'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { performance } from 'node:perf_hooks'
 import type { ModuleMeta, ModuleOptions, Nuxt, NuxtConfig, NuxtModule, NuxtOptions } from '@nuxt/schema'
-import { dirname, isAbsolute, join, relative, resolve } from 'pathe'
+import { dirname, isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import { defu } from 'defu'
 import { resolveModulePath, resolveModuleURL } from 'exsolve'
 import { readPackageJSON, resolvePackageDir } from '../internal/package-json.ts'
@@ -11,12 +11,13 @@ import { isGreaterThan, satisfies } from 'verkit'
 import { directoryToURL } from '../internal/esm.ts'
 import { interopDefault } from '../internal/interop.ts'
 import { lookupNodeModuleSubpath, parseNodeModulePath } from '../internal/node-module.ts'
+import { isWithinDir } from '../internal/paths.ts'
 import { useNuxt } from '../context.ts'
 import { logger } from '../logger.ts'
 import { resolveAlias } from '../resolve.ts'
 import { getLayerDirectories } from '../layers.ts'
 import { getAddDependencyCommand } from '../dependency.ts'
-import { getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
+import { describeMissingPackage, describeNativeImportFailure, getMissingCjsGlobal, getMissingPackage, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 import { DEFAULT_JS_FILE_EXTENSIONS } from '../constants.ts'
@@ -31,6 +32,13 @@ interface ResolvedModule {
   resolvedModulePath: string | undefined
   inlineOptions: Record<string, any>
   meta: ModuleMeta | undefined
+}
+
+type ModuleOptionsFn = () => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }
+
+function mergeModuleOptions (optionsFns: ModuleOptionsFn[], configured: unknown, inlineOptions?: Record<string, unknown>): Record<string, any> {
+  const options = optionsFns.map(fn => fn())
+  return defu({}, inlineOptions, ...options.map(o => o.overrides), configured as Record<string, unknown> | undefined, ...options.map(o => o.defaults))
 }
 
 // config keys that accept `false` as a valid config value or are known to handle disabling internally
@@ -49,7 +57,7 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
     }
   }
 
-  nuxt._moduleOptionsFunctions ||= new Map<ModuleToInstall, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>()
+  nuxt._moduleOptionsFunctions ||= new Map<ModuleToInstall, ModuleOptionsFn[]>()
   const resolvedModules: Array<ResolvedModule> = []
   // allow moduleDependencies to reference modules by their meta.name
   const modulesByMetaName = new Map<string, ModuleToInstall>()
@@ -166,24 +174,14 @@ export async function installModules (modulesToInstall: Map<ModuleToInstall, Rec
   for (const { nuxtModule, meta = {}, moduleToInstall, buildTimeModuleMeta, resolvedModulePath, inlineOptions } of resolvedModules) {
     const configKey = meta.configKey as keyof NuxtOptions | undefined
 
-    // Merge options
     const optionsFns = new Set([
       ...nuxt._moduleOptionsFunctions.get(moduleToInstall) || [],
       ...meta?.name ? nuxt._moduleOptionsFunctions.get(meta.name) || [] : [],
       // TODO: consider dropping options functions keyed by config key
       ...configKey ? nuxt._moduleOptionsFunctions.get(configKey) || [] : [],
     ])
-    if (optionsFns.size > 0) {
-      const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
-      const defaults: Array<Record<string, unknown> | undefined> = []
-      for (const fn of optionsFns) {
-        const options = fn()
-        overrides.push(options.overrides)
-        defaults.push(options.defaults)
-      }
-      if (configKey) {
-        ;(nuxt.options[configKey] as any) = defu(...overrides, nuxt.options[configKey], ...defaults)
-      }
+    if (optionsFns.size > 0 && configKey) {
+      ;(nuxt.options[configKey] as any) = mergeModuleOptions([...optionsFns], nuxt.options[configKey])
     }
 
     // Check if module should be disabled
@@ -233,14 +231,7 @@ export async function installModule<
       ...nuxt._moduleOptionsFunctions.get(configKey) || [],
     ]
     if (optionsFns.length > 0) {
-      const overrides = [] as unknown as [Record<string, unknown> | undefined, ...Array<Record<string, unknown> | undefined>]
-      const defaults: Array<Record<string, unknown> | undefined> = []
-      for (const fn of optionsFns) {
-        const options = fn()
-        overrides.push(options.overrides)
-        defaults.push(options.defaults)
-      }
-      mergedOptions = defu(inlineOptions, ...overrides, nuxt.options[configKey], ...defaults) as any
+      mergedOptions = mergeModuleOptions(optionsFns, nuxt.options[configKey], inlineOptions) as typeof inlineOptions
       ;(nuxt.options[configKey] as any) = mergedOptions
     }
   }
@@ -286,14 +277,11 @@ function resolveModuleDefinition (
   }
 
   const modAlias = resolveAlias(module, nuxt.options.alias)
+  const resolveOptions = moduleResolveOptions(nuxt)
   const modPath = resolveModulePath(modAlias, {
+    ...resolveOptions,
     try: true,
-    from: [
-      ...parentPath ? [pathToFileURL(parentPath)] : [],
-      ...nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-    ],
-    suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-    extensions: DEFAULT_JS_FILE_EXTENSIONS,
+    from: parentPath ? [pathToFileURL(parentPath), ...resolveOptions.from] : resolveOptions.from,
   })
 
   return {
@@ -303,7 +291,15 @@ function resolveModuleDefinition (
   }
 }
 
-let _jitiCache: WeakMap<Nuxt, Promise<Jiti | undefined>> | undefined
+function moduleResolveOptions (nuxt: Nuxt) {
+  return {
+    from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
+    suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
+    extensions: DEFAULT_JS_FILE_EXTENSIONS,
+  }
+}
+
+const jitiCache = new WeakMap<Nuxt, Promise<Jiti | undefined>>()
 
 /**
  * Resolve a jiti instance scoped to the project, or `undefined` if jiti is unavailable and the
@@ -318,47 +314,18 @@ let _jitiCache: WeakMap<Nuxt, Promise<Jiti | undefined>> | undefined
  * appropriate where jiti is expected to be the answer
  */
 async function getSharedJiti (nuxt: Nuxt, install: boolean): Promise<Jiti | undefined> {
-  _jitiCache ||= new WeakMap()
-  let promise = _jitiCache.get(nuxt)
+  let promise = jitiCache.get(nuxt)
   if (!promise) {
     promise = loadJiti({ rootDir: nuxt.options.rootDir, searchPaths: nuxt.options.modulesDir, install })
       .then(mod => mod?.createJiti(nuxt.options.rootDir, { alias: nuxt.options.alias }))
-    _jitiCache.set(nuxt, promise)
+    jitiCache.set(nuxt, promise)
   }
   const jiti = await promise
   // a lookup that was not allowed to install says nothing about one that is
   if (!jiti && !install) {
-    _jitiCache.delete(nuxt)
+    jitiCache.delete(nuxt)
   }
   return jiti
-}
-
-const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
-
-/**
- * Explain a failed native import in terms of what the author can change. The runtime supports
- * TypeScript, so the fix is never "stop using TypeScript": it is the specific thing the runtime
- * will not do.
- */
-function describeNativeImportFailure (error: unknown): string {
-  if (getMissingCjsGlobal(error)) {
-    return CJS_GLOBALS_HINT
-  }
-  switch ((error as { code?: string } | undefined)?.code) {
-    case 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING': {
-      return 'Published packages cannot ship TypeScript entrypoints, because the runtime does not strip types under `node_modules`. Ask the author to publish compiled JavaScript.'
-    }
-    case 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX': {
-      return 'The runtime erases type annotations but cannot compile TypeScript syntax that emits code, such as `enum`, `namespace`, decorators or constructor parameter properties. Replace it with erasable syntax.'
-    }
-    case 'ERR_MODULE_NOT_FOUND':
-    case 'ERR_UNSUPPORTED_DIR_IMPORT': {
-      return 'A specifier could not be resolved. Relative imports need an explicit file extension (`./foo.ts`, not `./foo`), and aliases such as `~/` are not resolved outside the bundler.'
-    }
-    default: {
-      return 'Check that the module and everything it imports can be loaded by the runtime directly.'
-    }
-  }
 }
 
 export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, nuxt: Nuxt = useNuxt()): Promise<{ nuxtModule: NuxtModule<any>, buildTimeModuleMeta: ModuleMeta, resolvedModulePath?: string }> {
@@ -372,10 +339,9 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   }
 
   if (typeof nuxtModule !== 'string') {
-    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` })
+    throw kitDiagnostics.NUXT_B8015({ received: `${typeof nuxtModule} (${JSON.stringify(nuxtModule)})` }, { method: 'error' })
   }
 
-  // Import if input is string
   nuxtModule = resolveAlias(nuxtModule, nuxt.options.alias)
 
   if (nuxtModule.startsWith('./') || nuxtModule.startsWith('../')) {
@@ -385,17 +351,13 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
   // resolution failures mean the module isn't installed
   let src: string
   try {
-    src = resolveModuleURL(nuxtModule, {
-      from: nuxt.options.modulesDir.map(m => directoryToURL(m.replace(/\/node_modules\/?$/, '/'))),
-      suffixes: ['nuxt', 'nuxt/index', 'module', 'module/index', '', 'index'],
-      extensions: DEFAULT_JS_FILE_EXTENSIONS,
-    })
+    src = resolveModuleURL(nuxtModule, moduleResolveOptions(nuxt))
   } catch (error: unknown) {
     throw kitDiagnostics.NUXT_B8017({
       module: nuxtModule,
       installCommand: isAbsolute(nuxtModule) ? undefined : await getAddDependencyCommand(nuxtModule, nuxt.options.rootDir),
       cause: error,
-    })
+    }, { method: 'error' })
   }
 
   // module is resolved on disk, so import failures are real load errors, not a missing install
@@ -405,13 +367,24 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
     resolvedNuxtModule = await import(src).then(r => interopDefault(r))
   } catch (nativeError: unknown) {
     const missingGlobal = getMissingCjsGlobal(nativeError)
-    // Whether jiti is the answer, or the module simply has a bug a second loader will repeat
-    const jitiCanHelp = isLoaderError(nativeError) || !!missingGlobal
+    const missingPackage = getMissingPackage(nativeError, nuxt.options.alias)
+    // Whether jiti is the answer, or the module simply has a bug a second loader will repeat.
+    // jiti may find a package the module does not depend on, which only hides the problem.
+    const jitiCanHelp = !missingPackage && (isLoaderError(nativeError) || !!missingGlobal)
+    const missingPackageError = async (missing: NonNullable<typeof missingPackage>) => kitDiagnostics.NUXT_B8020({
+      module: nuxtModule,
+      error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+      hint: await describeMissingPackage(missing, nuxt.options.rootDir),
+      cause: nativeError,
+    }, { method: 'error' })
     // A module is a function Nuxt calls later, so evaluating one twice repeats no work of its own
     const jiti = await getSharedJiti(nuxt, jitiCanHelp)
     if (!jiti) {
+      if (missingPackage) {
+        throw await missingPackageError(missingPackage)
+      }
       if (!jitiCanHelp) {
-        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError })
+        throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(nativeError), cause: nativeError }, { method: 'error' })
       }
       throw kitDiagnostics.NUXT_B8020({
         module: nuxtModule,
@@ -419,27 +392,34 @@ export async function loadNuxtModuleInstance (nuxtModule: string | NuxtModule, n
         hint: describeNativeImportFailure(nativeError),
         installCommand: await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
         cause: nativeError,
-      })
+      }, { method: 'error' })
     }
     try {
       resolvedNuxtModule = await jiti.import<NuxtModule<any>>(src, { default: true })
     } catch (error: unknown) {
+      if (missingPackage) {
+        throw await missingPackageError(missingPackage)
+      }
       // jiti's error is only the better one where jiti was expected to get further; a repeat of the
       // same failure keeps the native error and its untransformed stack
       const repeated = missingGlobal && getMissingCjsGlobal(error) === missingGlobal
       const reported = jitiCanHelp && !repeated ? error : nativeError
-      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported })
+      throw kitDiagnostics.NUXT_B8018({ module: nuxtModule, error: String(reported), cause: reported }, { method: 'error' })
     }
-    if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4)) {
+    if (shouldReportJitiFallbackOnce(resolvedModulePath, nuxt.options.rootDir, nuxt.options.future?.compatibilityVersion ?? 4, !!missingPackage)) {
       kitDiagnostics.NUXT_B8023({
         module: nuxtModule,
         error: nativeError instanceof Error ? nativeError.message : String(nativeError),
+        hint: missingPackage ? await describeMissingPackage(missingPackage, nuxt.options.rootDir) : describeNativeImportFailure(nativeError),
+        installCommand: missingPackage ? undefined : await getAddDependencyCommand('jiti', nuxt.options.rootDir, { dev: true }),
+        // the hint for a missing package already names whoever has to fix it
+        local: !!missingPackage || !normalize(resolvedModulePath).includes('/node_modules/'),
       })
     }
   }
 
   if (typeof resolvedNuxtModule !== 'function') {
-    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule })
+    throw kitDiagnostics.NUXT_B8016({ module: nuxtModule }, { method: 'error' })
   }
 
   // nuxt-module-builder generates a module.json with metadata including the version
@@ -561,8 +541,7 @@ async function callModule (nuxt: Nuxt, nuxtModule: NuxtModule<any, Partial<any>,
         ? parsed.dir + parsed.name
         : resolvePackageDir(modulePath, { try: true }) || modulePath
       nuxt.options.build.transpile.push(normalizeModuleTranspilePath(moduleRoot))
-      const directory = moduleRoot.replace(/\/?$/, '/')
-      if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => directory.startsWith(dir))) {
+      if (moduleRoot !== nameOrPath && !localLayerModuleDirs.some(dir => isWithinDir(moduleRoot, dir))) {
         nuxt.options.modulesDir.push(join(moduleRoot, 'node_modules'))
       }
     }

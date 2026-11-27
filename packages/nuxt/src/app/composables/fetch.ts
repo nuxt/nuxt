@@ -46,9 +46,9 @@ export interface UseFetchOptions<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-  R extends string = string,
-  M extends AnyServerRouteMethod = 'get',
-  B extends string = string,
+  in out R extends string = string,
+  in out M extends AnyServerRouteMethod = 'get',
+  in out B extends string = string,
 > extends Omit<AsyncDataOptions<ResT, DataT, PickKeys, DefaultT>, 'watch'>, Omit<ComputedFetchOptions<R, M, DataT, B>, 'timeout'> {
   key?: MaybeRefOrGetter<string>
   $fetch?: TypedFetch
@@ -60,9 +60,9 @@ export interface UseFetchOptionsWithTransform<
   DataT = ResT,
   PickKeys extends KeysOf<DataT> = KeysOf<DataT>,
   DefaultT = undefined,
-  R extends string = string,
-  M extends AnyServerRouteMethod = 'get',
-  B extends string = string,
+  in out R extends string = string,
+  in out M extends AnyServerRouteMethod = 'get',
+  in out B extends string = string,
 > extends Omit<UseFetchOptions<ResT, DataT, PickKeys, DefaultT, R, M, B>, 'transform'> {
   transform: _Transform<ResT, DataT>
 }
@@ -82,7 +82,7 @@ function generateOptionSegments (opts: Record<string, any>) {
     }
     segments.push(unwrapped)
   }
-  if (opts.body) {
+  if (opts.body != null) {
     const value = toValue(opts.body)
     if (!value) {
       segments.push(hashKey(value))
@@ -590,7 +590,7 @@ export function _createUseFetch<
   {
     /**
      * Fetch data from an API endpoint with an SSR-friendly composable.
-     * See {@link https://nuxt.com/docs/4.x/api/composables/use-fetch}
+     * See {@link https://nuxt.com/docs/5.x/api/composables/use-fetch}
      * @since 3.0.0
      * @param request The URL to fetch
      * @param opts extends $fetch options and useAsyncData options
@@ -669,6 +669,8 @@ export function _createUseFetch<
       // - defaults mode (plain object): factory < user opts (factory provides defaults)
       // - override mode (function): user opts < factory (factory overrides user opts)
       const {
+        key: keyOption,
+        $fetch: customFetch,
         server,
         lazy,
         default: defaultFn,
@@ -700,7 +702,7 @@ export function _createUseFetch<
 
       const _request = computed(() => toValue(request))
 
-      const key = computed(() => toValue(fetchOptions.key) || ('$f' + hashKey([
+      const key = computed(() => toValue(keyOption) || ('$f' + hashKey([
         autoKey,
         typeof _request.value === 'string' ? _request.value : '',
         ...generateOptionSegments(fetchOptions),
@@ -754,7 +756,7 @@ export function _createUseFetch<
       }
 
       const asyncData = useAsyncData<_ResT, ErrorT, DataT, PickKeys, DefaultT>(key, (_, { signal }) => {
-        const _$fetch: TypedFetch = fetchOptions.$fetch || (import.meta.server ? useRequestFetch() : $fetch)
+        const _$fetch: TypedFetch = customFetch || (import.meta.server ? useRequestFetch() : $fetch)
 
         const resolvedOptions = { signal, ..._fetchOptions } as Record<string, unknown>
         for (const key of MAYBE_REF_OR_GETTER_OPTION_KEYS) {
@@ -781,4 +783,4 @@ export const useLazyFetch: UseFetch = _createUseFetch({
   _functionName: 'useLazyFetch',
 })
 
-export type { AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'
+export type { AnyServerRouteMethod, AvailableServerRouteMethod, ServerRouteMethod, ServerRouteMethods, TypedFetch, TypedFetch as $Fetch, TypedFetchOptions, FetchOptions, TypedFetchRequest, TypedServerError, TypedServerResponse } from '../types/fetch'

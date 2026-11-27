@@ -1,24 +1,11 @@
-import { addServerHandler, addServerImports, addServerImportsDir, createResolver, defineNuxtModule } from 'nuxt/kit'
+import { addRendererPlugin, addServerImports, addServerImportsDir, addServerTemplate, createResolver, defineNuxtModule } from 'nuxt/kit'
 
 export default defineNuxtModule({
   meta: {
     name: 'auto-registered-module',
   },
-  setup (_, nuxt) {
+  setup () {
     const resolver = createResolver(import.meta.url)
-
-    addServerHandler({
-      handler: resolver.resolve('./runtime/handler'),
-      route: '/auto-registered-module',
-    })
-
-    // #34982
-    nuxt.hook('nitro:config', () => {
-      addServerHandler({
-        handler: resolver.resolve('./runtime/late-handler'),
-        route: '/auto-registered-module-late',
-      })
-    })
 
     addServerImports([{
       from: resolver.resolve('./runtime/some-server-import'),
@@ -30,5 +17,12 @@ export default defineNuxtModule({
     }])
 
     addServerImportsDir(resolver.resolve('./runtime/server/utils'))
+
+    addServerTemplate({
+      filename: '#auto-registered/template',
+      getContents: () => `export const mark = 'from a server template'`,
+    })
+
+    addRendererPlugin(resolver.resolve('./runtime/renderer-plugin'))
   },
 })

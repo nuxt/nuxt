@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
+import ignore from 'ignore'
 import type { Component, Nuxt } from '@nuxt/schema'
 import { kebabCase } from 'scule'
 import { join, normalize } from 'pathe'
@@ -68,6 +69,18 @@ describe('components:transform', () => {
     `)
   })
 
+  it('should skip ignored files', async () => {
+    const rootDir = fileURLToPath(new URL('./package-fixture/root/', import.meta.url))
+    const transform = createTransformer([createComponent('Foo')], 'all', ['ignored/**'])
+    const ignoredFile = join(rootDir, 'ignored', 'app.vue')
+    const includedFile = join(rootDir, 'pages', 'app.vue')
+
+    expect(await transform('import { Foo } from \'#components\'', ignoredFile)).toBeUndefined()
+    expect(await transform('', `${ignoredFile}?nuxt_component=async`)).toBeUndefined()
+    expect(await transform('import { Foo } from \'#components\'', includedFile)).toContain('Foo.vue')
+    expect(await transform('', `${includedFile}?nuxt_component=async`)).toContain('defineAsyncComponent')
+  })
+
   it('should correctly resolve client-only components', async () => {
     const transform = createTransformer([
       createComponent('Foo', { mode: 'client' }),
@@ -101,17 +114,20 @@ describe('components:transform', () => {
 
 const repoRoot = await findWorkspaceDir()
 
-function createTransformer (components: Component[], mode: 'client' | 'server' | 'all' = 'all') {
+function createTransformer (components: Component[], mode: 'client' | 'server' | 'all' = 'all', ignored: string[] = []) {
+  const rootDir = fileURLToPath(new URL('./package-fixture/root/', import.meta.url))
   const stubNuxt = {
+    _ignore: ignore().add(ignored),
     options: {
-      rootDir: fileURLToPath(new URL('./package-fixture/root/', import.meta.url)),
-      buildDir: '/',
+      rootDir,
+      buildDir: join(rootDir, '.nuxt'),
       sourcemap: {
         server: false,
         client: false,
       },
+      _layers: [],
     },
-  } as Nuxt
+  } as unknown as Nuxt
   const plugins = TransformPlugin(stubNuxt, {
     mode,
     getComponents: () => components,

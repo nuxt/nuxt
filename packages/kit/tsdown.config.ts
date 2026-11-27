@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { defineConfig } from 'tsdown'
+import { failOnInvalidAnnotation } from '../../scripts/tsdown-plugins.ts'
 
 export default defineConfig({
   entry: ['src/index.ts', 'src/internal/index.ts'],
@@ -10,6 +11,7 @@ export default defineConfig({
   // diagnostics catalogs rely on. tsc handles it.
   dts: {},
   exports: { devExports: true },
+  plugins: [failOnInvalidAnnotation()],
   deps: {
     // like nitro, we inline `c12` because we don't want to pull in chokidar and other deps we don't use.
     //

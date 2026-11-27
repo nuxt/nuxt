@@ -1,44 +1,12 @@
 import type { Plugin } from 'vite'
-import type { SourceMapInput } from 'rollup'
+import type { SourceMapInput } from 'rolldown'
 import { ensureDependencyInstalled, getAddDependencyCommand } from '@nuxt/kit'
-import { bundlerDiagnostics } from '@nuxt/kit/internal'
+import { MAY_CONTAIN_DECORATOR_RE, bundlerDiagnostics, hasDecoratorSyntax } from '@nuxt/kit/internal'
 import type { Nuxt } from '@nuxt/schema'
 import jsTokens from 'js-tokens'
 import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
 const BABEL_DECORATOR_DEPS = ['@babel/plugin-proposal-decorators', '@babel/plugin-syntax-jsx'] as const
-
-export function hasDecoratorSyntax (code: string, jsx = false) {
-  const tokens = jsx ? jsTokens(code, { jsx: true }) : jsTokens(code)
-
-  for (const token of tokens) {
-    if (!token.value.includes('@')) {
-      continue
-    }
-
-    switch (token.type) {
-      case 'HashbangComment':
-      case 'SingleLineComment':
-      case 'TemplateHead':
-      case 'TemplateMiddle':
-        continue
-      case 'MultiLineComment':
-      case 'StringLiteral':
-      case 'NoSubstitutionTemplate':
-      case 'TemplateTail':
-      case 'JSXString':
-        // An unclosed token can consume code that follows it. Let Babel parse
-        // ambiguous input instead of potentially hiding a real decorator.
-        if (token.closed) {
-          continue
-        }
-    }
-
-    return true
-  }
-
-  return false
-}
 
 export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
   let transformSync: typeof import('@babel/core').transformSync
@@ -63,9 +31,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
     },
     transform: {
       filter: {
-        // Only run on files that may contain decorator syntax
-        // (JS/TS/Vue files) and that include "@" as a quick check
-        code: '@',
+        code: MAY_CONTAIN_DECORATOR_RE,
 
         id: {
           include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
@@ -78,7 +44,7 @@ export function DecoratorsPlugin (nuxt: Nuxt): Plugin {
           return
         }
 
-        if (!hasDecoratorSyntax(code, /\.[jt]sx(?:$|\?)/.test(id))) {
+        if (!hasDecoratorSyntax(code, jsTokens, /\.[jt]sx(?:$|\?)/.test(id))) {
           return
         }
 

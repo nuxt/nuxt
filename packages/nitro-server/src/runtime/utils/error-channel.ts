@@ -7,7 +7,7 @@ import { isMainThread } from 'node:worker_threads'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { rootDir, srcDir } from '#internal/dev-server-logs-options'
+import { allowedHosts, reportFs, rootDir, srcDir } from '#internal/dev-server-logs-options'
 import * as devError from 'nuxt/internal/dev-error'
 
 import { NUXT_ERROR_CHANNEL } from '#internal/nuxt/nitro-config.mjs'
@@ -30,6 +30,7 @@ export function getErrorChannelPath (): string {
 }
 
 devError.setErrorChannelForwarding(() => shouldForwardReports())
+devError.setErrorChannelAccess({ root: reportFs.strict === false ? false : reportFs.allow, allowedHosts })
 
 /** The live error channel, forwarding to the dev server in front when there is one. */
 export function useErrorChannel (): Promise<Channel> {
@@ -41,19 +42,28 @@ export function publishErrorReport (report: ErrorReport, event?: H3Event): Promi
   return devError.publishErrorReport(report, event && { method: event.req.method, url: event.url, headers: event.req.headers })
 }
 
+/** Render the badge for the head of a page rendered for `event`. */
+export function renderDevBadge (event: H3Event, nonce?: string): Promise<string> {
+  return devError.renderDevBadge({ cwd: rootDir, channel: getErrorChannelPath(), request: event.req, nonce })
+}
+
 /**
  * Build a report for an error raised while rendering. Must run on the stack as it was
  * raised, since frames are mapped through the SSR bundle's sourcemaps.
  */
-export function createErrorReport (error: unknown, event?: H3Event): Promise<ErrorReport> {
+export async function createErrorReport (error: unknown, event?: H3Event): Promise<ErrorReport> {
   devError.resolveErrorPaths(error, resolveTransformPath)
   const ssrSourceMaps = useNitroApp().ssrSourceMaps
+  canRead ||= devError.createFsAccessCheck(reportFs).catch(() => () => false)
   return devError.createErrorReport(error, {
     cwd: rootDir,
     loaders: ssrSourceMaps ? [compiledPositionLoader(ssrSourceMaps)] : [],
+    canRead: await canRead,
     context: { event },
   })
 }
+
+let canRead: Promise<(file: string) => boolean> | undefined
 
 /**
  * Resolve a bundler module id such as `/app.vue`, which reads as an absolute path but is

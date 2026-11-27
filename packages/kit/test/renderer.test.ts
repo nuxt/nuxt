@@ -53,7 +53,9 @@ describe('getRendererConfig', () => {
     const stub = readFileSync(new URL('../../nuxt/src/runtime/server/renderer-config.ts', import.meta.url), 'utf-8')
     const expected = [...stub.matchAll(/^export const (\w+)/gm)].map(match => match[1])
 
-    expect(exportedNames(getRendererConfig({}, nuxt())).sort()).toEqual(expected.sort())
+    const experimental = expected.includes('NUXT_JSON_PAYLOADS') ? { renderJsonPayloads: true } : {}
+
+    expect(exportedNames(getRendererConfig({}, nuxt({ experimental }))).sort()).toEqual(expected.sort())
   })
 
   it('derives what it can from the resolved configuration', () => {
@@ -71,6 +73,12 @@ describe('getRendererConfig', () => {
     expect(code).toContain('export const appRootAttrs = {"id":"__nuxt"}')
   })
 
+  it('provides `NUXT_JSON_PAYLOADS` to a host that can render JS payloads', () => {
+    expect(exportedNames(getRendererConfig({}, nuxt()))).not.toContain('NUXT_JSON_PAYLOADS')
+    expect(getRendererConfig({}, nuxt({ experimental: { renderJsonPayloads: false } }))).toContain('export const NUXT_JSON_PAYLOADS = false')
+    expect(getRendererConfig({}, nuxt({ experimental: { renderJsonPayloads: true } }))).toContain('export const NUXT_JSON_PAYLOADS = true')
+  })
+
   it('defaults the constants a server builder resolves for itself, and takes overrides', () => {
     const code = getRendererConfig({ overrides: { componentIslands: 'true', spaTemplate: '"<span/>"' } }, nuxt())
 
@@ -84,7 +92,7 @@ describe('getRendererConfig', () => {
     const code = getRendererConfig({}, nuxt())
 
     expect(code).toContain(`export { default as unheadOptions } from "#build/unhead-options.mjs"`)
-    expect(code).toContain(`export { iifeChunkFileName, renderSSRHeadOptions } from "#build/unhead.config.mjs"`)
+    expect(code).toContain(`export { appComponentHead, iifeChunkFileName, renderSSRHeadOptions } from "#build/unhead.config.mjs"`)
 
     expect(getRendererConfig({ unheadOptions: '#custom', headConfig: '#custom-config' }, nuxt())).toContain(`from "#custom-config"`)
   })
@@ -170,6 +178,24 @@ describe('getServerRuntime', () => {
     expect(await modules['nuxt/internal/manifest']!.code()).toBe(manifest)
     expect(modules['nuxt/internal/manifest']!.output).toBe('clientManifest')
     expect(modules['nuxt/internal/renderer-config']!.output).toBeUndefined()
+  })
+
+  it('provides the modules registered with `addServerTemplate()`', async () => {
+    const { modules } = getServerRuntime({}, nuxt({
+      buildOutputs: buildOutputs(),
+      _serverTemplates: {
+        '#string': 'export const a = 1',
+        '#sync': () => 'export const b = 2',
+        '#async': () => Promise.resolve('export const c = 3'),
+        'nuxt/internal/styles': 'export default { replaced: true }',
+      },
+    }))
+
+    expect(await modules['#string']!.code()).toBe('export const a = 1')
+    expect(await modules['#sync']!.code()).toBe('export const b = 2')
+    expect(await modules['#async']!.code()).toBe('export const c = 3')
+    expect(modules['#string']!.output).toBeUndefined()
+    expect(await modules['nuxt/internal/styles']!.code()).toBe('export default { replaced: true }')
   })
 
   it('resolves the renderer config overrides each time the module is read', async () => {

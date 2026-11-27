@@ -11,7 +11,7 @@ import { linkToAlias, logger } from '../utils.ts'
 import * as defaultTemplates from './templates.ts'
 import { getNameFromPath, hasSuffix, uniqueBy } from './utils/index.ts'
 import type { ExtractedPluginMeta, PluginBuildMode } from './plugins/plugin-metadata.ts'
-import { extractMetadata, orderMap } from './plugins/plugin-metadata.ts'
+import { extractMetadata, orderMap, reportMetadataFallback } from './plugins/plugin-metadata.ts'
 import type { Nuxt, NuxtApp, NuxtPlugin, NuxtTemplate, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 export function createApp (nuxt: Nuxt, options: Partial<NuxtApp> = {}): NuxtApp {
@@ -52,18 +52,14 @@ const postTemplates = new Set([
 
 export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?: (template: ResolvedNuxtTemplate<any>) => boolean } = {}) {
   const generateStart = performance.now()
-  // Resolve app
   await resolveApp(nuxt, app)
   const resolvedAt = performance.now()
 
-  // User templates from options.build.templates
   app.templates = Object.values(defaultTemplates).concat(nuxt.options.build.templates) as NuxtTemplate[]
 
-  // Extend templates with hook
   await nuxt.callHook('app:templates', app)
   const scannedAt = performance.now()
 
-  // Normalize templates
   app.templates = app.templates.map(tmpl => normalizeTemplate(tmpl, nuxt.options.buildDir))
 
   // compile plugins first as they are needed within the nuxt.vfs
@@ -79,13 +75,13 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     filteredTemplates[key].push(template)
   }
 
-  // Compile templates into vfs
   const templateContext = { nuxt, app }
 
   const writes: Array<() => void> = []
   const dirs = new Set<string>()
   const changedTemplates: Array<ResolvedNuxtTemplate<any>> = []
   const FORWARD_SLASH_RE = /\//g
+  const debugTemplates = !!(nuxt.options.debug && nuxt.options.debug.templates)
   async function processTemplate (template: ResolvedNuxtTemplate) {
     const fullPath = template.dst || resolve(nuxt.options.buildDir, template.filename!)
     const start = performance.now()
@@ -113,24 +109,35 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
       changedTemplates.push(template)
     }
 
-    const perf = performance.now() - start
-    const compileTime = Math.round((perf * 100)) / 100
-
-    if ((nuxt.options.debug && nuxt.options.debug.templates) || compileTime > 500) {
-      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` in ${compileTime}ms`)
+    if (debugTemplates) {
+      logger.info(`Compiled \`${linkToAlias(fullPath, nuxt)}\` in ${Math.round((performance.now() - start) * 100) / 100}ms`)
     }
 
     if (template.modified && template.write && !matchesDisk(fullPath, contents)) {
       dirs.add(dirname(fullPath))
       writes.push(() => writeFileSync(fullPath, contents, 'utf8'))
-      if (nuxt.options.debug && nuxt.options.debug.templates) {
+      if (debugTemplates) {
         logger.info(`Writing \`${template.filename}\` to \`${linkToAlias(fullPath, nuxt)}\``)
       }
     }
   }
 
-  await Promise.allSettled(filteredTemplates.pre.map(processTemplate))
-  await Promise.allSettled(filteredTemplates.post.map(processTemplate))
+  const compileStart = performance.now()
+  for (const templates of [filteredTemplates.pre, filteredTemplates.post]) {
+    if (debugTemplates) {
+      // one at a time, so each reported time covers only that template
+      for (const template of templates) {
+        await processTemplate(template).catch(() => {})
+      }
+    } else {
+      await Promise.allSettled(templates.map(processTemplate))
+    }
+  }
+  const compileTime = performance.now() - compileStart
+
+  if (!debugTemplates && compileTime > 500) {
+    logger.info(`Generating templates took ${Math.round(compileTime)}ms. Set \`debug: { templates: true }\` to see how long each template took.`)
+  }
 
   // Write template files in single synchronous step to avoid (possible) additional
   // runtime overhead of cascading HMRs from vite/webpack
@@ -141,7 +148,7 @@ export async function generateApp (nuxt: Nuxt, app: NuxtApp, options: { filter?:
     write()
   }
 
-  if (nuxt.options.debug && nuxt.options.debug.templates) {
+  if (debugTemplates) {
     logger.info(`Generated app in ${Math.round(performance.now() - generateStart)}ms (resolve ${Math.round(resolvedAt - generateStart)}ms, scan ${Math.round(scannedAt - resolvedAt)}ms, compile ${Math.round(performance.now() - scannedAt)}ms), ${changedTemplates.length} template(s) changed`)
   }
 
@@ -172,14 +179,14 @@ async function compileTemplate<T> (template: NuxtTemplate<T>, ctx: { nuxt: Nuxt,
     try {
       return await fsp.readFile(template.src, 'utf-8')
     } catch (err) {
-      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err })
+      throw buildDiagnostics.NUXT_B1002({ src: template.src, cause: err }, { method: 'error' })
     }
   }
   if (template.getContents) {
     return template.getContents({ ...ctx, options: template.options! })
   }
 
-  throw buildDiagnostics.NUXT_B1003()
+  throw buildDiagnostics.NUXT_B1003({}, { method: 'error' })
 }
 
 export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
@@ -188,23 +195,18 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   const version = getAppStructureVersion(nuxt)
   if (nuxt.options.dev && resolvedStructureVersions.get(app) === version) { return }
 
-  // resolve layer
   const layerDirs = getLayerDirectories(nuxt)
   const reversedLayerDirs = layerDirs.toReversed()
 
-  // Resolve main (app.vue)
   app.mainComponent ||= await findPath(layerDirs.flatMap(d => [join(d.app, 'App'), join(d.app, 'app')]))
   app.mainComponent ||= resolve(nuxt.options.appDir, 'components/welcome.vue')
 
-  // Resolve root component
   app.rootComponent ||= await findPath(['~/app.root', resolve(nuxt.options.appDir, 'components/nuxt-root.vue')])
 
-  // Resolve error component
   app.errorComponent ||= await findPath(layerDirs.map(d => join(d.app, 'error'))) ?? resolve(nuxt.options.appDir, 'components/nuxt-error-page.vue')
 
   const extensionGlob = nuxt.options.extensions.join(',')
 
-  // Resolve layouts/ from all config layers
   const layouts: NuxtApp['layouts'] = {}
   for (const dirs of layerDirs) {
     const layoutFiles = await resolveFiles(dirs.appLayouts, `**/*{${extensionGlob}}`)
@@ -264,7 +266,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
   middleware = uniqueBy(await resolvePaths(nuxt, middleware.toReversed(), 'path'), 'name').reverse()
   plugins = uniqueBy(await resolvePaths(nuxt, plugins, 'src'), 'src')
 
-  // Resolve app.config
   const configs: NuxtApp['configs'] = []
   for (const dirs of layerDirs) {
     const appConfigPath = await findPath(join(dirs.app, 'app.config'))
@@ -275,7 +276,6 @@ export async function resolveApp (nuxt: Nuxt, app: NuxtApp) {
 
   Object.assign(app, { middleware, plugins, configs, layouts })
 
-  // Extend app
   await nuxt.callHook('app:resolve', app)
 
   // Normalize and de-duplicate plugins, middleware and app configs
@@ -307,24 +307,30 @@ const IS_TSX = /\.[jt]sx$/
 
 export type AnnotatedPlugin = NuxtPlugin & ExtractedPluginMeta
 
+const NODE_MODULES_RE = /[\\/]node_modules[\\/]/
+const reportedMetadataFallbacks = new WeakMap<Nuxt, Map<string, unknown>>()
+
 export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promise<AnnotatedPlugin[]> {
   const _plugins: AnnotatedPlugin[] = []
+  const reported = reportedMetadataFallbacks.get(nuxt) || new Map<string, unknown>()
+  reportedMetadataFallbacks.set(nuxt, reported)
+  const reportFallback = async (plugin: NuxtPlugin, reason: unknown) => {
+    if (reported.get(plugin.src) === reason) { return }
+    reported.set(plugin.src, reason)
+    if (!(nuxt.options.debug && nuxt.options.debug.modules) && NODE_MODULES_RE.test(await fsp.realpath(plugin.src).catch(() => plugin.src))) { return }
+    reportMetadataFallback(linkToAlias(plugin.src, nuxt), reason)
+  }
   for (const plugin of plugins) {
     try {
       const code = nuxt.vfs[plugin.src] ?? await fsp.readFile(plugin.src!, 'utf-8')
-      _plugins.push({
-        ...await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts'),
-        ...plugin,
-      })
-    } catch (e) {
-      const relativePluginSrc = linkToAlias(plugin.src, nuxt)
-      const code = e instanceof Error ? e.name : ''
-      if (code === 'NUXT_B2001' || code === 'NUXT_B2002') {
-        pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc })
-      } else {
-        pluginDiagnostics.NUXT_B2010({ src: relativePluginSrc, cause: e })
+      const meta = await extractMetadata(code, IS_TSX.test(plugin.src) ? 'tsx' : 'ts')
+      _plugins.push({ ...meta, ...plugin })
+      if (meta._metaUnknown) {
+        await reportFallback(plugin, meta)
       }
+    } catch (e) {
       _plugins.push({ ...plugin, _metaUnknown: true })
+      await reportFallback(plugin, e)
     }
   }
 
@@ -332,11 +338,23 @@ export async function annotatePlugins (nuxt: Nuxt, plugins: NuxtPlugin[]): Promi
 }
 
 /**
+ * Throw if plugins depend on each other in a cycle in the client or server build.
+ */
+export async function assertNoCircularPluginDependencies (nuxt: Nuxt, plugins: NuxtPlugin[]): Promise<void> {
+  const annotated = await annotatePlugins(nuxt, plugins)
+  for (const excludedMode of ['client', 'server'] as const) {
+    breakCircularDependencies(annotated.filter(plugin => plugin.mode !== excludedMode), (cycle) => {
+      throw pluginDiagnostics.NUXT_B2009(cycle, { method: 'error' })
+    })
+  }
+}
+
+/**
  * Reorder `order`-sorted plugins so each plugin's `dependsOn` entries appear earlier in the array.
  * The original (order-sorted) sequence is preserved as the stable tiebreaker. Unknown dependency
- * names are ignored to match the runtime resolver. Cycles are not resolved here; any plugin still
- * pending after the walk is emitted in its original position. `checkForCircularDependencies`
- * surfaces those graphs separately.
+ * names are ignored to match the runtime resolver. Cycles are removed beforehand by
+ * `breakCircularDependencies`; any plugin still pending after the walk is emitted in its original
+ * position.
  */
 export function sortPluginsByDependsOn<T extends AnnotatedPlugin> (plugins: T[]): T[] {
   const known = new Set<string>()
@@ -432,55 +450,72 @@ export function filterPluginDependencies<T extends AnnotatedPlugin> (plugins: T[
   return filter ? result : plugins
 }
 
-export function hasPluginDependencies (plugins: Array<{ dependsOn?: string[], _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.dependsOn && plugin.dependsOn.length > 0) { return true }
-  }
-  return false
+export type PluginCapability = 'dependsOn' | 'parallel' | 'hasHooks' | 'hasEnv'
+
+/**
+ * Whether any plugin may use a capability, so the runtime can skip the code paths for it otherwise.
+ * Plugins with metadata unknown at build time may use any capability.
+ */
+export function hasPluginCapability (plugins: Array<{ dependsOn?: string[], parallel?: boolean, hasHooks?: boolean, hasEnv?: boolean, _metaUnknown?: boolean }>, capability: PluginCapability): boolean {
+  return plugins.some((plugin) => {
+    const value = plugin[capability]
+    return plugin._metaUnknown || (Array.isArray(value) ? value.length > 0 : !!value)
+  })
 }
 
-export function hasParallelPlugins (plugins: Array<{ parallel?: boolean, _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.parallel) { return true }
-  }
-  return false
-}
+interface CircularDependency { cycle: string, name: string, dependency: string }
 
-export function hasPluginHooks (plugins: Array<{ hasHooks?: boolean, _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.hasHooks) { return true }
-  }
-  return false
-}
-
-export function hasIslandOptOutPlugins (plugins: Array<{ hasEnv?: boolean, _metaUnknown?: boolean }>): boolean {
-  for (const plugin of plugins) {
-    if (plugin._metaUnknown) { return true }
-    if (plugin.hasEnv) { return true }
-  }
-  return false
-}
-
-export function checkForCircularDependencies (_plugins: AnnotatedPlugin[]) {
-  const deps: Record<string, string[]> = Object.create(null)
-  for (const plugin of _plugins) {
-    // Make graph to detect circular dependencies
-    if (plugin.name) {
-      deps[plugin.name] = plugin.dependsOn || []
+/**
+ * Remove the `dependsOn` entries that close a cycle, walking plugins in order, so the remaining
+ * dependencies can always be resolved.
+ */
+export function breakCircularDependencies<T extends AnnotatedPlugin> (plugins: T[], onCycle: (cycle: CircularDependency) => void = cycle => pluginDiagnostics.NUXT_B2009(cycle)): T[] {
+  // a name is resolved once any plugin with that name has run
+  const names = new Set(plugins.flatMap(plugin => plugin.name ? [plugin.name] : []))
+  const resolved = new Set<string>()
+  const blocked = new Set(plugins.keys())
+  let progressed = true
+  while (progressed) {
+    progressed = false
+    for (const index of blocked) {
+      const plugin = plugins[index]!
+      if (plugin.dependsOn?.some(name => names.has(name) && !resolved.has(name))) { continue }
+      blocked.delete(index)
+      if (plugin.name) { resolved.add(plugin.name) }
+      progressed = true
     }
   }
-  const checkDeps = (name: string, visited: string[] = []): string[] => {
-    if (visited.includes(name)) {
-      pluginDiagnostics.NUXT_B2009({ cycle: `${visited.join(' -> ')} -> ${name}` })
-      return []
+  if (!blocked.size) { return plugins }
+
+  const byName = new Map<string, number>()
+  for (const index of blocked) {
+    const name = plugins[index]!.name
+    if (name && !resolved.has(name) && !byName.has(name)) { byName.set(name, index) }
+  }
+
+  const result = [...plugins]
+  const done = new Set<number>()
+  const stack: number[] = []
+  const visit = (index: number) => {
+    stack.push(index)
+    const plugin = result[index]!
+    for (const dependency of plugin.dependsOn || []) {
+      const target = byName.get(dependency)
+      if (target === undefined || done.has(target)) { continue }
+      const position = stack.indexOf(target)
+      if (position === -1) {
+        visit(target)
+        continue
+      }
+      const cycle = [...stack.slice(position), target].map(i => result[i]!.name)
+      onCycle({ cycle: cycle.join(' -> '), name: plugin.name!, dependency })
+      result[index] = { ...result[index]!, dependsOn: result[index]!.dependsOn!.filter(name => name !== dependency) }
     }
-    visited.push(name)
-    return deps[name]?.length ? deps[name].flatMap(dep => checkDeps(dep, [...visited])) : []
+    stack.pop()
+    done.add(index)
   }
-  for (const name in deps) {
-    checkDeps(name)
+  for (const index of blocked) {
+    if (!done.has(index)) { visit(index) }
   }
+  return result
 }

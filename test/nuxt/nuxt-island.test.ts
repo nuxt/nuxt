@@ -48,6 +48,7 @@ vi.mock('#build/nuxt.config.mjs', () => {
     cookieStore: false,
     appManifest: false,
     serverPathFallback: false,
+    staticRoutes: false,
     remoteComponentIslands: true,
     selectiveClient: true,
     devPagesDir: null,

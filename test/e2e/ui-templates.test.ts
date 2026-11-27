@@ -1,19 +1,11 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
-import { waitForHydration } from '@nuxt/test-utils'
 import type { Page } from '@playwright/test'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/ui-templates', import.meta.url))
+import { expect, fixtureDir, test } from './test-utils'
 
 test.describe.configure({ mode: 'serial' })
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('ui-templates'),
   },
 })
 
@@ -23,21 +15,21 @@ function app (page: Page) {
 }
 
 test.describe('error-404 template', () => {
-  test('offers only the home link on a direct hit', async ({ page }) => {
-    await page.goto('/does-not-exist')
-    await waitForHydration(page, '/does-not-exist', 'hydration')
+  test('offers only the home link on a direct hit', async ({ page, goto }) => {
+    await goto('/does-not-exist')
 
+    await expect(page).toHaveTitle('404 - Page not found: /does-not-exist | Nuxt')
     await expect(app(page).getByRole('heading', { level: 1 })).toHaveText('404')
     await expect(page.locator('[data-back-home]')).toBeVisible()
     await expect(page.locator('[data-back-previous]')).toBeHidden()
   })
 
-  test('offers a back button for in-app navigation and returns to the previous page', async ({ page }) => {
-    await page.goto('/')
-    await waitForHydration(page, '/', 'hydration')
+  test('offers a back button for in-app navigation and returns to the previous page', async ({ page, goto }) => {
+    await goto('/')
 
     await page.getByTestId('broken-link').click()
 
+    await expect(page).toHaveTitle('404 - Page not found: /does-not-exist | Nuxt')
     await expect(page.locator('[data-back-previous]')).toBeVisible()
     await expect(page.locator('[data-back-home]')).toBeHidden()
 
@@ -49,19 +41,18 @@ test.describe('error-404 template', () => {
 })
 
 test.describe('error-500 template', () => {
-  test('renders the error template for a fatal error', async ({ page }) => {
-    await page.goto('/crash')
-    await waitForHydration(page, '/crash', 'hydration')
+  test('renders the error template for a fatal error', async ({ page, goto }) => {
+    await goto('/crash')
 
+    await expect(page).toHaveTitle('500 - Internal Server Error | Nuxt')
     await expect(app(page).getByRole('heading', { level: 1 })).toHaveText('500')
     await expect(app(page).getByRole('heading', { level: 2 })).toHaveText('Internal Server Error')
   })
 })
 
 test.describe('welcome template', () => {
-  test('renders via <NuxtWelcome>', async ({ page }) => {
-    await page.goto('/welcome')
-    await waitForHydration(page, '/welcome', 'hydration')
+  test('renders via <NuxtWelcome>', async ({ page, goto }) => {
+    await goto('/welcome')
 
     await expect(page.getByRole('heading', { level: 2, name: 'Get started' })).toBeVisible()
     await expect(page.getByRole('link', { name: 'Documentation' })).toBeVisible()

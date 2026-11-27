@@ -10,6 +10,45 @@ import markdown from '@eslint/markdown'
 import { runtimeDependencies } from 'nuxt/meta'
 import { generatedTemplateCopies } from './packages/ui-templates/lib/paths.mjs'
 
+const DIR_NAME_RE = /dir|root|cwd/i
+const SLASHED_NAME_RE = /slash/i
+
+const throwDiagnosticRestriction = {
+  message: 'Pass `{ method: \'error\' }` when throwing a diagnostic, so that it is reported as an error.',
+  selector: 'ThrowStatement > CallExpression[callee.object.name=/Diagnostics$/]:not(:has(Property[key.name="method"]))',
+}
+
+/**
+ * Flags `.startsWith(x)` where `x` is named like a directory: without a trailing slash, `/foo`
+ * also matches `/foo-bar`.
+ * @type {import('eslint').Rule.RuleModule}
+ */
+const noUnboundedDirPrefix = {
+  create (context) {
+    return {
+      CallExpression (node) {
+        if (node.callee.type !== 'MemberExpression' || node.callee.property.type !== 'Identifier' || node.callee.property.name !== 'startsWith') {
+          return
+        }
+        const [arg] = node.arguments
+        const name = arg?.type === 'Identifier'
+          ? arg.name
+          : arg?.type === 'MemberExpression' && !arg.computed && arg.property.type === 'Identifier' ? arg.property.name : undefined
+        if (arg && name && DIR_NAME_RE.test(name) && !SLASHED_NAME_RE.test(name)) {
+          context.report({ messageId: 'unbounded', node: arg })
+        }
+      },
+    }
+  },
+  meta: {
+    messages: {
+      unbounded: 'Use `isWithinDir` from `@nuxt/kit/internal`: a directory prefix without a trailing slash also matches its siblings.',
+    },
+    schema: [],
+    type: 'problem',
+  },
+}
+
 export default createConfigForNuxt({
   features: {
     stylistic: {
@@ -25,13 +64,10 @@ export default createConfigForNuxt({
       // Don't add other attributes to this object
       ignores: [
         '.goff/**',
-        'packages/schema/schema/**',
-        'packages/nuxt/stubs/**',
         ...Object.keys(generatedTemplateCopies),
         'packages/kit/test/types-fixture/**',
         // deliberately does not compile
         'test/fixtures/dev-error-sourcemap/app/components/Broken.vue',
-        'test/fixtures/vite-server-dev-error/app/components/Broken.vue',
       ],
     },
     {
@@ -79,6 +115,8 @@ export default createConfigForNuxt({
         },
       ],
       '@typescript-eslint/no-dynamic-delete': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-invalid-void-type': 'off',
       '@typescript-eslint/no-unused-vars': [
         'error',
         {
@@ -90,14 +128,6 @@ export default createConfigForNuxt({
       ],
       '@typescript-eslint/triple-slash-reference': 'off',
       '@typescript-eslint/unified-signatures': 'off',
-      ...{
-        // TODO: Discuss if we want to enable this
-        '@typescript-eslint/ban-types': 'off',
-        // TODO: Discuss if we want to enable this
-        '@typescript-eslint/no-explicit-any': 'off',
-        // TODO: Discuss if we want to enable this
-        '@typescript-eslint/no-invalid-void-type': 'off',
-      },
     },
   })
 
@@ -125,12 +155,6 @@ export default createConfigForNuxt({
     rules: {
       'unicorn/no-new-array': 'off',
       'unicorn/prefer-dom-node-text-content': 'off',
-    },
-  })
-
-  .override('nuxt/vue/rules', {
-    rules: {
-
     },
   })
 
@@ -193,11 +217,6 @@ export default createConfigForNuxt({
                 message: 'should not import from barrel/index files',
                 target: 'packages/nuxt/src',
               },
-              {
-                from: 'packages/nitro',
-                message: 'nitro should not directly import other packages.',
-                target: 'packages/!(nitro)/**/*',
-              },
             ],
           },
         ],
@@ -208,6 +227,8 @@ export default createConfigForNuxt({
               'experimental',
               'knipignore',
               '__NO_SIDE_EFFECTS__',
+              'tool',
+              'input',
             ],
           },
         ],
@@ -221,16 +242,11 @@ export default createConfigForNuxt({
         'import-x': importX,
       },
       rules: {
-        'import/extensions': ['error', 'always', {
-          ignorePackages: true,
-          js: 'always',
-          ts: 'always',
-          vue: 'always',
-        }],
+        'import/extensions': ['error', 'always', { ignorePackages: true }],
       },
     },
     {
-      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rspack}/src/**'],
+      files: ['packages/{nuxt,kit,nitro-server,schema,vite,webpack,rsbuild,rspack}/src/**'],
       // vite-node* files execute inside the nitro dev process rather than the
       // Nuxt build process, so nostics catalogs do not apply there.
       ignores: ['packages/nuxt/src/app/**', '**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}', 'packages/vite/src/vite-node*.ts'],
@@ -239,7 +255,26 @@ export default createConfigForNuxt({
         'no-restricted-syntax': ['error', {
           message: 'Use a nostics diagnostic (see packages/kit/src/diagnostics/) instead of logger/console for build-time warnings and errors.',
           selector: 'CallExpression[callee.object.name=/^(logger|console)$/][callee.property.name=/^(warn|error)$/]',
-        }],
+        }, throwDiagnosticRestriction],
+      },
+    },
+    {
+      files: ['packages/vite-server/src/**'],
+      ignores: ['**/runtime/**', '**/*.{spec,test}.{js,mjs,ts,mts}'],
+      name: 'local/requires/thrown-diagnostics',
+      rules: {
+        'no-restricted-syntax': ['error', throwDiagnosticRestriction],
+      },
+    },
+    {
+      files: ['packages/*/src/**/*.{ts,mts,js,mjs}'],
+      ignores: ['packages/nuxt/src/app/**', '**/runtime/**', 'packages/kit/src/internal/paths.ts'],
+      name: 'local/requires/dir-prefix-boundary',
+      plugins: {
+        local: { rules: { 'no-unbounded-dir-prefix': noUnboundedDirPrefix } },
+      },
+      rules: {
+        'local/no-unbounded-dir-prefix': 'error',
       },
     },
     {
@@ -272,7 +307,7 @@ export default createConfigForNuxt({
     },
     // manually specify dependencies for nuxt browser app
     {
-      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/(components,head,imports,pages)/runtime/**'],
+      files: ['packages/nuxt/src/app/**', 'packages/nuxt/src/{components,head,imports,pages}/runtime/**'],
       name: 'local/client-packages',
       rules: {
         '@typescript-eslint/no-restricted-imports': ['error', {
@@ -305,7 +340,6 @@ export default createConfigForNuxt({
       name: 'local/disables/fixtures',
       rules: {
         '@typescript-eslint/no-unused-vars': 'off',
-        '@typescript-eslint/triple-slash-reference': 'off',
         'nuxt/no-nuxt-config-test-key': 'off',
         'vue/multi-word-component-names': 'off',
         'vue/valid-v-for': 'off',
@@ -318,8 +352,6 @@ export default createConfigForNuxt({
         'no-only-tests': noOnlyTests,
       },
       rules: {
-        '@typescript-eslint/no-explicit-any': 'off',
-        'no-console': 'off',
         'no-only-tests/no-only-tests': 'error',
       },
     },

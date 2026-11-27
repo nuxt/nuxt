@@ -8,10 +8,13 @@ import { parseAndWalk } from 'oxc-walker'
 /**
  * Check for those external configuration files that are not compatible with Nuxt,
  * and warns the user about them.
- * @see {@link https://nuxt.com/docs/4.x/getting-started/configuration#external-configuration-files}
+ * @see {@link https://nuxt.com/docs/5.x/getting-started/configuration#external-configuration-files}
  */
 export async function checkForExternalConfigurationFiles () {
-  const checkResults = await Promise.all([checkViteConfig(), checkWebpackConfig(), checkNitroConfig(), checkPostCSSConfig()])
+  const checkResults = await Promise.all([
+    checkViteConfig(),
+    ...Object.entries(incompatibleConfigFiles).map(([fileName, extensions]) => checkConfigFileExistence(fileName, extensions)),
+  ])
   const foundFiles = checkResults.filter(Boolean) as string[]
 
   if (!foundFiles.length) {
@@ -65,18 +68,12 @@ async function checkViteConfig () {
   return formatConfigFile(configFile)
 }
 
-function checkWebpackConfig () {
+const incompatibleConfigFiles: Record<string, string[]> = {
   // https://webpack.js.org/configuration/configuration-languages/
-  return checkConfigFileExistence('webpack.config', ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', '.coffee'])
-}
-
-function checkNitroConfig () {
+  'webpack.config': ['.js', '.mjs', '.ts', '.cjs', '.mts', '.cts', '.coffee'],
   // https://nitro.build/config
-  return checkConfigFileExistence('nitro.config', ['.ts', '.mts'])
-}
-
-function checkPostCSSConfig () {
-  return checkConfigFileExistence('postcss.config', ['.js', '.cjs'])
+  'nitro.config': ['.ts', '.mts'],
+  'postcss.config': ['.js', '.cjs'],
 }
 
 async function checkConfigFileExistence (fileName: string, extensions: string[]) {

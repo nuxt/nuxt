@@ -1,10 +1,6 @@
-import { fileURLToPath } from 'node:url'
-import { isWindows } from 'std-env'
 import type { Page } from '@playwright/test'
 import { version as vueVersion } from 'vue'
-import { expect, test } from './test-utils'
-
-const fixtureDir = fileURLToPath(new URL('../fixtures/vapor', import.meta.url))
+import { consoleLogs, expect, fixtureDir, test } from './test-utils'
 
 const [major = 0, minor = 0] = vueVersion.split('.').map(Number)
 const supportsVapor = major > 3 || (major === 3 && minor >= 6)
@@ -14,14 +10,15 @@ test.skip(!supportsVapor, `vapor mode requires vue 3.6+ (found ${vueVersion})`)
 
 test.use({
   nuxt: {
-    rootDir: fixtureDir,
-    server: true,
-    browser: true,
-    setupTimeout: (isWindows ? 360 : 120) * 1000,
+    rootDir: fixtureDir('vapor'),
   },
 })
 
 test.describe('vapor interop', () => {
+  test.afterEach(({ page }) => {
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('renders and hydrates a vapor component inside a vdom page', async ({ page, goto }) => {
     await goto('/')
     await expect(page.getByTestId('page-title')).toHaveText('Vapor interop fixture')
@@ -29,8 +26,6 @@ test.describe('vapor interop', () => {
 
     await page.getByTestId('vapor-counter-button').click()
     await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('renders and hydrates a vapor page using nuxt composables', async ({ page, goto }) => {
@@ -41,11 +36,9 @@ test.describe('vapor interop', () => {
 
     await page.getByTestId('vapor-counter-button').click({ timeout: 5000 })
     await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
-  test('nuxt composables work in a vapor component inside a vdom page', async ({ page, goto }) => {
+  test('nuxt composables, useId, onPrehydrate and template refs work in a vapor component inside a vdom page', async ({ page, goto }) => {
     await goto('/composables')
     await expect(page.getByTestId('nuxt-app')).toHaveText('nuxt-app-ok')
     await expect(page.getByTestId('state')).toHaveText('state-ok')
@@ -57,29 +50,9 @@ test.describe('vapor interop', () => {
     await expect(page.getByTestId('async-data')).toHaveText('world (success)')
     await expect(page).toHaveTitle('vapor head title')
     expect(await page.locator('meta[name=description]').getAttribute('content')).toBe('vapor seo description')
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
-  test('useId hydrates without mismatch in a vapor component', async ({ page, goto }) => {
-    await goto('/composables')
     await expect(page.getByTestId('use-id')).not.toHaveText('id-missing')
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
-  test('onPrehydrate runs in a vapor component', async ({ page, goto }) => {
-    await goto('/composables')
     await expect(page.locator('html')).toHaveAttribute('data-vapor-prehydrate', 'ran')
-
-    expect(page).toHaveNoErrorsOrWarnings()
-  })
-
-  test('element template refs work in a vapor component', async ({ page, goto }) => {
-    await goto('/composables')
     await expect(page.getByTestId('refs')).toHaveText('el:ok')
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   // nested vapor components inside a vapor component hit the same hydration
@@ -91,8 +64,6 @@ test.describe('vapor interop', () => {
 
     await page.getByTestId('vapor-counter-button').click({ timeout: 5000 })
     await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('lazy hydration (hydrate-on-visible) of a vapor component', async ({ page, goto }) => {
@@ -102,8 +73,6 @@ test.describe('vapor interop', () => {
     await page.getByTestId('vapor-counter-button').scrollIntoViewIfNeeded()
     await page.getByTestId('vapor-counter-button').click()
     await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1', { timeout: 5000 })
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('hydrates mixed vapor/vdom nesting in both directions', async ({ page, goto }) => {
@@ -116,8 +85,6 @@ test.describe('vapor interop', () => {
 
     await page.getByTestId('vapor-counter-button').click()
     await expect(page.getByTestId('vapor-counter-button')).toHaveText('count is 1')
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('client-side navigation between vdom and vapor pages', async ({ page, goto }) => {
@@ -130,8 +97,6 @@ test.describe('vapor interop', () => {
 
     await page.getByTestId('nav-index').click()
     await expect(page.getByTestId('page-title')).toHaveText('Vapor interop fixture')
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 })
 
@@ -252,14 +217,16 @@ function transitionEvents (page: Page) {
 }
 
 test.describe('vapor page transitions', () => {
+  test.afterEach(({ page }) => {
+    expect(page).toHaveNoErrorsOrWarnings()
+  })
+
   test('css transition runs when navigating from a vdom page to a vapor page', async ({ page, goto }) => {
     await goto('/vdom-page?tr=1')
     await spyOnCssTransitions(page)
     await page.getByTestId('nav-vapor-page-two').click()
     await expect(page.getByTestId('page-title')).toHaveText('Vapor page two')
     expect(await cssTransitions(page)).toContain('opacity')
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('js transition hooks fire for leave and enter across the vdom/vapor boundary', async ({ page, goto }) => {
@@ -272,8 +239,6 @@ test.describe('vapor page transitions', () => {
       'vapor-page-two:before-enter',
       'vapor-page-two:after-enter',
     ]))
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('js transition hooks fire exactly once and respect out-in ordering', async ({ page, goto, isDev }) => {
@@ -287,8 +252,6 @@ test.describe('vapor page transitions', () => {
       'vdom-page:after-leave',
       'vapor-page-two:after-enter',
     ])
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('navigating away from a vapor page with an out-in transition renders the next page', async ({ page, goto }) => {
@@ -298,8 +261,6 @@ test.describe('vapor page transitions', () => {
 
     await page.getByTestId('nav-index').click()
     await expect(page.getByTestId('page-title')).toHaveText('Vapor interop fixture', { timeout: 10_000 })
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('navigating to and from a vapor page with a default-mode transition shows the new page', async ({ page, goto }) => {
@@ -312,8 +273,6 @@ test.describe('vapor page transitions', () => {
 
     await page.getByTestId('nav-keepalive-vapor').click()
     await expect(page.getByRole('heading', { name: 'Keepalive vapor' })).toBeVisible()
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 
   test('default-mode transition removes the leaving page from the DOM', async ({ page, goto }) => {
@@ -327,8 +286,6 @@ test.describe('vapor page transitions', () => {
 
     await page.getByTestId('nav-keepalive-vapor').click()
     await expect.poll(() => page.getByTestId('page-title').allTextContents(), { timeout: 10_000 }).toEqual([' Keepalive vapor '])
-
-    expect(page).toHaveNoErrorsOrWarnings()
   })
 })
 
@@ -480,9 +437,7 @@ test.describe('nuxt built-ins with vapor children', () => {
     await expect(page.getByTestId('vapor-client-only-slot-props')).toHaveText('{}')
 
     if (isDev) {
-      // @ts-expect-error untyped
-      const logs: Array<{ type: string, text: string }> = page._consoleLogs
-      expect(logs.some(log => log.text.includes('NUXT_E4021'))).toBe(true)
+      expect(consoleLogs(page).some(log => log.text.includes('NUXT_E4021'))).toBe(true)
     }
   })
 
@@ -491,8 +446,7 @@ test.describe('nuxt built-ins with vapor children', () => {
     await goto('/vapor-slot-warnings')
     await expect(page.getByTestId('vapor-client-only-slot-props')).toHaveText('{}')
 
-    // @ts-expect-error untyped
-    const logs: Array<{ type: string, text: string }> = page._consoleLogs
+    const logs = consoleLogs(page)
     expect(logs.some(log => log.text.includes('NUXT_E6004'))).toBe(true)
     expect(logs.some(log => log.text.includes('NUXT_E6002'))).toBe(false)
   })

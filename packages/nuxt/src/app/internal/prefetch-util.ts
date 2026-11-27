@@ -21,6 +21,6 @@ export function canPrefetch (): boolean {
  * @internal
  */
 export function prefetchGroup (url: string): string {
-  const { pathname, search } = new URL(url, window.location.href)
+  const { pathname, search } = new URL(url, document.baseURI)
   return pathname + search
 }

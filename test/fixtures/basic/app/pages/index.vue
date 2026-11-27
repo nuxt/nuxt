@@ -39,20 +39,6 @@
     >
       createClientOnly()
     </NuxtLink>
-    <NuxtLink
-      id="middleware-abort-non-fatal"
-      to="/middleware-abort-non-fatal"
-      :prefetch="false"
-    >
-      Middleware abort navigation
-    </NuxtLink>
-    <NuxtLink
-      id="middleware-abort-non-fatal-error"
-      to="/middleware-abort-non-fatal?error=someerror"
-      :prefetch="false"
-    >
-      Middleware abort navigation with error
-    </NuxtLink>
     <NuxtLink to="/no-scripts">
       to no script
     </NuxtLink>

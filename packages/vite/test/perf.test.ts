@@ -52,12 +52,102 @@ describe('PerfPlugin', () => {
     ])
   })
 
-  it('should keep recording perf timings', () => {
+  it('should run timed hooks with the plugin context from `timeBundlerHook`', () => {
+    const recorded: unknown[] = []
+    const timedCtx = { id: 'timed' }
+    const timeBundlerHook = (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+      recorded.push([name, hook, ctx])
+      return run(timedCtx)
+    }
+    const plugin = { name: 'test-plugin', resolveId (this: unknown) { return this } }
+    applyPerfPlugin(createNuxt({}, { timeBundlerHook } as any), [plugin as Plugin])
+
+    const ctx = { id: 'ctx' }
+    expect(plugin.resolveId.call(ctx)).toBe(timedCtx)
+    expect(recorded).toEqual([['test-plugin', 'resolveId', ctx]])
+  })
+
+  it('should time frozen object hooks through a copy and leave frozen plugins untimed', () => {
     const recorded: string[] = []
-    const plugin: Plugin = { name: 'test-plugin', resolveId: id => id }
-    applyPerfPlugin(createNuxt({}, { recordBundlerPluginHook: (name: string, hook: string) => recorded.push(`${name}:${hook}`) } as any), [plugin])
-    expect((plugin.resolveId as any).call({}, 'x')).toBe('x')
-    expect(recorded).toEqual(['test-plugin:resolveId'])
+    const timeBundlerHook = (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+      recorded.push(`${name}:${hook}`)
+      return run(ctx)
+    }
+    const filter = { id: /\.ts$/ }
+    const plugin = { name: 'object-hook', transform: Object.freeze({ filter, order: 'pre' as const, handler: (code: string) => code + '!' }) }
+    const frozen = Object.freeze({ name: 'frozen', load: (id: string) => id })
+    const { load } = frozen
+    applyPerfPlugin(createNuxt({}, { timeBundlerHook } as any), [plugin, frozen])
+
+    expect(plugin.transform.handler('code')).toBe('code!')
+    expect(plugin.transform).toMatchObject({ filter, order: 'pre' })
+    expect(frozen.load).toBe(load)
+    expect(recorded).toEqual(['object-hook:transform'])
+  })
+
+  it('should keep changes a plugin makes to its hook objects after wrapping', () => {
+    const recorded: string[] = []
+    const timeBundlerHook = (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+      recorded.push(`${name}:${hook}`)
+      return run(ctx)
+    }
+    const plugin = { name: 'filtered', load: { filter: { id: /\.ts$/ } as { id: RegExp } | undefined, handler: (id: string) => id } }
+    const copy = { ...plugin }
+    applyPerfPlugin(createNuxt({}, { timeBundlerHook } as any), [copy])
+
+    delete plugin.load.filter
+    expect(copy.load).not.toHaveProperty('filter')
+    expect(copy.load.handler('/a.ts')).toBe('/a.ts')
+    expect(recorded).toEqual(['filtered:load'])
+  })
+
+  it('should time each handler once when plugins share hooks', () => {
+    const recorded: string[] = []
+    const timeBundlerHook = (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+      recorded.push(`${name}:${hook}`)
+      return run(ctx)
+    }
+    const plugin = { name: 'shared', resolveId: (id: string) => id, load: { handler: (id: string) => id } }
+    const perf = applyPerfPlugin(createNuxt({}, { timeBundlerHook } as any), [plugin, { ...plugin }])
+    const copy = { ...plugin }
+    const ssr = { name: 'ssr', plugins: [copy], fetchModule: () => Promise.resolve({}) }
+    ;(perf.configureServer as (server: unknown) => void)({ environments: { ssr } })
+    ;(perf.buildStart as (this: unknown) => void).call({ environment: ssr })
+
+    copy.resolveId('/a.ts')
+    copy.load.handler('/b.ts')
+    expect(recorded).toEqual(['shared:resolveId', 'shared:load'])
+  })
+
+  it('should time a hook object shared between hooks and plugins under each name', () => {
+    const recorded: string[] = []
+    const timeBundlerHook = (name: string, hook: string, ctx: unknown, run: (ctx: unknown) => unknown) => {
+      recorded.push(`${name}:${hook}`)
+      return run(ctx)
+    }
+    const hook = { handler: () => null }
+    const first = { name: 'first', resolveId: hook, load: hook }
+    const second = { name: 'second', load: hook }
+    applyPerfPlugin(createNuxt({}, { timeBundlerHook } as any), [first, second])
+
+    first.resolveId.handler()
+    first.load.handler()
+    second.load.handler()
+    expect(recorded).toEqual(['first:resolveId', 'first:load', 'second:load'])
+  })
+
+  it('should mark a phase for each environment the builder builds', async () => {
+    const phases: string[] = []
+    const perf = { startPhase: (name: string) => phases.push(`start ${name}`), endPhase: (name: string) => phases.push(`end ${name}`) }
+    const builder = {
+      build: (environment: { name: string }) => environment.name === 'nitro' ? Promise.reject(new Error('failed')) : Promise.resolve(environment.name),
+    }
+    const plugin = PerfPlugin(createNuxt({}, perf as any)) as { buildApp?: { handler: (builder: unknown) => Promise<void> } }
+    await plugin.buildApp?.handler(builder)
+
+    expect(await builder.build({ name: 'client' })).toBe('client')
+    await expect(builder.build({ name: 'nitro' })).rejects.toThrow('failed')
+    expect(phases).toEqual(['start vite:client', 'end vite:client', 'start vite:nitro'])
   })
 
   it('should publish server module fetches on `nuxt.bundler.module`', async () => {

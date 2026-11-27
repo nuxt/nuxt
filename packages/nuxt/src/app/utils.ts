@@ -1,8 +1,11 @@
 import { captureStackTrace } from 'errx'
 import { isScriptProtocol } from 'ufo'
 
-const PROBE_BASE_A = 'https://a.invalid/probe/'
-const PROBE_BASE_B = 'https://b.invalid/probe/'
+const PROBE_ORIGIN_A = 'https://a.invalid'
+// `https:host` is only relative against a base with the same scheme
+const PROBE_ORIGIN_B = 'http://b.invalid'
+const PROBE_BASE_A = `${PROBE_ORIGIN_A}/probe/`
+const PROBE_BASE_B = `${PROBE_ORIGIN_B}/probe/`
 
 function parseAnchorURL (value: string, base: string = PROBE_BASE_A): URL | null {
   try {
@@ -12,10 +15,11 @@ function parseAnchorURL (value: string, base: string = PROBE_BASE_A): URL | null
   }
 }
 
-// a relative value inherits whichever base it resolves against; an absolute one ignores both
+// a relative value stays on whichever base it resolves against
 function resolvesWithoutBase (value: string): boolean {
-  const resolved = parseAnchorURL(value)
-  return !!resolved && resolved.href === parseAnchorURL(value, PROBE_BASE_B)?.href
+  const a = parseAnchorURL(value)
+  const b = parseAnchorURL(value, PROBE_BASE_B)
+  return !!a && !!b && (a.origin !== PROBE_ORIGIN_A || b.origin !== PROBE_ORIGIN_B)
 }
 
 /** Whether a URL string is a path rooted at the current origin, so carries no protocol. */

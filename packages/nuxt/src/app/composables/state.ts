@@ -1,4 +1,4 @@
-import { isRef, toRef } from 'vue'
+import { getCurrentScope, isRef, onScopeDispose, toRef } from 'vue'
 import type { Ref } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { toArray } from '../utils'
@@ -31,9 +31,20 @@ export function useState<T> (...args: any): Ref<T> {
   const nuxtApp = useNuxtApp()
   const state = toRef(nuxtApp.payload.state, key)
 
-  // Register the init function for reset support
   if (init) {
-    nuxtApp._state[key] ??= { _default: init }
+    const inits = nuxtApp._state[key] ||= new Map()
+    const scope = getCurrentScope()
+    if (!inits.has(scope)) {
+      inits.set(scope, init)
+      if (scope) {
+        onScopeDispose(() => {
+          inits.delete(scope)
+          if (!inits.size && nuxtApp._state[key] === inits) {
+            delete nuxtApp._state[key]
+          }
+        })
+      }
+    }
   }
 
   if (state.value === undefined && init) {
@@ -80,8 +91,9 @@ export function clearNuxtState (
   for (const _key of _keys) {
     const key = useStateKeyPrefix + _key
     if (key in nuxtApp.payload.state) {
-      if (reset && nuxtApp._state[key]) {
-        nuxtApp.payload.state[key] = nuxtApp._state[key]._default()
+      const init = reset ? nuxtApp._state[key]?.values().next().value : undefined
+      if (init) {
+        nuxtApp.payload.state[key] = init()
       } else {
         delete nuxtApp.payload.state[key]
       }

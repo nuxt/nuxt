@@ -5,7 +5,6 @@ import { logger } from '@nuxt/kit'
 import { colorize, stripAnsi } from 'consola/utils'
 import { hasTTY, isCI } from 'std-env'
 import type { NuxtOptions } from '@nuxt/schema'
-import { relative } from 'pathe'
 import { useResolveFromPublicAssets } from '../plugins/public-dirs.ts'
 
 let duplicateCount = 0
@@ -27,11 +26,10 @@ const logLevelMapReverse: Record<NonNullable<vite.UserConfig['logLevel']>, numbe
 
 const RUNTIME_RESOLVE_REF_RE = /^([^ ]+) referenced in/m
 const DEPS_OPTIMIZED_RE = /dependenc(?:y|ies) optimized:\s*(.+)/
-export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?: boolean, onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void, onTransformError?: (error: unknown) => boolean } = {}): vite.Logger {
+export function createViteLogger (config: vite.InlineConfig, ctx: { onNewDeps?: (deps: string[]) => void, onStaleDep?: (dep: string) => void, onTransformError?: (error: unknown) => boolean } = {}): vite.Logger {
   const loggedErrors = new WeakSet<any>()
   const canClearScreen = hasTTY && !isCI && config.clearScreen
   const _logger = createLogger()
-  const relativeOutDir = relative(config.root!, config.build!.outDir || '')
   const clear = () => {
     _logger.clearScreen(
       // @ts-expect-error silent is a log level but not a valid option for clearScreens
@@ -52,7 +50,6 @@ export function createViteLogger (config: vite.InlineConfig, ctx: { hideOutput?:
         const id = msg.trim().match(RUNTIME_RESOLVE_REF_RE)?.[1]
         if (id && resolveFromPublicAssets(id)) { return }
       }
-      if (type === 'info' && ctx.hideOutput && msg.includes(relativeOutDir)) { return }
 
       // Intercept Vite optimizer messages → OptimizeDepsHintPlugin. Fails gracefully (Vite's default messages pass through).
       // Source: https://github.com/vitejs/vite/blob/v8.3.1/packages/vite/src/node/optimizer/optimizer.ts

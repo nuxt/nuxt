@@ -9,4 +9,7 @@ export default withMatrix({
       meta: [{ name: 'description', content: 'Suspense test fixture' }],
     },
   },
+  experimental: {
+    clientNodePlaceholder: false,
+  },
 })

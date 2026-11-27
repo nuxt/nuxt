@@ -1,0 +1,83 @@
+import type { Nuxt } from '@nuxt/schema'
+
+import { useNuxt } from '../context.ts'
+import { bundlerDiagnostics } from '../diagnostics/bundler.ts'
+
+/**
+ * State the client build leaves in memory for the server build to read, as opposed to
+ * the files it emits. A build cache hit skips the client build, so the cache saves this
+ * state with the client files and restores it before the server build reads it.
+ *
+ * @internal
+ */
+export interface ClientBuildState<T = unknown> {
+  /** Return the state as JSON-serialisable data, once the build has finished. */
+  save: () => T
+  /** Put back what `save()` returned in an earlier build, in place of a client build. */
+  restore: (state: T) => void
+}
+
+/**
+ * Register client build state under a key unique to the plugin that owns it.
+ *
+ * @internal
+ */
+export function addClientBuildState<T> (key: string, state: ClientBuildState<T>, nuxt: Nuxt = useNuxt()): void {
+  nuxt._clientBuildState ??= new Map()
+  nuxt._clientBuildState.set(key, state)
+}
+
+/**
+ * Resolves once the client build has finished when it runs alongside the server build,
+ * and immediately otherwise. Server build hooks must wait for it before reading client
+ * build state or any build output derived from it. Rejects when `environment` is the
+ * client build, which would otherwise wait for itself.
+ *
+ * @internal
+ */
+export async function waitForClientBuild (nuxt: Nuxt = useNuxt(), environment?: string): Promise<void> {
+  if (environment === 'client') {
+    throw bundlerDiagnostics.NUXT_B7038({}, { method: 'error' })
+  }
+  await nuxt._clientBuild
+}
+
+/**
+ * Build the client and server environments concurrently, with the client build exposed to
+ * {@link waitForClientBuild} until both have settled. Rejects with the first error once
+ * both have settled.
+ *
+ * @internal
+ */
+export async function buildClientAndServer<E> (builder: { build: (environment: E) => Promise<unknown> }, client: E, server: E, nuxt: Nuxt = useNuxt()): Promise<void> {
+  const clientBuild = builder.build(client)
+  const clientBuilt = clientBuild.then(() => {})
+  clientBuilt.catch(() => {})
+  nuxt._clientBuild = clientBuilt
+  try {
+    const results = await Promise.allSettled([clientBuild, builder.build(server)])
+    for (const result of results) {
+      if (result.status === 'rejected') { throw result.reason }
+    }
+  } finally {
+    nuxt._clientBuild = undefined
+  }
+}
+
+/** @internal */
+export function saveClientBuildState (nuxt: Nuxt = useNuxt()): Record<string, unknown> {
+  const saved: Record<string, unknown> = {}
+  for (const [key, state] of nuxt._clientBuildState ?? []) {
+    saved[key] = state.save()
+  }
+  return saved
+}
+
+/** @internal */
+export function restoreClientBuildState (saved: Record<string, unknown>, nuxt: Nuxt = useNuxt()): void {
+  for (const [key, state] of nuxt._clientBuildState ?? []) {
+    if (key in saved) {
+      state.restore(saved[key])
+    }
+  }
+}

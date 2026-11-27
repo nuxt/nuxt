@@ -1,16 +1,19 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { mountSuspended, registerEndpoint } from '@nuxt/test-utils/runtime'
 import { hasProtocol } from 'ufo'
-
-import { createClientPage } from '../../packages/nuxt/src/components/runtime/client-component'
+import { NavigationFailureType, isNavigationFailure } from 'vue-router'
+import { createApp, inject } from 'vue'
+import { headSymbol } from '@unhead/vue'
 
 import * as composables from '#app/composables'
-import { refreshNuxtData } from '#app/composables/asyncData'
-import { _showErrorUnlessCrawler, clearError, createError, isNuxtError, showError, useError } from '#app/composables/error'
+import { _showErrorUnlessCrawler, clearError, showError, useError } from '#app/composables/error'
 import { useNuxtApp } from '#app/nuxt'
+import type { NuxtApp } from '#app/nuxt'
+import { injectHead, useHead, useServerHead, useServerHeadSafe, useServerSeoMeta } from '#app/composables/head'
+import * as idleCallback from '#app/compat/idle-callback'
 import { onNuxtReady } from '#app/composables/ready'
 import { setResponseStatus, useRequestEvent, useRequestFetch, useRequestHeaders, useResponseHeader } from '#app/composables/ssr'
 import { clearNuxtState, useState } from '#app/composables/state'
@@ -22,8 +25,10 @@ import { useRouteAnnouncer } from '#app/composables/route-announcer'
 import { useAnnouncer } from '#app/composables/announcer'
 import { encodeRoutePath, encodeURL, resolveRouteObject } from '#app/composables/router'
 import { useRuntimeHook } from '#app/composables/runtime-hook'
-import { loadPayload, shouldLoadPayload } from '#app/composables/payload'
+import { loadPayload, preloadPayload, shouldLoadPayload } from '#app/composables/payload'
 import { NuxtPage } from '#components'
+import routerOptions from '#build/router.options.mjs'
+import { navigateToDefaults } from '#build/nuxt.config.mjs'
 
 import { isTestingAppManifest } from '../matrix'
 
@@ -37,6 +42,18 @@ vi.mock('#build/nuxt.config.mjs', async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(),
   payloadExtraction: true,
 }))
+
+const routeRulesMatcher = vi.hoisted(() => ({ calls: 0 }))
+vi.mock('#build/route-rules.mjs', async (importOriginal) => {
+  const original = await importOriginal<{ default: (path: string) => Record<string, any> }>()
+  return {
+    ...original,
+    default: (path: string) => {
+      routeRulesMatcher.calls++
+      return original.default(path)
+    },
+  }
+})
 
 describe('app config', () => {
   it('can be updated', () => {
@@ -147,33 +164,6 @@ describe('composables', () => {
 })
 
 describe('errors', () => {
-  it('createError', () => {
-    expect(createError({ statusCode: 404 }).toJSON()).toMatchInlineSnapshot(`
-      {
-        "data": undefined,
-        "message": "HTTPError 404",
-        "status": 404,
-        "statusText": undefined,
-        "unhandled": undefined,
-      }
-    `)
-    expect(createError('Message').toJSON()).toMatchInlineSnapshot(`
-      {
-        "data": undefined,
-        "message": "Message",
-        "status": 500,
-        "statusText": undefined,
-        "unhandled": undefined,
-      }
-    `)
-  })
-
-  it('isNuxtError', () => {
-    const error = createError({ statusCode: 404 })
-    expect(isNuxtError(error)).toBe(true)
-    expect(isNuxtError(new Error('test'))).toBe(false)
-  })
-
   it('global nuxt errors', () => {
     const error = useError()
     expect(error.value).toBeUndefined()
@@ -215,11 +205,74 @@ describe('errors', () => {
 })
 
 describe('onNuxtReady', () => {
+  function stubIdleCallback (isHydrating: boolean, implementation?: typeof idleCallback.requestIdleCallback) {
+    const nuxtApp = useNuxtApp()
+    const wasHydrating = nuxtApp.isHydrating
+    nuxtApp.isHydrating = isHydrating
+    const requestIdleCallback = vi.spyOn(idleCallback, 'requestIdleCallback')
+    if (implementation) {
+      requestIdleCallback.mockImplementation(implementation)
+    }
+    onTestFinished(() => {
+      nuxtApp.isHydrating = wasHydrating
+      requestIdleCallback.mockRestore()
+    })
+    return { nuxtApp, requestIdleCallback }
+  }
+
+  const runIdle: typeof idleCallback.requestIdleCallback = (cb) => { cb({ didTimeout: true, timeRemaining: () => 0 }); return 0 }
+
   it('should call callback once nuxt is hydrated', async () => {
     const fn = vi.fn()
     onNuxtReady(fn)
     await new Promise(resolve => setTimeout(resolve, 1))
     expect(fn).toHaveBeenCalled()
+  })
+
+  it('should pass the timeout to requestIdleCallback', () => {
+    const { requestIdleCallback } = stubIdleCallback(false, runIdle)
+    const fn = vi.fn()
+    onNuxtReady(fn, { timeout: 500 })
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+    expect(fn).toHaveBeenCalledOnce()
+  })
+
+  it('should pass the timeout to requestIdleCallback after hydration', async () => {
+    const { nuxtApp, requestIdleCallback } = stubIdleCallback(true, runIdle)
+    const fn = vi.fn()
+    onNuxtReady(fn, { timeout: 500 })
+    expect(requestIdleCallback).not.toHaveBeenCalled()
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 500 })
+    expect(fn).toHaveBeenCalledOnce()
+  })
+
+  it('should not schedule the callback if the signal is already aborted', () => {
+    const { requestIdleCallback } = stubIdleCallback(false)
+    onNuxtReady(() => {}, { signal: AbortSignal.abort() })
+    expect(requestIdleCallback).not.toHaveBeenCalled()
+  })
+
+  it('should not run the callback if the signal is aborted during hydration', async () => {
+    const { nuxtApp } = stubIdleCallback(true, runIdle)
+    const fn = vi.fn()
+    const controller = new AbortController()
+    onNuxtReady(fn, { signal: controller.signal })
+    controller.abort()
+    await nuxtApp.hooks.callHook('app:suspense:resolve')
+    expect(fn).not.toHaveBeenCalled()
+  })
+
+  it('should not run the callback if the signal is aborted while waiting for idle', () => {
+    let idle: IdleRequestCallback | undefined
+    stubIdleCallback(false, (cb) => { idle = cb; return 0 })
+    const fn = vi.fn()
+    const controller = new AbortController()
+    onNuxtReady(fn, { signal: controller.signal })
+    controller.abort()
+    expect(idle).toBeDefined()
+    idle?.({ didTimeout: false, timeRemaining: () => 50 })
+    expect(fn).not.toHaveBeenCalled()
   })
 })
 
@@ -233,19 +286,97 @@ describe('ssr composables', () => {
     expect(prerenderRoutes('/')).toBeUndefined()
     expect(useResponseHeader('x-test').value).toBeUndefined()
   })
+
+  it('do not add server-only head entries on client', async () => {
+    await mountSuspended(defineComponent({
+      setup () {
+        useHead({ meta: [{ name: 'client-head', content: 'client' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerHead({ meta: [{ name: 'server-head', content: 'server' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerHeadSafe({ meta: [{ name: 'server-head-safe', content: 'server' }] })
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
+        useServerSeoMeta({ author: 'server' })
+        return () => h('div')
+      },
+    }))
+    onTestFinished(() => document.querySelector('meta[name="client-head"]')?.remove())
+
+    await vi.waitFor(() => {
+      expect(document.querySelector('meta[name="client-head"]')?.getAttribute('content')).toBe('client')
+    })
+
+    expect(document.querySelector('meta[name="server-head"]')).toBeNull()
+    expect(document.querySelector('meta[name="server-head-safe"]')).toBeNull()
+    expect(document.querySelector('meta[name="author"]')).toBeNull()
+  })
+
+  it('returns an inert head entry on client', () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const headEntry = useServerHead({ meta: [{ name: 'server-head', content: 'server' }] })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const headSafeEntry = useServerHeadSafe({ meta: [{ name: 'server-head-safe', content: 'server' }] })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const seoEntry = useServerSeoMeta({ author: 'server' })
+
+    for (const entry of [headEntry, headSafeEntry, seoEntry]) {
+      expect(entry._i).toBe(-1)
+      entry.patch({})
+      entry.dispose()
+    }
+  })
 })
 
 describe('useHydration', () => {
+  let nuxtApp: ReturnType<typeof useNuxtApp>
+  let initialState: { appCreated: boolean | undefined, isHydrating: boolean | undefined }
+
+  beforeEach(() => {
+    nuxtApp = useNuxtApp()
+    initialState = {
+      appCreated: nuxtApp._appCreated,
+      isHydrating: nuxtApp.isHydrating,
+    }
+  })
+
+  afterEach(() => {
+    nuxtApp._appCreated = initialState.appCreated
+    nuxtApp.isHydrating = initialState.isHydrating
+    delete nuxtApp.payload.key
+  })
+
   it('should hydrate value from payload', async () => {
+    nuxtApp._appCreated = false
     let val: any
-    const nuxtApp = useNuxtApp()
     useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
-    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
-    expect(val).toMatchInlineSnapshot('undefined')
+    expect(val).toBeUndefined()
 
     nuxtApp.payload.key = 'from payload'
     await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
-    expect(val).toMatchInlineSnapshot('"from payload"')
+    expect(val).toBe('from payload')
+  })
+
+  it('should hydrate immediately when registered during hydration after the app has been created', async () => {
+    nuxtApp._appCreated = false
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    nuxtApp.isHydrating = true
+    nuxtApp.payload.key = 'late registration'
+
+    let val: any
+    useHydration('key', () => {}, (fromPayload) => { val = fromPayload })
+    expect(val).toBe('late registration')
+  })
+
+  it('should not apply the initial payload when registered after hydration', async () => {
+    nuxtApp._appCreated = false
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    nuxtApp.isHydrating = false
+    nuxtApp.payload.key = 'stale'
+
+    const set = vi.fn()
+    useHydration('key', () => {}, set)
+    await nuxtApp.hooks.callHook('app:created', nuxtApp.vueApp)
+    expect(set).not.toHaveBeenCalled()
   })
 })
 
@@ -420,6 +551,63 @@ describe('clearNuxtState', () => {
     expect(state3.value).toBe('test')
   })
 
+  it('should release init functions when the registering scope is disposed', () => {
+    const nuxtApp = useNuxtApp()
+    const key = 'clearNuxtState-scoped'
+    const scope1 = effectScope()
+    const scope2 = effectScope()
+    const state = scope1.run(() => useState(key, () => 'first'))!
+    scope2.run(() => useState(key, () => 'second'))
+
+    scope1.stop()
+    state.value = 'changed'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('second')
+
+    scope2.stop()
+    expect(nuxtApp._state[`$s${key}`]).toBeUndefined()
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBeUndefined()
+  })
+
+  it('should retain a shared init function until its last registering scope is disposed', () => {
+    const key = 'clearNuxtState-shared'
+    const init = () => 'default'
+    const scope1 = effectScope()
+    const scope2 = effectScope()
+    const state = scope1.run(() => useState(key, init))!
+    scope2.run(() => useState(key, init))
+
+    scope1.stop()
+    state.value = 'changed'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('default')
+
+    scope2.stop()
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBeUndefined()
+  })
+
+  it('should register one init function per key for each scope', () => {
+    const nuxtApp = useNuxtApp()
+    const key = 'clearNuxtState-repeated'
+    const scope = effectScope()
+    const state = scope.run(() => useState(key, () => 'first'))!
+    for (let i = 0; i < 3; i++) {
+      scope.run(() => useState(key, () => `call-${i}`))
+    }
+    useState(key, () => 'unscoped')
+    useState(key, () => 'unscoped-2')
+
+    expect(nuxtApp._state[`$s${key}`]?.size).toBe(2)
+    state.value = 'changed'
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('first')
+    scope.stop()
+    clearNuxtState(key, { reset: true })
+    expect(state.value).toBe('unscoped')
+  })
+
   it('should only enumerate useState keys, ignoring internal payload.state entries', () => {
     const nuxtApp = useNuxtApp()
     // Simulate internal state entries that don't use the useState prefix
@@ -487,9 +675,7 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect loading state to be changed by force starting/stoping', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -505,9 +691,7 @@ describe('loading state', () => {
     expect(isLoading.value).toBeFalsy()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect error from loading state to be changed by finish({ error: true })', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -522,9 +706,7 @@ describe('loading state', () => {
     finish()
     vi.useRealTimers()
   })
-})
 
-describe('loading state', () => {
   it('expect state from set opts: { force: true }', async () => {
     vi.useFakeTimers()
     const nuxtApp = useNuxtApp()
@@ -687,6 +869,31 @@ describe('unicode route rules', () => {
     for (const path of ['/cafÉ', `/caf${encodeURIComponent('É')}`]) {
       expect(getRouteRules({ path }), path).toMatchObject({ redirect: '/accented-target' })
     }
+    for (const path of ['/café', `/caf${encodeURIComponent('é')}`]) {
+      expect(getRouteRules({ path }), path).not.toHaveProperty('redirect')
+    }
+  })
+})
+
+describe('encoded slash route rules', () => {
+  it('applies rules for the path with encoded slashes as separators', () => {
+    for (const path of ['/pre%2Ftest', '/pre%2ftest']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ prerender: true, redirect: '/' })
+    }
+    for (const path of ['/pre/spa%2Fthing', '/pre%2Fspa%2Fthing']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ ssr: false })
+    }
+  })
+
+  it('applies rules for the path with each run of slashes collapsed', () => {
+    for (const path of ['//pre/test', '///pre/test', '/%2Fpre/test', '/%2Fpre%2F%2Ftest']) {
+      expect(getRouteRules({ path }), path).toMatchObject({ prerender: true, redirect: '/' })
+    }
+    expect(getRouteRules({ path: '/pre//spa/thing' })).toMatchObject({ ssr: false })
+  })
+
+  it('does not treat a double-encoded slash as a separator', () => {
+    expect(getRouteRules({ path: '/pre%252Ftest' })).not.toHaveProperty('redirect')
   })
 })
 
@@ -735,6 +942,51 @@ describe('compiled route rules', () => {
     } finally {
       fetchSpy.mockRestore()
     }
+  })
+
+  it('should match route rules once per payload load', async () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch').mockImplementation(() => Promise.resolve(new Response('[{"data":1},{}]')))
+    try {
+      routeRulesMatcher.calls = 0
+      await loadPayload('/pre/matched', { fresh: true })
+      expect(fetchSpy).toHaveBeenCalledOnce()
+      expect(routeRulesMatcher.calls).toBe(1)
+    } finally {
+      fetchSpy.mockRestore()
+    }
+  })
+
+  it('should add a single preload link per payload', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/preloaded/_payload.json"]')]
+
+    const first = preloadPayload('/pre/preloaded')
+    const second = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await Promise.all([first, second])
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/preloaded')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
+  })
+
+  it('should retry a payload preload that failed', async () => {
+    const links = () => [...document.head.querySelectorAll<HTMLLinkElement>('link[href*="/pre/unreachable/_payload.json"]')]
+
+    const failed = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('error'))
+    await expect(failed).rejects.toBeUndefined()
+    expect(links()).toHaveLength(0)
+
+    const retried = preloadPayload('/pre/unreachable')
+    await vi.waitFor(() => expect(links()).toHaveLength(1))
+    links()[0]!.dispatchEvent(new Event('load'))
+    await retried
+    expect(links()).toHaveLength(0)
   })
 })
 
@@ -788,10 +1040,12 @@ describe('routing utilities: `navigateTo`', () => {
   })
 
   it('navigateTo should disallow navigation to external URLs by default', () => {
-    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/4.x/errors/e2001]`)
+    expect(() => navigateTo('https://test.com')).toThrowErrorMatchingInlineSnapshot(`[NUXT_E2001: https://nuxt.com/docs/5.x/errors/e2001]`)
     expect(() => navigateTo('https://test.com', { external: true })).not.toThrow()
     expect(() => navigateTo('/\t/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
     expect(() => navigateTo('/\n\\test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
+    expect(() => navigateTo('https:test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
+    expect(() => navigateTo('https:/test.com')).toThrow(expect.objectContaining({ code: 'NUXT_E2001' }))
   })
   it('navigateTo should disallow navigation to data/script URLs', () => {
     const urls = [
@@ -823,7 +1077,7 @@ describe('routing utilities: `navigateTo`', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       expect(() => navigateTo('https://example.com', { open: { target: '_blank' } })).not.toThrow()
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       open.mockRestore()
     }
@@ -833,10 +1087,32 @@ describe('routing utilities: `navigateTo`', () => {
     const open = vi.spyOn(window, 'open').mockImplementation(() => null)
     try {
       navigateTo('https://example.com', { open: {} })
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       open.mockRestore()
     }
+  })
+
+  it('navigateTo should let explicit `noopener` override `experimental.defaults.navigateTo`', () => {
+    const open = vi.spyOn(window, 'open').mockImplementation(() => null)
+    const noopener = navigateToDefaults.noopener
+    onTestFinished(() => {
+      navigateToDefaults.noopener = noopener
+      open.mockRestore()
+    })
+
+    navigateTo('https://example.com', { open: { windowFeatures: { popup: true } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'popup=true, noopener=true')
+
+    navigateTo('https://example.com', { open: { windowFeatures: { noopener: false } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'noopener=false')
+
+    navigateToDefaults.noopener = false
+    navigateTo('https://example.com', { open: { windowFeatures: { popup: true } } })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', 'popup=true')
+
+    navigateTo('https://example.com', { open: {} })
+    expect(open).toHaveBeenLastCalledWith('https://example.com', '_blank', '')
   })
 
   it('navigateTo should respect app.baseURL when opening internal routes', () => {
@@ -846,13 +1122,13 @@ describe('routing utilities: `navigateTo`', () => {
     config.app.baseURL = '/docs/'
     try {
       navigateTo('/guide', { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', 'noopener=true')
 
       navigateTo({ path: '/guide' }, { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', '')
+      expect(open).toHaveBeenCalledWith('/docs/guide', '_blank', 'noopener=true')
 
       navigateTo('https://example.com', { open: { target: '_blank' } })
-      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', '')
+      expect(open).toHaveBeenCalledWith('https://example.com', '_blank', 'noopener=true')
     } finally {
       config.app.baseURL = originalBaseURL
       open.mockRestore()
@@ -874,6 +1150,7 @@ describe('routing utilities: `navigateTo`', () => {
       '//evil.com',
       'https://evil.com',
       '\\\\evil.com',
+      `${window.location.protocol === 'https:' ? 'http:' : 'https:'}//${window.location.host}/legit/path`,
     ]
     for (const url of urls) {
       expect(() => reloadNuxtApp({ path: url })).toThrow(expect.objectContaining({ code: 'NUXT_E2010' }))
@@ -893,6 +1170,24 @@ describe('routing utilities: `navigateTo`', () => {
       }
     `)
     nuxtApp._processingMiddleware = false
+  })
+  it('navigateTo should parse the query the same way the router does when replacing within middleware', () => {
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    const location = navigateTo('/?flag&empty=', { replace: true }) as { query: unknown }
+    nuxtApp._processingMiddleware = false
+    expect(location.query).toEqual(router.resolve('/?flag&empty=').query)
+  })
+  it('navigateTo should use `parseQuery` from the router options when replacing within middleware', () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    routerOptions.parseQuery = search => ({ search })
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    onTestFinished(() => { delete routerOptions.parseQuery })
+    const nuxtApp = useNuxtApp()
+    nuxtApp._processingMiddleware = true
+    const location = navigateTo('/?a=1', { replace: true }) as { query: unknown }
+    nuxtApp._processingMiddleware = false
+    expect(location.query).toEqual({ search: 'a=1' })
   })
 
   it('#28425', async () => {
@@ -918,12 +1213,175 @@ describe('routing utilities: `navigateTo`', () => {
     el.unmount()
     router.removeRoute('slug')
   })
+
+  it('should navigate when called outside middleware while a navigation is pending', async () => {
+    const router = useRouter()
+    let release!: () => void
+    const blocked = new Promise<void>((resolve) => { release = resolve })
+    let enter!: () => void
+    const entered = new Promise<void>((resolve) => { enter = resolve })
+    const removeGuard = router.beforeResolve(async (to) => {
+      if (to.query.section === 'roles') {
+        enter()
+        await blocked
+      }
+    })
+
+    try {
+      const older = navigateTo({ path: '/', query: { section: 'roles' } })
+      await entered
+      await navigateTo({ path: '/', query: { section: 'employment' } })
+      release()
+      await older
+    } finally {
+      removeGuard()
+    }
+
+    expect(router.currentRoute.value.query.section).toBe('employment')
+  })
+
+  it('should redirect from middleware while an earlier navigation is being cancelled', async () => {
+    const router = useRouter()
+    let releaseFirst!: () => void
+    const firstBlocked = new Promise<void>((resolve) => { releaseFirst = resolve })
+    let releaseSecond!: () => void
+    const secondBlocked = new Promise<void>((resolve) => { releaseSecond = resolve })
+    let enterSecond!: () => void
+    const secondEntered = new Promise<void>((resolve) => { enterSecond = resolve })
+    const middleware = defineNuxtRouteMiddleware(async (to) => {
+      if (to.query.race === 'first') {
+        await firstBlocked
+      }
+      if (to.query.race === 'second') {
+        enterSecond()
+        await secondBlocked
+        return navigateTo({ path: '/', query: { race: 'redirected' } })
+      }
+    })
+    const unregister = addRouteMiddleware(middleware, { global: true })
+
+    try {
+      const first = router.push({ path: '/', query: { race: 'first' } })
+      const second = router.push({ path: '/', query: { race: 'second' } })
+      await secondEntered
+      releaseFirst()
+      await first
+      releaseSecond()
+      await second
+    } finally {
+      unregister()
+    }
+
+    expect(router.currentRoute.value.query.race).toBe('redirected')
+    expect(router.currentRoute.value.redirectedFrom?.query.race).toBe('second')
+  })
+})
+
+describe('routing utilities: `addRouteMiddleware`', () => {
+  it('returns a function that unregisters global middleware', async () => {
+    const router = useRouter()
+    const visits: unknown[] = []
+    const unregister = addRouteMiddleware((to) => {
+      visits.push(to.query.unregister)
+    })
+    onTestFinished(unregister)
+    await router.push({ path: '/', query: { unregister: 'before' } })
+    unregister()
+    await router.push({ path: '/', query: { unregister: 'after' } })
+    expect(router.currentRoute.value.query.unregister).toBe('after')
+    expect(visits).toEqual(['before'])
+  })
+
+  it('removes a global middleware only once when unregister is called twice', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware(middleware)
+    const unregisterAgain = addRouteMiddleware(middleware)
+    onTestFinished(unregisterAgain)
+    unregister()
+    unregister()
+    expect(nuxtApp._middleware.global.filter(mw => mw === middleware)).toHaveLength(1)
+  })
+
+  it('preserves registration order when unregistering a duplicate global middleware', () => {
+    const nuxtApp = useNuxtApp()
+    const first = () => {}
+    const second = () => {}
+    const unregisterFirst = addRouteMiddleware(first)
+    const unregisterSecond = addRouteMiddleware(second)
+    const unregisterDuplicate = addRouteMiddleware(first)
+    onTestFinished(() => {
+      unregisterFirst()
+      unregisterSecond()
+      unregisterDuplicate()
+    })
+    unregisterDuplicate()
+    expect(nuxtApp._middleware.global).toEqual([first, second])
+  })
+
+  it('returns a function that unregisters named middleware', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware('test-named', middleware)
+    expect(nuxtApp._middleware.named['test-named']).toBe(middleware)
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBeUndefined()
+  })
+
+  it('does not remove named middleware that has since been replaced', () => {
+    const nuxtApp = useNuxtApp()
+    const first = () => {}
+    const second = () => {}
+    const unregister = addRouteMiddleware('test-named', first)
+    addRouteMiddleware('test-named', second)
+    onTestFinished(() => { delete nuxtApp._middleware.named['test-named'] })
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBe(second)
+  })
+
+  it('does not remove a named middleware that was re-registered when unregister is called again', () => {
+    const nuxtApp = useNuxtApp()
+    const middleware = () => {}
+    const unregister = addRouteMiddleware('test-named', middleware)
+    unregister()
+    addRouteMiddleware('test-named', middleware)
+    onTestFinished(() => { delete nuxtApp._middleware.named['test-named'] })
+    unregister()
+    expect(nuxtApp._middleware.named['test-named']).toBe(middleware)
+  })
+
+  it('removes a named middleware whose name collides with an Object prototype property', () => {
+    const nuxtApp = useNuxtApp()
+    const unregister = addRouteMiddleware('constructor', () => {})
+    unregister()
+    expect(nuxtApp._middleware.named.constructor).toBeUndefined()
+  })
 })
 
 describe('routing utilities: `resolveRouteObject`', () => {
   it('resolveRouteObject should correctly resolve a route object', () => {
     expect(resolveRouteObject({ path: '/test' })).toMatchInlineSnapshot(`"/test"`)
     expect(resolveRouteObject({ path: '/test', hash: '#thing', query: { foo: 'bar' } })).toMatchInlineSnapshot(`"/test?foo=bar#thing"`)
+  })
+  it('resolveRouteObject should serialise the query the same way the router does', () => {
+    const query = { path: 'a/b', empty: '', flag: null, list: ['1', '2'] }
+    expect(resolveRouteObject({ path: '/test', query })).toBe(useRouter().resolve({ path: '/test', query }).fullPath)
+    expect(resolveRouteObject({ path: 'https://example.com/test?flag&empty=&foo=old', query: { foo: 'new' } })).toBe('https://example.com/test?flag&empty=&foo=new')
+    expect(resolveRouteObject({ path: '/test', query: { '?a': '1' } })).toBe(useRouter().resolve({ path: '/test', query: { '?a': '1' } }).fullPath)
+  })
+  it('resolveRouteObject should use `stringifyQuery` from the router options', () => {
+    routerOptions.stringifyQuery = query => Object.keys(query).join(',')
+    onTestFinished(() => { delete routerOptions.stringifyQuery })
+    expect(resolveRouteObject({ path: 'https://example.com/test', query: { a: '1', b: '2' } })).toBe('https://example.com/test?a,b')
+  })
+  it('resolveRouteObject should only call `parseQuery` from the router options when the path has a query', () => {
+    const parseQuery = vi.fn(() => ({}))
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    routerOptions.parseQuery = parseQuery
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    onTestFinished(() => { delete routerOptions.parseQuery })
+    expect(resolveRouteObject({ path: '/test', query: { a: '1' } })).toBe('/test?a=1')
+    expect(parseQuery).not.toHaveBeenCalled()
   })
 })
 
@@ -1150,10 +1608,23 @@ describe('routing utilities: `abortNavigation`', () => {
   it('should block navigation if no error is provided', () => {
     expect(abortNavigation()).toMatchInlineSnapshot('false')
   })
+  it('should abort navigation from a router guard in development', async () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    const router = useRouter()
+    const removeGuard = router.beforeEach(to => to.query.abortGuard ? abortNavigation() : undefined)
+    try {
+      const failure = await router.push('/?abortGuard=1')
+      expect(isNavigationFailure(failure, NavigationFailureType.aborted)).toBe(true)
+    } finally {
+      removeGuard()
+      vi.unstubAllGlobals()
+    }
+  })
 
   describe('aborted navigation', () => {
     const abortMiddleware = defineNuxtRouteMiddleware(to => to.query.abort ? abortNavigation() : undefined)
     let restoreRoutes = () => {}
+    let unregisterAbort = () => {}
 
     beforeEach(() => {
       const router = useRouter()
@@ -1168,12 +1639,11 @@ describe('routing utilities: `abortNavigation`', () => {
           router.addRoute(catchall)
         }
       }
-      addRouteMiddleware(abortMiddleware, { global: true })
+      unregisterAbort = addRouteMiddleware(abortMiddleware, { global: true })
     })
 
     afterEach(async () => {
-      const globalMiddleware = useNuxtApp()._middleware.global
-      globalMiddleware.splice(globalMiddleware.indexOf(abortMiddleware), 1)
+      unregisterAbort()
       await clearError()
       await navigateTo('/abort-matched')
       restoreRoutes()
@@ -1214,6 +1684,56 @@ describe('routing utilities: `setPageLayout`', () => {
     nuxtApp._processingMiddleware = false
   })
 
+  it('should set layout on the target route if run within a router guard', async () => {
+    const router = useRouter()
+    router.addRoute({
+      name: 'layout-guard-test',
+      path: '/layout-guard-test',
+      component: defineComponent({ template: '<div />' }),
+    })
+    const from = router.currentRoute.value
+    const removeGuard = router.beforeEach((to) => {
+      if (to.path === '/layout-guard-test') {
+        setPageLayout('custom')
+      }
+    })
+    try {
+      await router.push('/layout-guard-test')
+    } finally {
+      removeGuard()
+      router.removeRoute('layout-guard-test')
+    }
+    expect(from.meta.layout).toBeUndefined()
+    expect(router.currentRoute.value.meta.layout).toBe('custom')
+  })
+
+  it.each([
+    ['to the current route', ['/?layoutRedirect=current']],
+    ['through another route to the current route', ['/?layoutRedirect=hop', '/?layoutRedirect=current']],
+  ])('should set layout on page metadata after middleware redirects %s', async (_, targets) => {
+    const router = useRouter()
+    const route = useRoute()
+    await router.push('/')
+    const middleware = defineNuxtRouteMiddleware((to) => {
+      if (to.query.layoutRedirect === 'hop') {
+        return navigateTo('/?layoutRedirect=current')
+      }
+      if (to.query.layoutRedirect === 'current') {
+        return navigateTo('/')
+      }
+    })
+    const unregister = addRouteMiddleware(middleware, { global: true })
+    try {
+      await router.push(targets[0]!)
+    } finally {
+      unregister()
+    }
+    expect(route.fullPath).toBe('/')
+    setPageLayout('custom')
+    expect(route.meta.layout).toBe('custom')
+    route.meta.layout = undefined
+  })
+
   it('should preserve layout and props on same-path (query-only) navigation', async () => {
     const router = useRouter()
     router.addRoute({
@@ -1230,348 +1750,6 @@ describe('routing utilities: `setPageLayout`', () => {
     expect(route.meta.layout).toEqual('with-props')
     expect(route.meta.layoutProps).toEqual({ someProp: 'hello' })
     router.removeRoute('layout-props-test')
-  })
-})
-
-describe('defineNuxtComponent', () => {
-  it('should produce a Vue component', async () => {
-    const wrapper = await mountSuspended(defineNuxtComponent({
-      render: () => h('div', 'hi there'),
-    }))
-    expect(wrapper.html()).toMatchInlineSnapshot('"<div>hi there</div>"')
-  })
-
-  it('should support Options API asyncData', async () => {
-    const nuxtApp = useNuxtApp()
-    nuxtApp.isHydrating = true
-    nuxtApp.payload.serverRendered = true
-    const ClientOnlyPage = await createClientPage(() => Promise.resolve(defineNuxtComponent({
-      asyncData: () => ({
-        users: ['alice', 'bob'],
-      }),
-      render () {
-        // @ts-expect-error this is not typed
-        return h('div', `Total users: ${this.users.length}`)
-      },
-    })))
-    const wrapper = await mountSuspended(ClientOnlyPage)
-    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>Total users: 2</div>"`)
-    nuxtApp.isHydrating = false
-    nuxtApp.payload.serverRendered = false
-  })
-
-  it('should support Options API refreshNuxtData', async () => {
-    let count = 0
-    const component = defineNuxtComponent({
-      asyncData: () => ({
-        number: count++,
-      }),
-      setup () {
-        const vm = getCurrentInstance()
-        return () => {
-          // @ts-expect-error go directly to jail 😈
-          return h('div', vm!.render.number.value)
-        }
-      },
-    })
-
-    const wrapper = await mountSuspended(component)
-    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>0</div>"`)
-
-    await refreshNuxtData()
-
-    expect(wrapper.html()).toMatchInlineSnapshot(`"<div>1</div>"`)
-  })
-
-  it.todo('should support Options API head')
-})
-
-describe('useCookie', () => {
-  it('should watch custom cookie refs', () => {
-    const user = useCookie('userInfo', {
-      default: () => ({ score: -1 }),
-      maxAge: 60 * 60,
-    })
-    const computedVal = computed(() => user.value.score)
-    expect(computedVal.value).toBe(-1)
-    user.value.score++
-    expect(computedVal.value).toBe(0)
-  })
-
-  it('should not re-read `document.cookie` for every call', async () => {
-    document.cookie = 'read-count-a=1'
-    document.cookie = 'read-count-b=2'
-
-    let target: any = document
-    let descriptor: PropertyDescriptor | undefined
-    while (target && !descriptor) {
-      descriptor = Object.getOwnPropertyDescriptor(target, 'cookie')
-      if (!descriptor) { target = Object.getPrototypeOf(target) }
-    }
-
-    let reads = 0
-    let writes = 0
-    Object.defineProperty(document, 'cookie', {
-      configurable: true,
-      get () {
-        reads++
-        return descriptor!.get!.call(document)
-      },
-      set (value) {
-        writes++
-        descriptor!.set!.call(document, value)
-      },
-    })
-
-    try {
-      for (let i = 0; i < 10; i++) {
-        useCookie('read-count-a')
-        useCookie('read-count-b')
-        useCookie('read-count-absent-' + i)
-      }
-      expect(reads).toBe(1)
-      expect(writes).toBe(0)
-
-      for (let i = 0; i < 10; i++) {
-        useCookie('read-count-default', { default: () => 'value' })
-      }
-      expect(reads).toBe(1)
-      expect(writes).toBe(1)
-
-      useCookie('read-count-scoped', { default: () => 'value', domain: 'example.com' })
-      useCookie('read-count-a')
-      expect(reads).toBe(2)
-
-      await nextTick()
-      useCookie('read-count-a')
-      expect(reads).toBe(3)
-    } finally {
-      delete (document as any).cookie
-    }
-  })
-
-  it('should invalidate the cached cookie jar after a write', async () => {
-    const cookie = useCookie<string>('invalidate-me', { default: () => 'initial' })
-    expect(useCookie<string>('invalidate-me').value).toBe('initial')
-
-    cookie.value = 'updated'
-    await nextTick()
-    expect(useCookie<string>('invalidate-me').value).toBe('updated')
-  })
-
-  it('should not read a cookie excluded by `filter`', () => {
-    document.cookie = 'filtered-out=set'
-
-    let decodeCallCount = 0
-    const cookie = useCookie<string>('filtered-out', {
-      default: () => 'default',
-      filter: () => false,
-      decode (value) {
-        decodeCallCount++
-        return value
-      },
-    })
-    expect(cookie.value).toBe('default')
-    expect(decodeCallCount).toBe(0)
-  })
-
-  it('cookie decode function should be invoked once', () => {
-    // Pre-set cookies
-    document.cookie = 'foo=Foo'
-    document.cookie = 'bar=%7B%22s2%22%3A0%7D'
-    document.cookie = 'baz=%7B%22s2%22%3A0%7D'
-
-    let barCallCount = 0
-    const bazCookie = useCookie<{ s2: number }>('baz', {
-      default: () => ({ s2: -1 }),
-      decode (value) {
-        barCallCount++
-        return JSON.parse(decodeURIComponent(value))
-      },
-    })
-    bazCookie.value.s2++
-    expect(bazCookie.value.s2).toEqual(1)
-    expect(barCallCount).toBe(1)
-
-    let quxCallCount = 0
-    const quxCookie = useCookie<{ s3: number }>('qux', {
-      default: () => ({ s3: -1 }),
-      filter: key => key === 'bar' || key === 'baz',
-      decode (value) {
-        quxCallCount++
-        return JSON.parse(decodeURIComponent(value))
-      },
-    })
-    quxCookie.value.s3++
-    expect(quxCookie.value.s3).toBe(0)
-    expect(quxCallCount).toBe(0)
-  })
-
-  it('should not watch custom cookie refs when shallow', () => {
-    for (const value of ['shallow', false] as const) {
-      const user = useCookie('shallowUserInfo', {
-        default: () => ({ score: -1 }),
-        maxAge: 60 * 60,
-        watch: value,
-      })
-      const computedVal = computed(() => user.value.score)
-      expect(computedVal.value).toBe(-1)
-      user.value.score++
-      expect(computedVal.value).toBe(-1)
-    }
-  })
-
-  it('should set cookie value when called on client', () => {
-    useCookie('cookie-watch-false', { default: () => 'foo', watch: false })
-    expect(document.cookie).toContain('cookie-watch-false=foo')
-
-    useCookie('cookie-watch-true', { default: () => 'foo', watch: true })
-    expect(document.cookie).toContain('cookie-watch-true=foo')
-  })
-
-  it('should not write a readonly cookie with a default value on client', () => {
-    const cookie = useCookie('cookie-readonly', { default: () => 'foo', readonly: true })
-    expect(cookie.value).toBe('foo')
-    expect(document.cookie).not.toContain('cookie-readonly')
-  })
-
-  it('should re-write cookie on same-value assignment when refresh is true', async () => {
-    const { nextTick } = await import('vue')
-
-    document.cookie = 'refresh-test=initial; Max-Age=3600'
-    const cookie = useCookie('refresh-test', {
-      maxAge: 3600,
-      refresh: true,
-    })
-    expect(cookie.value).toBe('initial')
-
-    // Assign the same value — should still trigger a cookie write
-    cookie.value = 'initial'
-    await nextTick()
-
-    expect(document.cookie).toContain('refresh-test=initial')
-  })
-
-  it('should not re-write cookie on same-value assignment when refresh is false', async () => {
-    const { nextTick } = await import('vue')
-
-    document.cookie = 'no-refresh-test=original'
-    const cookie = useCookie('no-refresh-test', {
-      maxAge: 3600,
-      refresh: false,
-    })
-    expect(cookie.value).toBe('original')
-
-    // Clear document.cookie to detect if a write happens
-    document.cookie = 'no-refresh-test=; Max-Age=0'
-    expect(document.cookie).not.toContain('no-refresh-test=original')
-
-    // Assign the same value — should NOT trigger a cookie write
-    cookie.value = 'original'
-    await nextTick()
-
-    expect(document.cookie).not.toContain('no-refresh-test=original')
-  })
-
-  it('should never write a readonly cookie, even when refresh is true', async () => {
-    const { nextTick } = await import('vue')
-
-    document.cookie = 'readonly-refresh-test=original'
-    const cookie = useCookie('readonly-refresh-test', {
-      maxAge: 3600,
-      readonly: true,
-      refresh: true,
-    })
-    expect(cookie.value).toBe('original')
-
-    // Clear document.cookie to detect if a write happens
-    document.cookie = 'readonly-refresh-test=; Max-Age=0'
-    expect(document.cookie).not.toContain('readonly-refresh-test=original')
-
-    ;(cookie as any).value = 'stray-write'
-    expect(cookie.value).toBe('stray-write')
-    await nextTick()
-
-    expect(document.cookie).not.toContain('readonly-refresh-test=stray-write')
-  })
-
-  it('should re-evaluate expires getter on each cookie write', async () => {
-    const { nextTick } = await import('vue')
-    let callCount = 0
-    const cookie = useCookie('expires-getter', {
-      expires: () => {
-        callCount++
-        return new Date(Date.now() + 60_000)
-      },
-    })
-
-    // Initial write of default/undefined may or may not happen; start from a known count
-    const baseline = callCount
-    cookie.value = 'first'
-    await nextTick()
-    expect(callCount).toBeGreaterThan(baseline)
-
-    const afterFirst = callCount
-    cookie.value = 'second'
-    await nextTick()
-    expect(callCount).toBeGreaterThan(afterFirst)
-    expect(document.cookie).toContain('expires-getter=second')
-  })
-
-  it('should re-evaluate expires getter on same-value assignment when refresh is true', async () => {
-    const { nextTick } = await import('vue')
-    let callCount = 0
-    document.cookie = 'expires-refresh=token'
-    const cookie = useCookie('expires-refresh', {
-      refresh: true,
-      expires: () => {
-        callCount++
-        return new Date(Date.now() + 60_000)
-      },
-    })
-    expect(cookie.value).toBe('token')
-
-    const baseline = callCount
-    cookie.value = 'token'
-    await nextTick()
-    expect(callCount).toBeGreaterThan(baseline)
-    expect(document.cookie).toContain('expires-refresh=token')
-  })
-
-  it('should support a static Date for expires without a getter', async () => {
-    const { nextTick } = await import('vue')
-    const cookie = useCookie('expires-static', {
-      expires: new Date(Date.now() + 60_000),
-    })
-    cookie.value = 'static-value'
-    await nextTick()
-    expect(document.cookie).toContain('expires-static=static-value')
-  })
-
-  it('should not treat an expires getter returning undefined as expired', () => {
-    const cookie = useCookie('expires-undefined-getter', {
-      default: () => 'fallback',
-      expires: () => undefined,
-    })
-    expect(cookie.value).toBe('fallback')
-  })
-
-  it('should keep session cookies without expires or maxAge as plain refs', async () => {
-    const { nextTick } = await import('vue')
-    vi.useFakeTimers()
-    try {
-      const cookie = useCookie('session-no-expiry', {
-        default: () => 'session',
-      })
-      cookie.value = 'session'
-      await nextTick()
-      expect(cookie.value).toBe('session')
-
-      vi.advanceTimersByTime(60_000)
-      expect(cookie.value).toBe('session')
-    } finally {
-      vi.useRealTimers()
-    }
   })
 })
 
@@ -1654,6 +1832,81 @@ describe('callOnce', () => {
       expect(fn).toHaveBeenCalledTimes(3)
     })
 
+    // https://github.com/nuxt/nuxt/issues/37146
+    it.runIf(options?.mode === 'navigation')('should rerun on the next navigation after navigating away while it was still running', async () => {
+      let finish!: () => void
+      const fn = vi.fn()
+        .mockImplementationOnce(() => new Promise<void>((resolve) => { finish = resolve }))
+        .mockImplementation(() => {})
+      const execute = () => callOnce('superseded-nav', fn, options)
+
+      await navigateTo('/superseded-1')
+      const pending = execute()
+
+      // navigate away while the callback is still running
+      await navigateTo('/superseded-2')
+      finish()
+      await pending
+      expect(fn).toHaveBeenCalledTimes(1)
+
+      // the next navigation must run the callback again
+      await navigateTo('/superseded-3')
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation').each(['resolves', 'rejects'] as const)('should not reuse a callback still running from the previous route when it %s', async (outcome) => {
+      const settlers: Array<{ resolve: () => void, reject: (e: Error) => void }> = []
+      const fn = vi.fn().mockImplementation(() => new Promise<void>((resolve, reject) => { settlers.push({ resolve, reject }) }))
+      const key = `superseded-reuse-${outcome}`
+      const execute = () => callOnce(key, fn, options)
+
+      await navigateTo(`/${key}-1`)
+      const first = execute()
+
+      await navigateTo(`/${key}-2`)
+      const second = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      // settling the first call must not drop the second, still running one
+      if (outcome === 'resolves') {
+        settlers[0]!.resolve()
+        await first
+      } else {
+        settlers[0]!.reject(new Error('first'))
+        await expect(first).rejects.toThrow('first')
+      }
+      expect(nuxtApp.payload.once.has(key)).toBe(false)
+      const third = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      settlers[1]!.resolve()
+      await Promise.all([second, third])
+      await execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
+    it.runIf(options?.mode === 'navigation')('should tell runs apart when the callback returns a shared promise', async () => {
+      let finish!: () => void
+      const shared = new Promise<void>((resolve) => { finish = resolve })
+      const fn = vi.fn(() => shared)
+      const execute = () => callOnce('superseded-shared', fn, options)
+
+      await navigateTo('/superseded-shared-1')
+      const first = execute()
+      let rerun: Promise<void> | undefined
+      void shared.then(() => { rerun = execute() })
+
+      await navigateTo('/superseded-shared-2')
+      const second = execute()
+      expect(fn).toHaveBeenCalledTimes(2)
+
+      finish()
+      await Promise.all([first, second])
+      await rerun
+      expect(fn).toHaveBeenCalledTimes(2)
+    })
+
     it('should retry after a rejected promise', async () => {
       const fn = vi.fn()
         .mockRejectedValueOnce(new Error('fail'))
@@ -1668,48 +1921,16 @@ describe('callOnce', () => {
   })
 })
 
-describe('route announcer', () => {
-  it('should create a route announcer with default politeness', () => {
-    const announcer = useRouteAnnouncer()
-    expect(announcer.politeness.value).toBe('polite')
+describe.each([
+  { name: 'useRouteAnnouncer', useAnnouncer: useRouteAnnouncer, resetsOnDispose: false },
+  { name: 'useAnnouncer', useAnnouncer, resetsOnDispose: true },
+])('$name', ({ useAnnouncer, resetsOnDispose }) => {
+  it('should default to polite politeness', () => {
+    expect(useAnnouncer().politeness.value).toBe('polite')
   })
 
-  it('should create a route announcer with provided politeness', () => {
-    const announcer = useRouteAnnouncer({ politeness: 'assertive' })
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-
-  it('should set message and politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.set('Test message with politeness', 'assertive')
-    expect(announcer.message.value).toBe('Test message with politeness')
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-
-  it('should set message with polite politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.polite('Test message polite')
-    expect(announcer.message.value).toBe('Test message polite')
-    expect(announcer.politeness.value).toBe('polite')
-  })
-
-  it('should set message with assertive politeness', () => {
-    const announcer = useRouteAnnouncer()
-    announcer.assertive('Test message assertive')
-    expect(announcer.message.value).toBe('Test message assertive')
-    expect(announcer.politeness.value).toBe('assertive')
-  })
-})
-
-describe('announcer', () => {
-  it('should create an announcer with default politeness', () => {
-    const announcer = useAnnouncer()
-    expect(announcer.politeness.value).toBe('polite')
-  })
-
-  it('should create an announcer with provided politeness', () => {
-    const announcer = useAnnouncer({ politeness: 'assertive' })
-    expect(announcer.politeness.value).toBe('assertive')
+  it('should accept a politeness', () => {
+    expect(useAnnouncer({ politeness: 'assertive' }).politeness.value).toBe('assertive')
   })
 
   it('should set message and politeness', () => {
@@ -1717,57 +1938,30 @@ describe('announcer', () => {
     announcer.set('Test message with politeness', 'assertive')
     expect(announcer.message.value).toBe('Test message with politeness')
     expect(announcer.politeness.value).toBe('assertive')
-  })
 
-  it('should set message with polite politeness', () => {
-    const announcer = useAnnouncer()
     announcer.polite('Test message polite')
     expect(announcer.message.value).toBe('Test message polite')
     expect(announcer.politeness.value).toBe('polite')
-  })
 
-  it('should set message with assertive politeness', () => {
-    const announcer = useAnnouncer()
     announcer.assertive('Test message assertive')
     expect(announcer.message.value).toBe('Test message assertive')
     expect(announcer.politeness.value).toBe('assertive')
   })
 
-  it('should cleanup announcer when last scope is disposed', () => {
-    const nuxtApp = useNuxtApp()
-
-    // Clean up any pre-existing announcer state
-    delete nuxtApp._announcer
-    delete nuxtApp._announcerDeps
-
+  it('should share the announcer until the last scope using it is disposed', () => {
     const scope1 = effectScope()
-    let announcer: ReturnType<typeof useAnnouncer>
-
-    scope1.run(() => {
-      announcer = useAnnouncer()
-      announcer.set('Test message', 'assertive')
-    })
-
-    expect(nuxtApp._announcerDeps).toBe(1)
-    expect(nuxtApp._announcer).toBeDefined()
-
-    // Create a second consumer in a separate scope
     const scope2 = effectScope()
-    scope2.run(() => {
-      useAnnouncer()
-    })
+    const announcer = scope1.run(() => useAnnouncer())!
+    expect(scope2.run(() => useAnnouncer())).toBe(announcer)
+    announcer.assertive('Still in use')
 
-    expect(nuxtApp._announcerDeps).toBe(2)
-
-    // Dispose first scope — announcer should still exist
     scope1.stop()
-    expect(nuxtApp._announcerDeps).toBe(1)
-    expect(nuxtApp._announcer).toBeDefined()
+    expect(useAnnouncer()).toBe(announcer)
+    expect(announcer.message.value).toBe('Still in use')
 
-    // Dispose second scope — announcer should be cleaned up
     scope2.stop()
-    expect(nuxtApp._announcerDeps).toBe(0)
-    expect(nuxtApp._announcer).toBeUndefined()
+    expect(announcer.message.value).toBe(resetsOnDispose ? '' : 'Still in use')
+    expect(useAnnouncer()).not.toBe(announcer)
   })
 })
 
@@ -1779,5 +1973,17 @@ describe('namespace access to useNuxtApp', () => {
 
   it('should throw an error when used with wrong appId', () => {
     expect(() => useNuxtApp('nuxt-app-unknown')).toThrow()
+  })
+})
+
+describe('injectHead', () => {
+  it('creates and provides the client head on first use', () => {
+    const vueApp = createApp({ render: () => null })
+    const nuxtApp = { vueApp, runWithContext: (fn: () => unknown) => vueApp.runWithContext(fn) } as unknown as NuxtApp
+
+    expect(vueApp.runWithContext(() => inject(headSymbol, null))).toBeNull()
+    const head = injectHead(nuxtApp)
+    expect(injectHead(nuxtApp)).toBe(head)
+    expect(vueApp.runWithContext(() => inject(headSymbol))).toBe(head)
   })
 })

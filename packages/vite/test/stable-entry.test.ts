@@ -2,8 +2,9 @@ import { createHash } from 'node:crypto'
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import { afterAll, describe, expect, it } from 'vitest'
-import { buildNuxt, loadNuxt } from '@nuxt/kit'
 import { join } from 'pathe'
+
+import { buildFixture } from './utils.ts'
 
 const tmpDir = fileURLToPath(new URL('./.tmp/stable-entry', import.meta.url))
 
@@ -40,24 +41,10 @@ async function writeApp (extraPages: number) {
 }
 
 async function build () {
-  const nuxt = await loadNuxt({
-    cwd: tmpDir,
-    ready: true,
-    dev: false,
-    overrides: {
-      compatibilityDate: 'latest',
-      devtools: { enabled: false },
-      ssr: true,
-    },
-  })
+  let buildAssetsDir = ''
+  await buildFixture(tmpDir, { ssr: true }, (nuxt) => { buildAssetsDir = nuxt.options.app.buildAssetsDir })
 
-  try {
-    await buildNuxt(nuxt)
-  } finally {
-    await nuxt.close()
-  }
-
-  const dir = join(tmpDir, '.output/public', nuxt.options.app.buildAssetsDir.replace(/^\/+/, ''))
+  const dir = join(tmpDir, '.output/public', buildAssetsDir.replace(/^\/+/, ''))
   const chunks: Record<string, string> = {}
   let importsEntrySpecifier = false
   for (const file of await readdir(dir)) {

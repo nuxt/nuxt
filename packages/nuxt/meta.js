@@ -18,5 +18,4 @@ export const runtimeDependencies = [
   'object-identity',
   'ohash',
   'pathe',
-  'uncrypto',
 ]

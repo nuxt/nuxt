@@ -1,11 +1,11 @@
 import { existsSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
+import { readFile, realpath } from 'node:fs/promises'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import { exec } from 'tinyexec'
 import { glob } from 'tinyglobby'
-import { join, relative } from 'pathe'
+import { dirname, join, relative } from 'pathe'
 
 const repoRoot = fileURLToPath(new URL('../..', import.meta.url))
 const runner = fileURLToPath(new URL('./run-without-jiti.mjs', import.meta.url))
@@ -13,10 +13,13 @@ const runner = fileURLToPath(new URL('./run-without-jiti.mjs', import.meta.url))
 const kitSource = join(repoRoot, 'packages/kit/src/index.ts')
 const kitDist = join(repoRoot, 'packages/kit/dist/index.mjs')
 
+/** Packages a default install of `nuxt` must not pull in. */
+const EXCLUDED_PACKAGES = new Set(['jiti', 'untyped'])
+
 /** Packages allowed to declare `jiti`, and only as an optional peer dependency. */
 const OPTIONAL_JITI_PACKAGES = new Set(['@nuxt/kit', 'nuxt'])
 
-async function runWithoutJiti (kitEntry: string, task: 'config' | 'build', cwds: string[]) {
+async function runWithoutJiti (kitEntry: string, task: 'config' | 'schema' | 'build', cwds: string[]) {
   const { stdout, stderr, exitCode } = await exec(process.execPath, [runner, kitEntry, task, ...cwds], {
     nodeOptions: { cwd: repoRoot },
   })
@@ -27,11 +30,25 @@ async function runWithoutJiti (kitEntry: string, task: 'config' | 'build', cwds:
   return {
     exitCode,
     completed,
+    schemas: stdout.split('\n').filter(line => line.startsWith('schema ')).map(line => JSON.parse(line.slice(7))),
     /** Message describing where and why the child stopped, for use as an assertion message. */
     report: [
       failedOn && `failed on ${relative(repoRoot, failedOn)} (${completed.length}/${cwds.length} succeeded)`,
       stderr.trim().split('\n').slice(-40).join('\n'),
     ].filter(Boolean).join('\n\n'),
+  }
+}
+
+/** Node's lookup for `<dir>/node_modules/<name>`, walking up from `dir`. */
+function findInstalled (dir: string, name: string) {
+  for (let current = dir; ; current = dirname(current)) {
+    const candidate = join(current, 'node_modules', name)
+    if (existsSync(join(candidate, 'package.json'))) {
+      return candidate
+    }
+    if (dirname(current) === current) {
+      return
+    }
   }
 }
 
@@ -71,6 +88,43 @@ describe('jiti is not required', () => {
     expect(offenders).toEqual([])
   })
 
+  it('does not install jiti or untyped with nuxt through any of its dependencies', async () => {
+    // walks the installed tree through `dependencies`, `optionalDependencies` and required peers, as a consumer's package manager would
+    const seen = new Set<string>()
+    const paths: string[] = []
+    async function walk (dir: string, path: string[]) {
+      const realDir = await realpath(dir)
+      if (seen.has(realDir)) { return }
+      seen.add(realDir)
+      const pkg = JSON.parse(await readFile(join(realDir, 'package.json'), 'utf8')) as {
+        name: string
+        dependencies?: Record<string, string>
+        optionalDependencies?: Record<string, string>
+        peerDependencies?: Record<string, string>
+        peerDependenciesMeta?: Record<string, { optional?: boolean }>
+      }
+      const requiredPeers = Object.keys(pkg.peerDependencies ?? {}).filter(name => !pkg.peerDependenciesMeta?.[name]?.optional)
+      for (const name of new Set([...Object.keys({ ...pkg.dependencies, ...pkg.optionalDependencies }), ...requiredPeers])) {
+        if (EXCLUDED_PACKAGES.has(name)) {
+          paths.push([...path, pkg.name, name].join(' > '))
+          continue
+        }
+        const depDir = findInstalled(realDir, name)
+        if (!depDir) {
+          if (Object.hasOwn(pkg.optionalDependencies ?? {}, name)) {
+            continue
+          }
+          throw new Error(`Cannot inspect required dependency: ${[...path, pkg.name, name].join(' > ')}`)
+        }
+        await walk(depDir, [...path, pkg.name])
+      }
+    }
+    await walk(join(repoRoot, 'packages/nuxt'), [])
+
+    expect(seen.size).toBeGreaterThan(50)
+    expect(paths).toEqual([])
+  })
+
   it.skipIf(!existsSync(kitDist))('does not statically import jiti from the built kit', async () => {
     const dist = await readFile(kitDist, 'utf8')
     expect(dist).not.toMatch(/^import[^\n]*['"]jiti['"]/m)
@@ -92,6 +146,17 @@ describe('jiti is not required', () => {
     const { exitCode, completed, report } = await runWithoutJiti(kitDist, 'config', dirs)
     expect(exitCode, report).toBe(0)
     expect(completed).toEqual(dirs)
+  }, 120_000)
+
+  it('reads the JSDoc annotations in a nuxt.schema file', async () => {
+    const cwd = join(repoRoot, 'test/fixtures/basic-types')
+    const { exitCode, schemas, report } = await runWithoutJiti(kitSource, 'schema', [cwd])
+    expect(exitCode, report).toBe(0)
+    expect(schemas[0].properties.appConfig.properties.userConfig).toMatchObject({
+      title: 'This is an example app config defined in custom schema',
+      tsType: '123 | 456',
+      default: 123,
+    })
   }, 120_000)
 
   it.skipIf(process.env.SKIP_NO_JITI_BUILD === 'true')('builds a minimal application', async () => {

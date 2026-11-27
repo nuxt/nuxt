@@ -19,6 +19,10 @@ Headers that are **not meant to be forwarded** will **not be included** in the r
 `transfer-encoding`, `connection`, `keep-alive`, `upgrade`, `expect`, `host`, `accept`
 ::
 
+::important
+Headers are only forwarded to paths starting with `/` (such as `/api/cookies`). Requests to an absolute URL, including one pointing at your own app, are sent without them.
+::
+
 ::tip
 The [`useFetch`](/docs/api/composables/use-fetch) composable uses `useRequestFetch` under the hood to automatically forward the request context and headers.
 ::
@@ -49,5 +53,5 @@ export default defineEventHandler((event) => {
 ::
 
 ::tip
-In the browser during client-side navigation, `useRequestFetch` will behave just like regular [`$fetch`](/docs/api/utils/dollarfetch).
+In the browser during client-side navigation, `useRequestFetch` will behave just like regular [`$fetch`](/docs/api/utils/$fetch).
 ::

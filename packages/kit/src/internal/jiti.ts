@@ -1,9 +1,11 @@
-import { readFileSync, realpathSync } from 'node:fs'
-import { pathToFileURL } from 'node:url'
-import { dirname, join } from 'pathe'
+import { existsSync, readFileSync, realpathSync } from 'node:fs'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { basename, dirname, join } from 'pathe'
 import { resolveModulePath } from 'exsolve'
 import { directoryToURL } from './esm.ts'
-import { ensureDependencyInstalled } from '../dependency.ts'
+import { ensureDependencyInstalled, getAddDependencyCommand, isPackageSpecifier } from '../dependency.ts'
+import { describeMissingTypeStripping } from './node-support.ts'
+import { parseNodeModulePath } from './node-module.ts'
 
 export type Jiti = ReturnType<typeof import('jiti')['createJiti']>
 type JitiModule = typeof import('jiti')
@@ -58,6 +60,131 @@ export function getMissingCjsGlobal (error: unknown): string | undefined {
   return CJS_GLOBAL_ERROR_RE.exec(message)?.[1]
 }
 
+const MISSING_PACKAGE_RE = /^Cannot find package '([^']+)' imported from (.+)$/m
+
+/** A package that a failed `import()` could not find. */
+export interface MissingPackage {
+  name: string
+  /** Path of the file that imports the package. */
+  importer: string
+}
+
+/**
+ * The package a failed `import()` could not find, or `undefined` if it failed for another reason
+ * or the specifier is a path or an alias rather than a package.
+ *
+ * @param error the error the failed `import()` rejected with
+ * @param aliases aliases the file may import through, which are not packages
+ */
+export function getMissingPackage (error: unknown, aliases: Record<string, string> = {}): MissingPackage | undefined {
+  const { code, message } = (error ?? {}) as { code?: unknown, message?: unknown }
+  if (code !== 'ERR_MODULE_NOT_FOUND' || typeof message !== 'string') {
+    return
+  }
+  const [, name, importer] = MISSING_PACKAGE_RE.exec(message) ?? []
+  if (!name || !importer || !isPackageSpecifier(name)) {
+    return
+  }
+  if (Object.keys(aliases).some((alias) => {
+    alias = alias.replace(/\/$/, '')
+    return name === alias || name.startsWith(`${alias}/`) || alias.startsWith(`${name}/`)
+  })) {
+    return
+  }
+  return { name, importer }
+}
+
+/**
+ * Explain how to install a package that a failed `import()` could not find.
+ *
+ * @param missing the package, as returned by {@link getMissingPackage}
+ * @param rootDir project root, used to pick the package manager
+ */
+export async function describeMissingPackage (missing: MissingPackage, rootDir: string): Promise<string> {
+  const installCommand = await getAddDependencyCommand(missing.name, rootDir, { dev: true })
+  const importingPackage = parseNodeModulePath(missing.importer).name
+  if (importingPackage) {
+    return `\`${missing.name}\` is not a dependency of \`${importingPackage}\`, which imports it. Report it to the author of \`${importingPackage}\`, and until then run \`${installCommand}\` to add it to your project.`
+  }
+  return `\`${missing.name}\` is not installed as a dependency of your project. Run \`${installCommand}\` to add it.`
+}
+
+const MISSING_EXPORT_RE = /does not provide an export named\b/
+const TYPESCRIPT_EXTENSION_RE = /^Unknown file extension "\.[cm]?ts"/
+
+/**
+ * Whether a failed `import()` failed to link because a module does not provide a named export.
+ * Under type stripping this is usually a type imported without `import type`, which jiti erases.
+ *
+ * @param error the error the failed `import()` rejected with
+ */
+export function isMissingExportError (error: unknown): boolean {
+  const { name, message } = (error ?? {}) as { name?: unknown, message?: unknown }
+  return name === 'SyntaxError' && typeof message === 'string' && MISSING_EXPORT_RE.test(message)
+}
+
+const CJS_GLOBALS_HINT = 'The file was loaded as native ESM, which does not provide the CommonJS globals `__dirname`, `__filename`, `require`, `module` or `exports`. Use `import.meta.url`, `import.meta.dirname` and `createRequire(import.meta.url)` from `node:module` instead.'
+
+/**
+ * Explain a failed native import in terms of what the author can change. The fix is never "stop
+ * using TypeScript": it is the specific thing the runtime will not do, or a runtime that strips
+ * types.
+ *
+ * @param error the error the failed `import()` rejected with
+ */
+export function describeNativeImportFailure (error: unknown): string {
+  if (getMissingCjsGlobal(error)) {
+    return CJS_GLOBALS_HINT
+  }
+  const typeStrippingHint = isUnknownTypeScriptExtension(error) ? describeMissingTypeStripping() : undefined
+  if (typeStrippingHint) {
+    return typeStrippingHint
+  }
+  if (isMissingExportError(error)) {
+    return 'The runtime erases types without checking which imports refer to them, so types have to be imported with `import type`.'
+  }
+  switch ((error as { code?: string } | undefined)?.code) {
+    case 'ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING': {
+      return 'Published packages cannot ship TypeScript entrypoints, because the runtime does not strip types under `node_modules`. Ask the author to publish compiled JavaScript.'
+    }
+    case 'ERR_UNSUPPORTED_TYPESCRIPT_SYNTAX': {
+      return 'The runtime erases type annotations but cannot compile TypeScript syntax that emits code, such as `enum`, `namespace`, decorators or constructor parameter properties. Replace it with erasable syntax.'
+    }
+    case 'ERR_MODULE_NOT_FOUND':
+    case 'ERR_UNSUPPORTED_DIR_IMPORT': {
+      return describeMissingExtension(error) ?? 'A specifier could not be resolved. Relative imports need an explicit file extension (`./foo.ts`, not `./foo`), and aliases such as `~/` are not resolved outside the bundler.'
+    }
+    case 'ERR_IMPORT_ATTRIBUTE_MISSING': {
+      return 'JSON imports need an import attribute: `import pkg from \'./package.json\' with { type: \'json\' }`.'
+    }
+    case 'ERR_PACKAGE_IMPORT_NOT_DEFINED': {
+      return 'Aliases such as `#shared` are not resolved outside the bundler. Use a relative import with an explicit file extension instead.'
+    }
+    default: {
+      return 'Check that the file and everything it imports can be loaded by the runtime directly.'
+    }
+  }
+}
+
+function isUnknownTypeScriptExtension (error: unknown): boolean {
+  const { code, message } = (error ?? {}) as { code?: unknown, message?: unknown }
+  return code === 'ERR_UNKNOWN_FILE_EXTENSION' && typeof message === 'string' && TYPESCRIPT_EXTENSION_RE.test(message)
+}
+
+const MISSING_EXTENSIONS = ['.ts', '.mts', '.mjs', '.js']
+
+function describeMissingExtension (error: unknown): string | undefined {
+  const { url } = error as { url?: unknown }
+  if (typeof url !== 'string' || !url.startsWith('file:')) {
+    return
+  }
+  const path = fileURLToPath(url)
+  const extension = MISSING_EXTENSIONS.find(extension => existsSync(path + extension))
+  if (extension) {
+    return `Relative imports need an explicit file extension: import \`${basename(path)}${extension}\` rather than \`${basename(path)}\`.`
+  }
+}
+
 const DEPENDENCY_FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const
 const declaredJitiCache = new Map<string, boolean>()
 const nuxtJitiCache = new Map<string, boolean>()
@@ -68,14 +195,16 @@ const reportedFallbacks = new Set<string>()
  * record that they have been told.
  *
  * Returns `true` at most once per file, so a dev server reloading a config does not repeat itself.
- * Silent only where jiti is not something the project could lose.
+ * Silent only where jiti is not something the project could lose, unless `missingPackage` is set.
  *
  * @param filePath the file that had to be loaded through jiti
  * @param rootDir project root, where the search for a declared `jiti` starts
  * @param compatibilityVersion resolved `future.compatibilityVersion`
+ * @param missingPackage whether the runtime could not find a package the file imports, which
+ * jiti only hides
  */
-export function shouldReportJitiFallbackOnce (filePath: string, rootDir: string, compatibilityVersion: number): boolean {
-  if (reportedFallbacks.has(filePath) || jitiIsGuaranteed(rootDir, compatibilityVersion)) {
+export function shouldReportJitiFallbackOnce (filePath: string, rootDir: string, compatibilityVersion: number, missingPackage = false): boolean {
+  if (reportedFallbacks.has(filePath) || (!missingPackage && jitiIsGuaranteed(rootDir, compatibilityVersion))) {
     return false
   }
   reportedFallbacks.add(filePath)
@@ -216,7 +345,8 @@ function resolveFromProject (options: LoadJitiOptions): string | undefined {
   const from = [options.rootDir, ...options.searchPaths ?? []]
     .map(dir => directoryToURL(dir.replace(/[/\\]node_modules[/\\]?$/, '')))
 
-  const direct = resolveModulePath('jiti', { from, try: true })
+  // exsolve otherwise remembers a failed lookup, hiding a `jiti` installed since the last call
+  const direct = resolveModulePath('jiti', { from, try: true, cache: false })
   if (direct) {
     return direct
   }
@@ -233,5 +363,5 @@ function resolveFromProject (options: LoadJitiOptions): string | undefined {
   } catch {
     return undefined
   }
-  return resolveModulePath('jiti', { from: pathToFileURL(realNuxt), try: true })
+  return resolveModulePath('jiti', { from: pathToFileURL(realNuxt), try: true, cache: false })
 }

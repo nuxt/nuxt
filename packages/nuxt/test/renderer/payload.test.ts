@@ -1,15 +1,53 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { isReactive, isShallow, reactive, shallowReactive, toRaw } from 'vue'
 import type { NuxtSSRContext } from 'nuxt/app'
 
-import { getPayloadKeySizes, renderPayloadJsonScript } from '../../src/runtime/server/renderer/payload.ts'
+import { getPayloadKeySizes, renderPayloadJsonScript, renderPayloadResponse } from '../../src/runtime/server/renderer/payload.ts'
+import type { RendererEvent } from '../../src/runtime/server/renderer/runtime.ts'
 
-function ssrContext (url = '/') {
+function ssrContext (url = '/', payload?: Record<string, unknown>) {
   return {
     url,
+    payload,
     'config': {},
-    '~payloadReducers': {},
+    'runtimeConfig': { app: { buildId: 'test' } },
+    '~payloadReducers': {
+      ShallowReactive: (data: unknown) => isReactive(data) && isShallow(data) && toRaw(data),
+      Reactive: (data: unknown) => isReactive(data) && toRaw(data),
+    },
   } as unknown as NuxtSSRContext
 }
+
+function createPayload (keys: string[]) {
+  const shared = { shared: true }
+  const payload = {
+    data: shallowReactive<Record<string, unknown>>({}),
+    state: reactive<Record<string, unknown>>({}),
+    once: new Set<string>(),
+    _errors: shallowReactive<Record<string, unknown>>({}),
+  }
+  for (const key of keys) {
+    payload.data[key] = { key, shared }
+    payload.state[`$s${key}`] = key
+    payload.once.add(key)
+    payload._errors[key] = undefined
+  }
+  return payload
+}
+
+describe('payload serialisation', () => {
+  it('does not depend on the order payload keys were added in', () => {
+    const script = (keys: string[]) => renderPayloadJsonScript({ ssrContext: ssrContext(), data: createPayload(keys) })[0]!.innerHTML
+    expect(script(['b', 'a', 'c'])).toBe(script(['a', 'b', 'c']))
+    expect(script(['c', 'a', 'b'])).toMatchInlineSnapshot(`"[{"data":1,"state":11,"once":13,"_errors":14},["ShallowReactive",2],{"a":3,"b":7,"c":9},{"key":4,"shared":5},"a",{"shared":6},true,{"key":8,"shared":5},"b",{"key":10,"shared":5},"c",["Reactive",12],{"$sa":4,"$sb":8,"$sc":10},["Set",4,8,10],["ShallowReactive",15],{"a":-1,"b":-1,"c":-1}]"`)
+  })
+
+  it('does not depend on the order payload data was added in for `_payload.json`', () => {
+    const event = { res: {} } as RendererEvent
+    const response = (keys: string[]) => renderPayloadResponse(ssrContext('/', createPayload(keys)), event).body
+    expect(response(['b', 'a', 'c'])).toBe(response(['a', 'b', 'c']))
+  })
+})
 
 describe('getPayloadKeySizes', () => {
   it('returns keys sorted by serialized size', () => {
@@ -50,6 +88,27 @@ describe('renderPayloadJsonScript (dev)', () => {
     warn.mockClear()
     renderPayloadJsonScript({ ssrContext: ssrContext('/large'), data })
     expect(warn).not.toHaveBeenCalled()
+  })
+
+  it('bounds the set of urls it has warned about', () => {
+    vi.stubGlobal('__TEST_DEV__', true)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const data = { data: { big: 'z'.repeat(101 * 1024) } }
+    for (let i = 0; i <= 100; i++) {
+      renderPayloadJsonScript({ ssrContext: ssrContext(`/bounded/${i}`), data })
+    }
+    expect(warn).toHaveBeenCalledTimes(101)
+
+    warn.mockClear()
+    for (let i = 1; i <= 100; i++) {
+      renderPayloadJsonScript({ ssrContext: ssrContext(`/bounded/${i}`), data })
+    }
+    expect(warn).not.toHaveBeenCalled()
+
+    warn.mockClear()
+    renderPayloadJsonScript({ ssrContext: ssrContext('/bounded/0'), data })
+    expect(warn).toHaveBeenCalledOnce()
   })
 
   it('does not warn for small payloads', () => {

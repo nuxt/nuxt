@@ -18,17 +18,30 @@ export { pageDiagnostics } from '../diagnostics/pages.ts'
 export { configDiagnostics } from '../diagnostics/config.ts'
 export { headDiagnostics } from '../diagnostics/head.ts'
 export { bundlerDiagnostics } from '../diagnostics/bundler.ts'
+export { docsBase, reporters as diagnosticReporters } from '../diagnostics/_shared.ts'
 
 export { reportPendingTemplates, trackPendingTemplate } from './pending-templates.ts'
 
-export { loadJiti } from './jiti.ts'
+export { describeMissingPackage, describeNativeImportFailure, getMissingCjsGlobal, getMissingPackage, isLoaderError, isMissingExportError, loadJiti, shouldReportJitiFallbackOnce } from './jiti.ts'
+export { describeUnsupportedNode } from './node-support.ts'
 
-export { findPackageMissingSubpath } from '../dependency.ts'
+export { resolvePostcssPlugin, resolvePostcssPluginPath, resolvePostcssPlugins, sortPostcssPlugins } from './postcss.ts'
 
-export { parseNodeModulePath } from './node-module.ts'
+export { lookupNodeModuleSubpath, parseNodeModulePath } from './node-module.ts'
 export type { ParsedNodeModulePath } from './node-module.ts'
 
 export { hasOwnSubpathImport } from './subpath-imports.ts'
+
+export { isInsideNodeModules, isWithinDir } from './paths.ts'
+
+export { VUE_PACKAGE_NAMES, VUE_PACKAGE_SPECIFIER_RE, isInVuePackages, resolveVuePackageImporter, resolveVuePackages } from './vue-packages.ts'
+export type { VuePackageName, VuePackages } from './vue-packages.ts'
+
+export { MAY_CONTAIN_DECORATOR_RE, hasDecoratorSyntax } from './decorators.ts'
+
+export { decodeRoutePath, encodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from './route-path.ts'
+export { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, createRouteRulesRouter, encodeRoutePattern, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, genNormalizePathCode, isWildcardRedirect, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath, normalizeRouteRules, parseRouteRulesRoute, resolveRouteRulesRoutes, resolveWildcardRedirect } from './route-rules.ts'
+export type { RouteRulesRoute, RouteRulesRouter } from './route-rules.ts'
 
 export { resolveModuleExportNames } from './exports.ts'
 export type { ResolveModuleExportNamesOptions } from './exports.ts'
@@ -39,7 +52,17 @@ export { installModules } from '../module/install.ts'
 
 export { DEFAULT_JS_FILE_EXTENSIONS, DEFAULT_JSX_FILE_EXTENSIONS } from '../constants.ts'
 
-export { createServerBuild, setServerBuild, useServerBuild } from './server-build.ts'
+export { createServerBuild, resolveNitroDeployCommand, setServerBuild, useServerBuild } from './server-build.ts'
+
+export { reportNitroPrerender, startBuildEnvironment } from './build-report.ts'
+export type { BuildEnvironmentReport } from './build-report.ts'
+
+export { addClientBuildState, buildClientAndServer, restoreClientBuildState, saveClientBuildState, waitForClientBuild } from './client-build-state.ts'
+export type { ClientBuildState } from './client-build-state.ts'
 
 export { SERVER_RUNTIME_VERSION, getServerRuntime } from './renderer.ts'
+
+export { resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath } from './spa-loading-template.ts'
+
+export { findRuntimeConfigSchema, getRuntimeConfigSchema, resolveRuntimeConfig, runtimeConfigSchemaToType } from './runtime-config.ts'
 export type { NuxtServerRuntime, NuxtServerRuntimeModule, RendererConfigName, ServerRuntimeOptions } from './renderer.ts'

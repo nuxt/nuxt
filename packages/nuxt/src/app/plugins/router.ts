@@ -5,7 +5,7 @@ import { defineNuxtPlugin, useRuntimeConfig } from '../nuxt'
 import type { ObjectPlugin, Plugin } from '../nuxt'
 import { getRouteRules } from '../composables/manifest'
 import { clearError, createError, showError } from '../composables/error'
-import { navigateTo } from '../composables/router'
+import { encodeRoutePath, navigateTo } from '../composables/router'
 import type { RouteMiddleware } from '../composables/router'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
@@ -13,6 +13,7 @@ import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 import { globalMiddleware } from '#build/middleware'
 import { tracingChannelNuxt } from '#build/nuxt.config.mjs'
 import { traceAsync } from '../internal/tracing'
+import { documentURL } from '../internal/location'
 
 interface Route {
   /** Percentage encoded pathname section of the URL. */
@@ -74,7 +75,7 @@ function getRouteFromPath (fullPath: string | Partial<Route>, baseURL: string = 
   const isRooted = isRootedPath(fullPath)
   let parts = isRooted ? splitLiteralPath(fullPath) : undefined
   if (!parts) {
-    const url = new URL(fullPath, import.meta.client ? window.location.href : 'http://localhost')
+    const url = new URL(fullPath, import.meta.client ? documentURL() : 'http://localhost')
     parts = { path: url.pathname, search: url.search, hash: url.hash }
   }
 
@@ -200,9 +201,9 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
         }
       } finally {
         if (navigationId === navigationCounter) {
-          delete nuxtApp._processingMiddleware
+          delete nuxtApp._middlewareTo
           if (import.meta.server) {
-            delete nuxtApp._middlewareTo
+            delete nuxtApp._processingMiddleware
           }
         }
       }
@@ -284,22 +285,21 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
     // Handle middleware
     nuxtApp._middleware ||= {
       global: [],
-      named: {},
+      named: Object.create(null),
     }
 
     const initialLayout = nuxtApp.payload.state._layout
     const initialLayoutProps = nuxtApp.payload.state._layoutProps
     nuxtApp.hooks.hookOnce('app:created', async () => {
-      router.beforeEach(async (to, from) => {
+      let runningMiddleware = 0
+      async function runMiddleware (to: Route, from: Route): Promise<RouteGuardReturn> {
         to.meta = reactive(to.meta || {})
         if (nuxtApp.isHydrating && initialLayout && !isReadonly(to.meta.layout)) {
           to.meta.layout = initialLayout
           to.meta.layoutProps = initialLayoutProps
         }
         nuxtApp._processingMiddleware = true
-        if (import.meta.server) {
-          nuxtApp._middlewareTo = to
-        }
+        nuxtApp._middlewareTo = to
 
         if (import.meta.client || !nuxtApp.ssrContext?.islandContext) {
           const middlewareEntries = new Set<RouteGuard>([...globalMiddleware, ...nuxtApp._middleware.global])
@@ -350,18 +350,36 @@ const plugin: Plugin<{ route: Route, router: Router }> & ObjectPlugin<{ route: R
             if (result || result === false) { return result }
           }
         }
-      })
+      }
 
-      router.afterEach(() => {
-        delete nuxtApp._processingMiddleware
+      router.beforeEach(async (to, from) => {
         if (import.meta.server) {
-          delete nuxtApp._middlewareTo
+          return runMiddleware(to, from)
+        }
+        runningMiddleware++
+        try {
+          return await runMiddleware(to, from)
+        } finally {
+          if (--runningMiddleware === 0) {
+            delete nuxtApp._processingMiddleware
+          }
         }
       })
 
+      if (import.meta.server) {
+        router.afterEach(() => {
+          delete nuxtApp._processingMiddleware
+          delete nuxtApp._middlewareTo
+        })
+      }
+
       await router.replace(initialURL)
       if (!isEqual(route.fullPath, initialURL)) {
-        await nuxtApp.runWithContext(() => navigateTo(route.fullPath))
+        if (import.meta.server) {
+          await nuxtApp.runWithContext(() => navigateTo(route.fullPath))
+        } else if (!nuxtApp._processingMiddleware) {
+          await router.push(encodeRoutePath(route.fullPath))
+        }
       }
     })
 

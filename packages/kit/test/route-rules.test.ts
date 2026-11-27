@@ -1,0 +1,356 @@
+import fc from 'fast-check'
+import { describe, expect, it } from 'vitest'
+import type { Nuxt } from '@nuxt/schema'
+
+import { addRoute, createRouter } from 'rou3'
+import { runWithNuxtContext } from '../src/context.ts'
+import { decodeRoutePath, foldRouteCase, foldRouteRulePath, matchAllRouteRules } from '../src/internal/route-path.ts'
+import { assertCaseIndependentRouteRuleKey, assertEncodingIndependentRouteRuleKey, assertSingleCatchAllRouteRuleKey, createNormalizedRouteRulesRouter, findCaseDependentConstraint, findCaseDependentRouteRuleKeyPart, findEncodingDependentConstraint, foldRouteRulePattern, normalizeRouteRuleKey, normalizeRouteRuleLookupPath, normalizeRouteRulePath, resolveRouteRulesRoutes } from '../src/internal/route-rules.ts'
+
+const RESERVED_RE = /[%;/?:@&=+$,#]/g
+
+const pathSegment = fc.oneof(
+  fc.string(),
+  fc.string({ unit: 'grapheme' }),
+  fc.constantFrom('a', 'A', 'Ünicode', '测试', 'cafÉ', '100% legit', '%', '%2F', '%25', '%2525', '%C3', '+', ' ', 'a?b', 'a#b'),
+)
+const routePath = fc.array(pathSegment, { minLength: 1, maxLength: 3 }).map(segments => '/' + segments.join('/'))
+
+describe('decodeRoutePath', () => {
+  it('decodes percent-encoded paths', () => {
+    expect(decodeRoutePath('/pre/t%65st')).toBe('/pre/test')
+    expect(decodeRoutePath('/%E6%B5%8B%E8%AF%95')).toBe('/测试')
+  })
+
+  it('decodes double-encoded sequences only once', () => {
+    expect(decodeRoutePath('/pre/%2574est')).toBe('/pre/%74est')
+  })
+
+  it('leaves reserved characters encoded', () => {
+    expect(decodeRoutePath('/pre%2Ftest')).toBe('/pre%2Ftest')
+    expect(decodeRoutePath('/pre%3Ftest')).toBe('/pre%3Ftest')
+  })
+
+  it('returns unchanged paths that are not percent-encoded or cannot be decoded', () => {
+    expect(decodeRoutePath('/pre/test')).toBe('/pre/test')
+    expect(decodeRoutePath('/100% legit')).toBe('/100% legit')
+    expect(decodeRoutePath('/caf%C3')).toBe('/caf%C3')
+  })
+
+  it('decodes only the path portion of a query-bearing path', () => {
+    expect(decodeRoutePath('/pre/t%65st?next=%252Fhome')).toBe('/pre/test?next=%252Fhome')
+    expect(decodeRoutePath('/pre/test?next=%41')).toBe('/pre/test?next=%41')
+  })
+
+  it('should never change the number of path segments', () => {
+    fc.assert(fc.property(routePath, (path) => {
+      expect(decodeRoutePath(path).split('/').length).toBe(path.split('/').length)
+    }), { numRuns: 1000 })
+  })
+
+  it('should never introduce a query delimiter', () => {
+    fc.assert(fc.property(routePath, (path) => {
+      fc.pre(!path.includes('?'))
+      expect(decodeRoutePath(path)).not.toContain('?')
+    }), { numRuns: 1000 })
+  })
+
+  it('should leave every reserved character encoded', () => {
+    fc.assert(fc.property(fc.constantFrom(...';/?:@&=+$,#'), (char) => {
+      const path = '/x' + encodeURIComponent(char) + 'y'
+      expect(decodeRoutePath(path)).toBe(path)
+    }))
+  })
+})
+
+describe('matchAllRouteRules', () => {
+  const router = createNormalizedRouteRulesRouter([
+    { route: '/**', data: { all: true } },
+    { route: '/docs/**', data: { docs: true, layout: 'docs' } },
+    { route: '/docs/*', data: { page: true } },
+    { route: '/docs/internal/**', data: { internal: true, layout: 'internal' } },
+  ], '', true)
+  const match = (path: string) => router.matchAll('', normalizeRouteRuleLookupPath(path, true))
+
+  it('should match the path and the path with encoded slashes as separators, without duplicates', () => {
+    expect(matchAllRouteRules(match, '/Docs/Internal%2FX')).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { page: true }, { internal: true, layout: 'internal' }])
+    expect(matchAllRouteRules(match, '/docs/internal/x')).toEqual(match('/docs/internal/x'))
+    expect(matchAllRouteRules(match, '/docs/internal%252Fx')).toEqual(match('/docs/internal%252Fx'))
+    expect(matchAllRouteRules(match, '/docs/a?next=%2Fdocs%2Finternal')).toEqual(match('/docs/a'))
+  })
+
+  it('should match the path with each run of slashes collapsed', () => {
+    for (const path of ['//docs/internal/x', '///docs/internal/x', '/docs//internal/x', '/%2Fdocs/internal/x', '/%2fdocs%2F%2Finternal/x']) {
+      expect(matchAllRouteRules(match, path), path).toEqual([{ all: true }, { docs: true, layout: 'docs' }, { page: true }, { internal: true, layout: 'internal' }])
+    }
+    expect(matchAllRouteRules(match, '/docs/a?next=//docs/internal')).toEqual(match('/docs/a'))
+
+    const slug = createNormalizedRouteRulesRouter([{ route: '/docs/:slug', data: { slug: true } }], '', true)
+    expect(matchAllRouteRules(path => slug.matchAll('', normalizeRouteRuleLookupPath(path, true)), '//docs/a%2Fb')).toEqual([{ slug: true }])
+  })
+})
+
+describe('normalizeRouteRulePath', () => {
+  it('should fold by case-folding the unfolded key', () => {
+    fc.assert(fc.property(routePath, (path) => {
+      expect(normalizeRouteRulePath(path, true)).toBe(foldRouteCase(normalizeRouteRulePath(path, false)))
+    }), { numRuns: 1000 })
+  })
+
+  it('should normalize an encoded request path onto its decoded rule key', () => {
+    const unreservedSegment = pathSegment.map(segment => segment.replace(RESERVED_RE, ''))
+    fc.assert(fc.property(fc.array(unreservedSegment, { minLength: 1, maxLength: 3 }), fc.boolean(), (segments, fold) => {
+      const decoded = '/' + segments.join('/')
+      const encoded = '/' + segments.map(segment => encodeURIComponent(segment)).join('/')
+      expect(normalizeRouteRulePath(encoded, fold)).toBe(normalizeRouteRulePath(decoded, fold))
+    }), { numRuns: 1000 })
+  })
+})
+
+describe('foldRouteCase', () => {
+  const equalIgnoringCase = (a: string, b: string) => new RegExp(`^\\u${a.charCodeAt(0).toString(16).padStart(4, '0')}$`, 'i').test(b)
+
+  it('should fold two code units together exactly when a case-insensitive regex treats them as equal', () => {
+    for (let code = 0; code <= 0xFFFF; code++) {
+      const char = String.fromCharCode(code)
+      const folded = foldRouteCase(char)
+      expect(folded.length, char).toBe(1)
+      expect(equalIgnoringCase(char, folded), char).toBe(true)
+      for (const other of [char.toUpperCase(), char.toLowerCase()]) {
+        if (other.length !== 1) { continue }
+        expect(foldRouteCase(other) === folded, `${char} / ${other}`).toBe(equalIgnoringCase(char, other))
+      }
+    }
+  })
+
+  it('should fold two characters together exactly when a case-insensitive vue-router route matches one with the other', () => {
+    const chars = [...'aAzZéÉßſİiKkςσΣµμΜϐβᲂоОᲃсС𐐀𐐨']
+    for (const a of chars) {
+      for (const b of chars) {
+        expect(foldRouteCase(a) === foldRouteCase(b), `${a} ${b}`).toBe(new RegExp(`^${a}$`, 'i').test(b))
+      }
+    }
+  })
+
+  it('should fold letters the way vue-router compares them', () => {
+    expect(foldRouteCase('/ΣΊΓΜΑ/ςίγμα')).toBe('/σίγμα/σίγμα')
+    expect(foldRouteCase('/µ/ᲂкно/ABC')).toBe('/μ/окно/abc')
+    expect(foldRouteCase('/İ/\u212A/ẞ/ß/\u{10400}')).toBe('/İ/\u212A/ẞ/ß/\u{10400}')
+  })
+})
+
+describe('foldRouteRulePath', () => {
+  it('should fold plain and percent-encoded characters', () => {
+    expect(foldRouteRulePath('/Admin/%C3%89cole')).toBe('/admin/%C3%A9cole')
+    expect(foldRouteRulePath('/%41dmin')).toBe('/admin')
+    expect(foldRouteRulePath(encodeURI('/ΣΊΓΜΑ/ςίγμα'))).toBe(encodeURI('/σίγμα/σίγμα'))
+  })
+
+  it('should leave escapes without a folded form as written', () => {
+    expect(foldRouteRulePath('/a%2Fb/%e6%b5%8b')).toBe('/a%2Fb/%e6%b5%8b')
+    expect(foldRouteRulePath('/%zz/%C3')).toBe('/%zz/%C3')
+  })
+})
+
+describe('foldRouteRulePattern', () => {
+  it('should keep param names and backslash escapes', () => {
+    expect(foldRouteRulePattern('GET /Users/:userId/**:Rest')).toBe('get /users/:userId/**:Rest')
+    expect(foldRouteRulePattern('/N/:id(\\D+)')).toBe('/n/:id(\\D+)')
+  })
+
+  it('should keep constraints as written', () => {
+    expect(foldRouteRulePattern('/X/:id((?:foo|bar))/:Rest')).toBe('/x/:id((?:foo|bar))/:Rest')
+    expect(foldRouteRulePattern('/X/:id([A-z]+)')).toBe('/x/:id([A-z]+)')
+    expect(foldRouteRulePattern('/X/:id([A-Z]+)')).toBe('/x/:id([A-Z]+)')
+  })
+})
+
+describe('normalizeRouteRuleKey', () => {
+  it('should fold literal text but not regex constraints', () => {
+    expect(normalizeRouteRuleKey('/X/:id(\\D+)', true)).toBe('/x/:id(\\D+)')
+    expect(normalizeRouteRuleKey('/X/:id(\\W|\\S|\\B)/Y', true)).toBe('/x/:id(\\W|\\S|\\B)/y')
+    expect(normalizeRouteRuleKey('/X/:id([A-z]+)', true)).toBe('/x/:id([A-z]+)')
+    expect(normalizeRouteRuleKey('/:a(\\P{Lu}+)-:b([A-Z](?:\\D))', true)).toBe('/:a(\\P{Lu}+)-:b([A-Z](?:\\D))')
+    expect(normalizeRouteRuleKey('/:role(Admin|User)', true)).toBe('/:role(Admin|User)')
+    expect(normalizeRouteRuleKey('/X/:id([A-Z]\\D+)', false)).toBe('/X/:id([A-Z]\\D+)')
+  })
+
+  it('should treat escaped and bracketed parentheses as part of their group', () => {
+    expect(normalizeRouteRuleKey('/A\\(B/:id([)]A)C', true)).toBe('/a\\(b/:id([)]A)c')
+    expect(normalizeRouteRuleKey('/A/:id(\\)A)B', true)).toBe('/a/:id(\\)A)b')
+    expect(normalizeRouteRuleKey('/A/:id(\\D', true)).toBe('/a/:id(\\D')
+  })
+
+  it('should decode literal text and keep regex constraints as written', () => {
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', true)).toBe('/café/:id(caf%C3%A9|CAF%C3%89)')
+    expect(normalizeRouteRuleKey('/Caf%C3%89/:id(caf%C3%A9|CAF%C3%89)', false)).toBe('/CafÉ/:id(caf%C3%A9|CAF%C3%89)')
+    expect(normalizeRouteRuleKey('/A\\(B\\)/:x([()]+(?:A|B))/C', false)).toBe('/A\\(B\\)/:x([()]+(?:A|B))/C')
+  })
+
+  it('should match lookups against regex constraints as written', () => {
+    for (const fold of [false, true]) {
+      const router = createNormalizedRouteRulesRouter([
+        { route: '/blog/:slug(cafe|tea)', data: { blog: true } },
+        { route: '/x/:id([a-z]+)', data: { x: true } },
+        { route: '/range/:id([A-Za-z_]+)', data: { range: true } },
+      ], '', fold)
+      const match = (path: string) => router.matchAll('', normalizeRouteRuleLookupPath(path, fold))
+      expect(match('/blog/cafe'), `fold: ${fold}`).toEqual([{ blog: true }])
+      expect(match('/blog/tea'), `fold: ${fold}`).toEqual([{ blog: true }])
+      expect(match('/blog/caf%C3%A9'), `fold: ${fold}`).toEqual([])
+      expect(match('/x/abc'), `fold: ${fold}`).toEqual([{ x: true }])
+      expect(match('/x/123'), `fold: ${fold}`).toEqual([])
+      expect(match('/range/ABC'), `fold: ${fold}`).toEqual([{ range: true }])
+      expect(match('/range/_'), `fold: ${fold}`).toEqual([{ range: true }])
+      expect(match('/range/123'), `fold: ${fold}`).toEqual([])
+    }
+    const folded = createNormalizedRouteRulesRouter([{ route: '/Range/:id([A-Za-z_]+)', data: { range: true } }], '', true)
+    expect(folded.matchAll('', normalizeRouteRuleLookupPath('/RANGE/_', true))).toEqual([{ range: true }])
+  })
+})
+
+describe('findCaseDependentRouteRuleKeyPart', () => {
+  it('should find the case-dependent part in any constraint of a key', () => {
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id([a-z]+)/:rest((?:FOO|bar))')).toBe('F')
+    expect(findCaseDependentRouteRuleKeyPart('/X/:id([A-z]+)/Y')).toBeUndefined()
+  })
+})
+
+describe('assertCaseIndependentRouteRuleKey', () => {
+  it('should throw on a key with a constraint that depends on letter case', () => {
+    expect(() => assertCaseIndependentRouteRuleKey('/X/:id([a-z]+)/:rest((?:FOO|bar))')).toThrow('The route rule `/X/:id([a-z]+)/:rest((?:FOO|bar))` has a regex constraint that depends on letter case (`F`)')
+    expect(() => assertCaseIndependentRouteRuleKey('/X/:id([A-z]+)/Y')).not.toThrow()
+  })
+})
+
+describe('findEncodingDependentConstraint', () => {
+  it('should accept constraints that only match characters a path keeps as they are', () => {
+    for (const constraint of ['([a-z0-9-]+)', '([A-Z]+)', '(\\d{2})', '([a-z]{2,3})', '((?:foo|bar))', '(\\w+)', '([._~-]+)', '((?<name>[a-z]+))', '((?=a)[a-z]+)', '((?<!b)a)', '(^a$)', '([\\uFFFD])']) {
+      expect(findEncodingDependentConstraint(constraint), constraint).toBeUndefined()
+    }
+  })
+
+  it('should find the part of a constraint that depends on percent-encoding', () => {
+    expect(findEncodingDependentConstraint('([é])')).toBe('[é]')
+    expect(findEncodingDependentConstraint('(café)')).toBe('é')
+    expect(findEncodingDependentConstraint('(caf%C3%A9)')).toBe('%')
+    expect(findEncodingDependentConstraint('([%C3%A9]+)')).toBe('[%C3%A9]')
+    expect(findEncodingDependentConstraint('(\\u00e9)')).toBe('\\u00e9')
+    expect(findEncodingDependentConstraint('(.)')).toBe('.')
+    expect(findEncodingDependentConstraint('(.{1,3})')).toBe('.')
+    expect(findEncodingDependentConstraint('(\\S+)')).toBe('\\S')
+    expect(findEncodingDependentConstraint('(\\D+)')).toBe('\\D')
+    expect(findEncodingDependentConstraint('([^a-z]+)')).toBe('[^a-z]')
+    expect(findEncodingDependentConstraint('([!-~]+)')).toBe('[!-~]')
+    expect(findEncodingDependentConstraint('(a b)')).toBe(' ')
+    expect(findEncodingDependentConstraint('(a{)')).toBe('{')
+    expect(findEncodingDependentConstraint('(\\bfoo)')).toBe('\\b')
+    expect(findEncodingDependentConstraint('([a-z]+\\B)')).toBe('\\B')
+    expect(findEncodingDependentConstraint('([\\b])')).toBe('[\\b]')
+  })
+
+  it('should throw on a key with a constraint that depends on percent-encoding', () => {
+    expect(() => assertEncodingIndependentRouteRuleKey('/café/:id([a-z]+)/:rest([^/])')).toThrow('The route rule `/café/:id([a-z]+)/:rest([^/])` has a regex constraint that depends on percent-encoding (`[^/]`)')
+    expect(() => assertEncodingIndependentRouteRuleKey('/é:slug(\\bfoo)')).toThrow('The route rule `/é:slug(\\bfoo)` has a regex constraint that depends on percent-encoding (`\\b`)')
+    expect(() => assertEncodingIndependentRouteRuleKey('/café/:id([a-z]+)')).not.toThrow()
+  })
+})
+
+describe('findCaseDependentConstraint', () => {
+  it('should accept constraints that match a case-folded path the way they read', () => {
+    for (const constraint of ['([a-z]+)', '([A-z]+)', '([!-~]+)', '([0-9a-zA-Z_]+)', '(\\D+)', '(\\w+)', '(\\W\\S\\B\\b\\d\\s)', '((?:foo|bar))', '(café)', '(\\x61\\x31)', '([^a-zA-Z])', '(\\1)', '(.{2,3})', '((?<Name>[a-z]+))']) {
+      expect(findCaseDependentConstraint(constraint), constraint).toBeUndefined()
+    }
+  })
+
+  it('should find the part of a constraint that depends on letter case', () => {
+    expect(findCaseDependentConstraint('(A)')).toBe('A')
+    expect(findCaseDependentConstraint('([A-Z]+)')).toBe('[A-Z]')
+    expect(findCaseDependentConstraint('((?:FOO))')).toBe('F')
+    expect(findCaseDependentConstraint('((?:foo|BAR))')).toBe('B')
+    expect(findCaseDependentConstraint('([!-a]+)')).toBe('[!-a]')
+    expect(findCaseDependentConstraint('([^a-z])')).toBe('[^a-z]')
+    expect(findCaseDependentConstraint('([^A-Z])')).toBe('[^A-Z]')
+    expect(findCaseDependentConstraint('(\\x41+)')).toBe('\\x41')
+    expect(findCaseDependentConstraint('(\\u00C9)')).toBe('\\u00C9')
+    expect(findCaseDependentConstraint('(\\101)')).toBe('\\101')
+    expect(findCaseDependentConstraint('(\\cA)')).toBeUndefined()
+    expect(findCaseDependentConstraint('(cafÉ)')).toBe('É')
+    expect(findCaseDependentConstraint('(\\p{Lu})')).toBe('L')
+  })
+
+  it('should check constraints against the case folding vue-router uses', () => {
+    for (const constraint of ['([a-zçğıöşüİ]+)', '([\\u0130]+)', '(\\u212A)', '([\u{10400}]+)', '(\u{10400}+)', '([a-zσς]+)', '([^a-zA-Z]+)', '(\\W+)', '([^/]+)']) {
+      expect(findCaseDependentConstraint(constraint), constraint).toBeUndefined()
+    }
+    expect(findCaseDependentConstraint('([a-zς]+)')).toBe('[a-zς]')
+    expect(findCaseDependentConstraint('(ς)')).toBe('ς')
+    expect(findCaseDependentConstraint('(µ)')).toBe('µ')
+    expect(findCaseDependentConstraint('(ᲂ)')).toBe('ᲂ')
+  })
+})
+
+describe('assertSingleCatchAllRouteRuleKey', () => {
+  it('rejects the keys the route-rule router rejects', () => {
+    const keys = [
+      '/api/content/pull/*/*/blob/**',
+      '/*/comments/**',
+      '/a/:x+/b/**',
+      '/a/:x*/:y*',
+      '/api/content/pull/:repo/:number/blob/**',
+      '/blog/*',
+      '/blog/**',
+      '/a/:x+',
+      '/products/:id([a-z]+)/**',
+      '/products/:id([a-z]*)',
+    ]
+    for (const key of keys) {
+      let routerError: unknown
+      try {
+        addRoute(createRouter(), '', key, {})
+      } catch (error) {
+        routerError = error
+      }
+      if (routerError) {
+        expect(() => assertSingleCatchAllRouteRuleKey(key), key).toThrow(`The route rule \`${key}\` in \`routeRules\` has more than one`)
+      } else {
+        expect(() => assertSingleCatchAllRouteRuleKey(key), key).not.toThrow()
+      }
+    }
+  })
+})
+
+describe('resolveRouteRulesRoutes', () => {
+  function host (nitro?: Record<string, unknown>): Nuxt {
+    return {
+      __name: 'nuxt-route-rules',
+      _nitro: nitro,
+      options: { app: { baseURL: '/app/' }, routeRules: { '/config': { ssr: false } } },
+    } as unknown as Nuxt
+  }
+
+  it('reads the routes a Nitro v3 server has resolved', () => {
+    const routes = [{ route: '/v3', method: '', data: { prerender: true } }]
+    const nuxt = host({ routing: { routeRules: { routes } }, options: { baseURL: '/base/', routeRules: { '/ignored': {} } } })
+
+    expect(runWithNuxtContext(nuxt, () => resolveRouteRulesRoutes(nuxt))).toEqual({ routes, baseURL: '/base/' })
+  })
+
+  it('reads the rules a Nitro v2 server has resolved', () => {
+    const nuxt = host({ options: { baseURL: '/base/', routeRules: { '/v2': { prerender: true } } } })
+
+    expect(runWithNuxtContext(nuxt, () => resolveRouteRulesRoutes(nuxt))).toEqual({
+      routes: [{ route: '/v2', method: '', data: { prerender: true } }],
+      baseURL: '/base/',
+    })
+  })
+
+  it('falls back to the configured rules without a server builder', () => {
+    const nuxt = host()
+
+    expect(runWithNuxtContext(nuxt, () => resolveRouteRulesRoutes(nuxt))).toEqual({
+      routes: [{ route: '/config', method: '', data: { ssr: false } }],
+      baseURL: '/app/',
+    })
+  })
+})

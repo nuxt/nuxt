@@ -42,6 +42,15 @@ describe('PublicDirsPlugin dev transform', () => {
   it('does not double up slashes when the base URL has a trailing slash', () => {
     expect(transformCSS('/cdn/', code)).toBe(expected)
   })
+
+  it('only receives css modules with a root-relative url', () => {
+    const { filter } = PublicDirsPlugin({ dev: true, baseURL: '/cdn' })[0]!.transform as { filter: { id: RegExp, code: RegExp } }
+    expect(filter.id.test('/styles.css')).toBe(true)
+    expect(filter.id.test('/app.vue?vue&type=style&index=0&lang.scss')).toBe(true)
+    expect(filter.id.test('/app.ts')).toBe(false)
+    expect(filter.code.test(code)).toBe(true)
+    expect(filter.code.test('a{background:url(./logo.svg)}')).toBe(false)
+  })
 })
 
 describe('PublicDirsPlugin', () => {
@@ -89,6 +98,13 @@ describe('PublicDirsPlugin', () => {
       const result = (renderChunk as any).call({}, code, chunk, {}, {})
       return result?.code?.toString() ?? code
     }
+
+    it('only receives chunks with a root-relative css url', () => {
+      const { filter } = plugin.renderChunk as { filter?: { code: RegExp } }
+      expect(filter?.code.test('const a = "a{background:url(/logo.svg)}"')).toBe(true)
+      expect(filter?.code.test('export default 1')).toBe(false)
+      expect(filter?.code.test('const a = "a{background:url(./logo.svg)}"')).toBe(false)
+    })
 
     it('rewrites every public asset url in a chunk', () => {
       const code = 'const a = "a{background:url(/logo.svg)}b{background:url(/icon.svg)}c{background:url(/logo.svg)}"'

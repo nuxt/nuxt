@@ -106,7 +106,7 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B8020: {
       why: (p: { module: string, error: string }) => `The module \`${p.module}\` could not be loaded: ${p.error}`,
-      fix: (p: { hint: string, installCommand: string }) => `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.`,
+      fix: (p: { hint: string, installCommand?: string }) => p.installCommand ? `${p.hint} Alternatively, run \`${p.installCommand}\` and Nuxt will load it through jiti instead.` : p.hint,
       docs: false,
     },
     NUXT_B8021: {
@@ -121,7 +121,10 @@ export const kitDiagnostics = /* #__PURE__ */ defineDiagnostics({
     },
     NUXT_B8023: {
       why: (p: { module: string, error: string }) => `The module \`${p.module}\` was loaded through jiti because the runtime could not load it: ${p.error}`,
-      fix: 'Loading it natively is faster, as jiti has to transform the module first. Report it to the module author if the module is not your own.',
+      fix: (p: { hint: string, installCommand?: string, local: boolean }) => {
+        const hint = p.local ? p.hint : `Report it to the module author: ${p.hint}`
+        return p.installCommand ? `${hint} Your project does not depend on jiti, so run \`${p.installCommand}\` if you want to keep loading it through jiti.` : hint
+      },
       docs: false,
     },
     NUXT_B8024: {

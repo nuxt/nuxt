@@ -2,11 +2,13 @@ import { rmSync, writeFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 
 import type { FSWatcher } from 'vite'
-import type { ResolvedNuxtTemplate } from 'nuxt/schema'
+import type { Nuxt, ResolvedNuxtTemplate } from 'nuxt/schema'
 import { join, relative, resolve } from 'pathe'
 import { findWorkspaceDir } from 'pkg-types'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { build, loadNuxt } from 'nuxt'
+
+import { resolvePathsToWatch } from '../src/core/builder.ts'
 
 describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
   const tmpDir = join(await findWorkspaceDir(), '.test/builder-watch')
@@ -69,6 +71,38 @@ describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
       'other',
       'test',
     ])
+  })
+
+  // skipping parcel as it can miss writes in any subdirectory, `app/` included
+  it.each(['chokidar', 'chokidar-granular', 'builder'] as const)('should watch the shared directory with %s strategy', async (watcher) => {
+    const rootDir = join(tmpDir, 'project')
+    // with an `app/` directory, `srcDir` is `app/` and `shared/` sits outside it
+    await mkdir(join(rootDir, 'app'), { recursive: true })
+    await mkdir(join(rootDir, 'shared'), { recursive: true })
+    const nuxt = await loadNuxt({
+      cwd: rootDir,
+      ready: true,
+      overrides: {
+        experimental: { watcher },
+        dev: true,
+        vite: { cacheDir },
+      },
+    })
+    const probe = join(rootDir, 'shared/probe.ts')
+    let probeSeen = false
+    nuxt.hook('builder:watch', (_event, path) => {
+      if (path === probe) { probeSeen = true }
+    })
+
+    await build(nuxt)
+
+    await vi.waitFor(() => {
+      rmSync(probe, { force: true })
+      writeFileSync(probe, 'export const probe = 1')
+      expect(probeSeen).toBe(true)
+    }, { timeout: 8000, interval: 250 })
+
+    await nuxt.close()
   })
 
   it('should only recompile templates that can be affected by a changed file', async () => {
@@ -237,5 +271,104 @@ describe('builder:watch', { concurrent: false, timeout: 60_000 }, async () => {
       'other',
       'test',
     ])
+  })
+})
+
+describe('plugin dependencies', { timeout: 60_000 }, async () => {
+  const rootDir = join(await findWorkspaceDir(), '.test/plugin-dependencies/project')
+  beforeEach(async () => {
+    await rm(rootDir, { recursive: true, force: true })
+    await mkdir(join(rootDir, 'node_modules'), { recursive: true })
+    await mkdir(join(rootDir, 'app/plugins'), { recursive: true })
+    vi.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterAll(async () => {
+    vi.restoreAllMocks()
+    await rm(resolve(rootDir, '..'), { recursive: true, force: true, maxRetries: 3 })
+  })
+
+  async function buildWith (plugins: Record<string, string>, _prepare: boolean, check: (result: Promise<void>, nuxt: Nuxt) => Promise<void>) {
+    for (const [file, contents] of Object.entries(plugins)) {
+      await writeFile(join(rootDir, 'app/plugins', file), contents)
+    }
+    const nuxt = await loadNuxt({ cwd: rootDir, ready: true, overrides: { dev: false, _prepare } })
+    try {
+      await check(build(nuxt), nuxt)
+    } finally {
+      await nuxt.close()
+    }
+  }
+
+  const cycle = {
+    'a.ts': 'export default defineNuxtPlugin({ name: \'a\', dependsOn: [\'b\'] })\n',
+    'b.ts': 'export default defineNuxtPlugin({ name: \'b\', dependsOn: [\'a\'] })\n',
+  }
+
+  it('fails a production build when plugins depend on each other in a cycle', async () => {
+    await buildWith(cycle, false, result => expect(result).rejects.toThrow(/Circular dependency detected in plugins: a -> b -> a\./))
+  })
+
+  it('ignores the dependency that closes a cycle in `nuxt prepare`', async () => {
+    await buildWith(cycle, true, async (result, nuxt) => {
+      await expect(result).resolves.toBeUndefined()
+      const contents = nuxt.vfs[join(nuxt.options.buildDir, 'plugins.client.mjs')]!
+      expect(contents.indexOf('/plugins/b.ts')).toBeGreaterThan(-1)
+      expect(contents.indexOf('/plugins/b.ts')).toBeLessThan(contents.indexOf('/plugins/a.ts'))
+    })
+  })
+
+  it('builds for production with a warning when plugin metadata cannot be statically analysed', async () => {
+    const warn = vi.mocked(console.warn)
+    await buildWith({
+      'dynamic.ts': 'const createPlugin = (name: string) => ({ name, setup () {} })\nexport default defineNuxtPlugin(createPlugin(\'dynamic\'))\n',
+    }, false, result => expect(result).resolves.toBeUndefined())
+    expect(warn).toHaveBeenCalledWith(expect.stringMatching(/^\[NUXT_B2013\] The plugin passed to `defineNuxtPlugin` is a `CallExpression`[\s\S]*sources: \S*dynamic\.ts$/))
+  })
+})
+
+describe('resolvePathsToWatch', () => {
+  function createStubNuxt (watch: string[]) {
+    const rootDir = '/x/project'
+    const options = { rootDir, srcDir: '/x/project/app', alias: {}, dir: {}, watch }
+    return {
+      options: {
+        ...options,
+        _layers: [
+          { cwd: rootDir, config: { rootDir } },
+          { cwd: '/x/foo-bar', config: { rootDir: '/x/foo-bar', srcDir: '/x/foo-bar/app' } },
+        ],
+      },
+    } as unknown as Nuxt
+  }
+
+  it('keeps layer directories that share a name prefix with a watched path', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['../../foo']))
+    expect([...paths]).toContain('/x/foo-bar/app/')
+    expect([...paths]).toContain('/x/foo')
+  })
+
+  it('keeps watched paths that share a name prefix with each other', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['/y/foo', '/y/foo-bar']))
+    expect([...paths]).toContain('/y/foo')
+    expect([...paths]).toContain('/y/foo-bar')
+  })
+
+  it('replaces directories nested in a watched path', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['../../foo-bar']))
+    expect([...paths]).toContain('/x/foo-bar')
+    expect([...paths]).not.toContain('/x/foo-bar/app/')
+  })
+
+  it('skips watched paths that are already covered', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['components', '/x/project/app']))
+    expect([...paths]).toContain('/x/project/app/')
+    expect([...paths]).not.toContain('/x/project/app/components')
+    expect([...paths]).not.toContain('/x/project/app')
+  })
+
+  it('keeps a watched path that is listed twice', () => {
+    const paths = resolvePathsToWatch(createStubNuxt(['../../foo-bar', '../../foo-bar']))
+    expect([...paths].filter(path => path.startsWith('/x/foo-bar'))).toEqual(['/x/foo-bar'])
   })
 })

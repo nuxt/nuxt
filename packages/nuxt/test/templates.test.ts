@@ -1,15 +1,17 @@
 import { existsSync } from 'node:fs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { resolve } from 'pathe'
+import ts from 'typescript'
 
 // `templates.ts` re-imports `./app.ts`, which reads `defaultTemplates.*` at
 // module init. Pulling `app.ts` in first lets that cycle resolve the same way
 // it does in production; otherwise the test would see partially-initialised
 // exports and crash before any assertions run.
 import '../src/core/app.ts'
-import { appConfigTemplate, dollarFetchTemplate, publicPathTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
+import { appConfigDeclarationTemplate, appConfigTemplate, dollarFetchTemplate, pluginsDeclaration, publicPathTemplate, schemaTemplate, sharedAppConfigDeclarationTemplate } from '../src/core/templates.ts'
 
-import type { Nuxt, NuxtApp } from 'nuxt/schema'
+import type { Nuxt, NuxtApp, NuxtPlugin } from 'nuxt/schema'
+import type { RuntimeConfigSchemaNode } from '@nuxt/schema/internal'
 
 // deliberately partial, as the objects that reach a template in a unit test, in
 // `@nuxt/test-utils` or in devtools are: `serverBuild` is only present when a caller
@@ -61,6 +63,27 @@ describe('sharedAppConfigDeclarationTemplate', () => {
   })
 })
 
+describe.each([
+  ['appConfigDeclarationTemplate', appConfigDeclarationTemplate],
+  ['sharedAppConfigDeclarationTemplate', sharedAppConfigDeclarationTemplate],
+])('%s', (_name, template) => {
+  const render = (appConfig: Record<string, unknown>) => template.getContents!({ nuxt: makeNuxt({ appConfig } as Partial<Nuxt['options']>), app: makeApp(), options: {} })
+
+  it('does not change when only inline app config values change', async () => {
+    const first = await render({ time: 1, sha: 'abc', enabled: true, empty: null, list: [1, 2], items: [{ id: 'a' }, { id: 'b' }] })
+    const second = await render({ time: 2, sha: 'def', enabled: false, empty: null, list: [3], items: [{ id: 'c' }] })
+    expect(second).toBe(first)
+    expect(first).not.toContain('abc')
+  })
+
+  it('changes when the shape of the inline app config changes', async () => {
+    const first = await render({ time: 1, list: [1] })
+    expect(await render({ time: '1', list: [1] })).not.toBe(first)
+    expect(await render({ time: 1, list: [1, 'a'] })).not.toBe(first)
+    expect(await render({ time: 1, list: [1], extra: true })).not.toBe(first)
+  })
+})
+
 describe('publicPathTemplate', () => {
   it('falls back to the host nitro major\'s runtime-config specifier when no server build is declared', async () => {
     const v3 = await publicPathTemplate.getContents!({ nuxt: makeNuxt({ _nitroMajor: 3 }), app: makeApp(), options: {} })
@@ -85,6 +108,32 @@ describe('publicPathTemplate', () => {
 
     expect(contents).not.toMatch(/import \{ useRuntimeConfig \}/)
     expect(contents).toMatch(/getAppConfig = \(\) => \(/)
+  })
+
+  it('builds server asset urls from the current runtime config', async () => {
+    const { joinRelativeURL } = await import('ufo')
+    const contents = await publicPathTemplate.getContents!({ nuxt: makeNuxt(), app: makeApp(), options: {} })
+    const source = contents
+      .replace(/^import .*$/gm, '')
+      .replace(/\bexport /g, '')
+      .replace(/import\.meta\.(server|client)/g, (_, env) => String(env === 'server'))
+    vi.stubGlobal('__TEST_SERVER__', true)
+    onTestFinished(() => { vi.unstubAllGlobals() })
+    let app = { baseURL: '/', buildAssetsDir: '/_nuxt/', cdnURL: '' }
+    const join = vi.fn(joinRelativeURL)
+    const buildAssetsURL = new Function('joinRelativeURL', 'useRuntimeConfig', `${source}\nreturn buildAssetsURL`)(join, () => ({ app })) as (...path: string[]) => string
+
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(buildAssetsURL('entry.js')).toBe('/_nuxt/entry.js')
+    expect(join).toHaveBeenCalledTimes(1)
+    app = { ...app, baseURL: '/base/' }
+    expect(buildAssetsURL('entry.js')).toBe('/base/_nuxt/entry.js')
+    app = { ...app, cdnURL: 'https://cdn.example.com/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/_nuxt/entry.js')
+    app = { ...app, buildAssetsDir: '/assets/' }
+    expect(buildAssetsURL('entry.js')).toBe('https://cdn.example.com/assets/entry.js')
+    expect(buildAssetsURL('chunks', 'entry.js')).toBe('https://cdn.example.com/assets/chunks/entry.js')
+    expect(buildAssetsURL()).toBe('https://cdn.example.com/assets/')
   })
 })
 
@@ -112,5 +161,45 @@ describe('dollarFetchTemplate', () => {
     expect(contents).not.toMatch(/createFetch/)
     expect(contents).toMatch(/import \{ \$fetch as _\$fetch \} from "\/[^"]*ofetch[^"]*"/)
     expect(contents).toMatch(/globalThis\.\$fetch = _\$fetch\.create\(\{\s*baseURL: baseURL\(\)/)
+  })
+})
+
+describe('schemaTemplate', () => {
+  it('emits valid declarations for a public runtime config schema that is a union', async () => {
+    const node: RuntimeConfigSchemaNode = { o: [{ p: { mode: { e: ['preview'] } } }, { p: { mode: { e: ['production'] } } }] }
+    const runtimeConfig = { apiKey: '', public: { mode: 'preview' } }
+    const contents = await schemaTemplate.getContents!({
+      nuxt: makeNuxt({ runtimeConfig, _runtimeConfigSchemas: [{ path: ['public'], node, required: false }] } as unknown as Partial<Nuxt['options']>),
+      app: makeApp(),
+      options: {},
+    })
+    expect(ts.transpileModule(contents, { reportDiagnostics: true }).diagnostics).toEqual([])
+    expect(contents).toContain('interface SharedRuntimeConfig {\n  apiKey: string,\n}')
+  })
+})
+
+describe('pluginsDeclaration', () => {
+  it('leaves plugins marked `_skipTypes` out of the generated types', async () => {
+    const buildDir = '/project/.nuxt'
+    const plugins: NuxtPlugin[] = [
+      { src: '/project/app/plugins/user.ts' },
+      { src: '/nuxt/app/plugins/dev-overlay.client.ts', _skipTypes: true },
+    ]
+    const nuxt = {
+      ...makeNuxt({ buildDir, extensions: ['.ts'] } as unknown as Partial<Nuxt['options']>),
+      vfs: {
+        '/project/app/plugins/user.ts': `export default defineNuxtPlugin({ name: 'user', setup () {} })`,
+        '/nuxt/app/plugins/dev-overlay.client.ts': `export default defineNuxtPlugin({ name: 'nuxt:dev-overlay', setup () {} })`,
+      },
+    } as unknown as Nuxt
+    const contents = await pluginsDeclaration.getContents!({
+      nuxt,
+      app: { plugins, templates: plugins.map(plugin => ({ dst: plugin.src, write: true })) } as unknown as NuxtApp,
+      options: {},
+    })
+
+    expect(contents).toContain('import("../../app/plugins/user")')
+    expect(contents).toContain(`'user'`)
+    expect(contents).not.toContain('dev-overlay')
   })
 })

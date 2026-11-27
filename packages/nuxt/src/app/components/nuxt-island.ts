@@ -2,7 +2,6 @@ import type { Component, DefineSetupFnComponent, PropType, RendererNode, SlotsTy
 import { Fragment, Teleport, computed, createStaticVNode, createVNode, defineComponent, getCurrentInstance, h, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, toRaw, watch, withMemo } from 'vue'
 import { debounce } from 'perfect-debounce'
 import type { ActiveHeadEntry, SerializableHead } from '@unhead/vue'
-import { randomUUID } from 'uncrypto'
 import { joinURL } from 'ufo'
 
 import type { NuxtAppLiterals, NuxtIslandResponse } from '../types'
@@ -26,7 +25,7 @@ const ISLAND_SCOPE_ID_RE = /^<[^> ]*/
 const VUE_SCOPE_ID_RE = /^data-v-[\w-]+$/
 
 let id = 1
-const getId = import.meta.client ? () => (id++).toString() : randomUUID
+const getId = import.meta.client ? () => (id++).toString() : crypto.randomUUID.bind(crypto)
 
 const components = import.meta.client ? new Map<string, Component>() : undefined
 
@@ -39,7 +38,7 @@ async function loadComponents (source = appBaseURL, paths: NuxtIslandResponse['c
     if (!(components!.has(component))) {
       promises.push((async () => {
         const chunkSource = joinURL(source, item.chunk)
-        const c = await import(/* @vite-ignore */ chunkSource).then(m => m.default || m)
+        const c = await import(/* webpackIgnore: true */ /* @vite-ignore */ chunkSource).then(m => m.default || m)
         components!.set(component, c)
       })())
     }

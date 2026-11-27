@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "fixture-spa-only",
   "scripts": {
     "build": "nuxt build"
@@ -11,6 +12,6 @@
     "typescript": "catalog:dev"
   },
   "engines": {
-    "node": "^22.21.0 || ^24.11.0 || >=26.0.0"
+    "node": "^22.21.0 || ^24.15.0 || >=26.0.0"
   }
 }

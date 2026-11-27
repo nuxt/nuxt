@@ -3,15 +3,20 @@ import { createUnplugin } from 'unplugin'
 import { ScopeTracker, parseAndWalk, walk } from 'oxc-walker'
 import escapeStringRegexp from 'escape-string-regexp'
 import { genImport } from 'knitwork'
+import { VUE_PACKAGE_NAMES } from '@nuxt/kit/internal'
 
 import { JS_ID_RE, VUE_NON_SCRIPT_BLOCK_RE, VUE_SCRIPT_ID_FILTER } from '../utils/index.ts'
 
 type ImportPath = string
 
+const VUE_RUNTIME_RE = new RegExp(String.raw`[\\/]node_modules[\\/](?:${VUE_PACKAGE_NAMES.map(name => name.replace('/', String.raw`[\\/]`)).join('|')})[\\/]`)
+
 interface TreeShakeComposablesPluginOptions {
   composables: Record<ImportPath, string[]>
   /** Composables to replace with a call to the same export from the given module, without the first argument. */
   stubs?: Record<string, ImportPath>
+  /** Auto-imports keyed by local name, so auto-imports from a subpath of a configured import path are tree-shaken too. */
+  getAutoImports?: () => Promise<Map<string, { name: string, from: string }>> | undefined
 }
 
 export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOptions) => createUnplugin(() => {
@@ -22,6 +27,25 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
     return []
   }
 
+  function isAllowedImport (importPath: string, importedName: string, autoImports?: Map<string, { name: string, from: string }>) {
+    if (importPath === '#imports') {
+      return allComposableNames.has(importedName)
+    }
+    if (options.composables[importPath]?.includes(importedName)) {
+      return true
+    }
+    const autoImport = autoImports?.get(importedName)
+    if (autoImport?.name !== importedName || autoImport.from !== importPath) {
+      return false
+    }
+    for (const path in options.composables) {
+      if (importPath.startsWith(path + '/') && options.composables[path]!.includes(importedName)) {
+        return true
+      }
+    }
+    return false
+  }
+
   return {
     name: 'nuxt:tree-shake-composables:transform',
     enforce: 'post',
@@ -29,11 +53,12 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
       filter: {
         id: {
           include: [...VUE_SCRIPT_ID_FILTER, JS_ID_RE],
-          exclude: VUE_NON_SCRIPT_BLOCK_RE,
+          exclude: [VUE_NON_SCRIPT_BLOCK_RE, VUE_RUNTIME_RE],
         },
         code: { include: new RegExp(`\\b(?:${[...allComposableNames].map(r => escapeStringRegexp(r)).join('|')})\\b`) },
       },
-      handler (code, id, meta?: unknown) {
+      async handler (code, id, meta?: unknown) {
+        const autoImports = await options.getAutoImports?.()
         const s = rolldownString(code, id, meta)
         const stubImports = new Map<string, string>()
 
@@ -75,11 +100,7 @@ export const TreeShakeComposablesPlugin = (options: TreeShakeComposablesPluginOp
                 : importSpecifier.local.name
               composableName = importedName
 
-              const isFromAllowedPath = importPath === '#imports'
-                ? allComposableNames.has(importedName)
-                : options.composables[importPath]?.includes(importedName)
-
-              if (!isFromAllowedPath) {
+              if (!isAllowedImport(importPath, importedName, autoImports)) {
                 return
               }
             }

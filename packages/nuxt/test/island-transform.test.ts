@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { Component } from '@nuxt/schema'
-import { IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
+import { ComponentsChunkPlugin, IslandsTransformPlugin } from '../src/components/plugins/islands-transform.ts'
 import { normalizeLineEndings } from './utils.ts'
 
 const getComponents = () => [{
@@ -553,6 +553,36 @@ const fields: any[] = []
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('only supported with the Vite builder'))
         expect(spyOnWarn).toHaveBeenCalledWith(expect.stringContaining('hello.server.vue'))
       })
+
+      it('warns about nuxt-client once per file source, however many requests transform it', async () => {
+        const plugin = IslandsTransformPlugin({ getComponents, selectiveClient: true })
+          .raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => Promise<unknown> } }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const source = '<template><HelloWorld nuxt-client /></template>'
+
+        await plugin.transform.handler(source, 'hello.server.vue')
+        await plugin.transform.handler(source, 'hello.server.vue?vue&type=template')
+        expect(warn).toHaveBeenCalledTimes(1)
+
+        await plugin.transform.handler(`<template><div>${source}</div></template>`, 'hello.server.vue')
+        expect(warn).toHaveBeenCalledTimes(2)
+        warn.mockRestore()
+      })
+
+      it('warns again about a restored nuxt-client after the file changes on disk in development', async () => {
+        const hooks: Record<string, (event: string, path: string) => void> = {}
+        const nuxt = { options: { dev: true, srcDir: '/app' }, hook: (name: string, fn: (event: string, path: string) => void) => { hooks[name] = fn } } as any
+        const plugin = IslandsTransformPlugin({ getComponents, selectiveClient: true, nuxt })
+          .raw({}, { framework: 'webpack', webpack: { compiler: {} as any }, versions: {} }) as { transform: { handler: (code: string, id: string) => Promise<unknown> } }
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const source = '<template><HelloWorld nuxt-client /></template>'
+
+        await plugin.transform.handler(source, '/app/hello.server.vue')
+        hooks['builder:watch']!('change', 'hello.server.vue')
+        await plugin.transform.handler(source, '/app/hello.server.vue')
+        expect(warn).toHaveBeenCalledTimes(2)
+        warn.mockRestore()
+      })
     })
   })
 
@@ -614,5 +644,41 @@ import InteractiveButton from '~/components/InteractiveButton.vue'
       const result = await viteTransform(source, pageFile, true, () => [pageFile])
       expect(result).toContain('<NuxtTeleportIslandComponent :nuxt-client=')
     })
+  })
+})
+
+describe('components chunk', () => {
+  function setup (waitForClientBuild: () => Promise<void>) {
+    const plugins = ComponentsChunkPlugin({
+      dev: false,
+      getComponents: () => [{ filePath: '/app/components/Counter.vue', mode: 'all', pascalName: 'Counter' } as Component],
+      waitForClientBuild,
+    })
+    const client = plugins.find(p => p.name === 'nuxt:components-chunk:client')!
+    const server = plugins.find(p => p.name === 'nuxt:components-chunk:server')!
+    return {
+      buildClient () {
+        (client.buildStart as (this: unknown) => void).call({ emitFile: () => 'ref' })
+        ;(client.generateBundle as (this: unknown, options: unknown, bundle: object) => void).call({ getFileName: () => '_nuxt/Counter.js' }, {}, {})
+      },
+      load (environment: string) {
+        const load = server.load as { handler: (this: unknown, id: string) => Promise<string> }
+        return load.handler.call({ environment: { name: environment } }, '\0nuxt-component-chunk')
+      },
+    }
+  }
+
+  it('should not wait for the client build when loaded by the client build', async () => {
+    const { load } = setup(() => new Promise(() => {}))
+    await expect(load('client')).resolves.toBe('export default {}')
+  })
+
+  it('should include client chunk paths when loaded by the server build before the client build finishes', async () => {
+    let finish!: () => void
+    const { buildClient, load } = setup(() => new Promise((resolve) => { finish = resolve }))
+    const result = load('ssr')
+    buildClient()
+    finish()
+    expect(await result).toContain('Counter: "/_nuxt/Counter.js"')
   })
 })

@@ -2,6 +2,7 @@ import { resolveModulePath } from 'exsolve'
 import type { Nuxt, NuxtBuildOutputs } from '@nuxt/schema'
 
 import { useNuxt } from '../context.ts'
+import { resolveAlias } from '../resolve.ts'
 import { directoryToURL } from './esm.ts'
 import { useServerBuild } from './server-build.ts'
 
@@ -25,6 +26,9 @@ const SERVER_APP_CONFIG_SPECIFIER = 'nuxt/internal/server-app-config'
 
 /** Dev-only error reporting, empty outside development. */
 const DEV_ERROR_SPECIFIER = 'nuxt/internal/dev-error'
+
+/** The renderer plugins registered through `addRendererPlugin()`, which each renderer calls. */
+const RENDERER_PLUGINS_SPECIFIER = 'nuxt/internal/renderer-plugins'
 
 /** The part of the app config template only the Vue app runs. */
 const APP_CONFIG_CLIENT_RE = /\/\*\* client \*\*\/[\s\S]*\/\*\* client-end \*\*\//
@@ -54,13 +58,16 @@ export type RendererConfigName =
   | 'NUXT_PAGE_PATTERNS'
   | 'NUXT_EARLY_404'
   | 'NUXT_PAGE_MATCHER'
+  | 'NUXT_SPA_PAGE_MATCHER'
   | 'NUXT_INLINE_ERROR_RENDERING'
   | 'PARSE_ERROR_DATA'
+  | 'NUXT_JSON_PAYLOADS'
   | 'NUXT_PAYLOAD_EXTRACTION'
   | 'NUXT_PAYLOAD_INLINE'
   | 'NUXT_RUNTIME_PAYLOAD_EXTRACTION'
   | 'NUXT_SSR_STREAMING'
   | 'NUXT_SSR_STREAMING_BOT_RE'
+  | 'NUXT_DEFER_PREFETCH_HINTS'
   | 'appHead'
   | 'appRootTag'
   | 'appRootAttrs'
@@ -103,7 +110,10 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
   const streaming = nuxt.options.experimental.ssrStreaming
   const streamingEnabled = typeof streaming === 'object' && !!streaming.enabled
 
-  const values: Record<RendererConfigName, string> = {
+  // deprecated or absent depending on the Nuxt version
+  const { parseErrorData, renderJsonPayloads } = nuxt.options.experimental as { parseErrorData?: boolean, renderJsonPayloads?: boolean }
+
+  const values: Record<Exclude<RendererConfigName, 'NUXT_JSON_PAYLOADS'>, string> & { NUXT_JSON_PAYLOADS?: string } = {
     NUXT_NO_SSR: String(nuxt.options.ssr === false),
     NUXT_PRERENDER_ERROR_PAGES: '[]',
     NUXT_PRERENDER_NO_SSR_ROUTES: '[]',
@@ -117,14 +127,16 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
     NUXT_PAGE_PATTERNS: '[]',
     NUXT_EARLY_404: 'false',
     NUXT_PAGE_MATCHER: 'undefined',
+    NUXT_SPA_PAGE_MATCHER: 'undefined',
     NUXT_INLINE_ERROR_RENDERING: String(!!nuxt.options.experimental.inlineErrorRendering),
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    PARSE_ERROR_DATA: String(!!nuxt.options.experimental.parseErrorData),
+    PARSE_ERROR_DATA: String(!!parseErrorData),
+    ...renderJsonPayloads === undefined ? {} : { NUXT_JSON_PAYLOADS: String(!!renderJsonPayloads) },
     NUXT_PAYLOAD_EXTRACTION: String(payloadExtraction !== false),
     NUXT_PAYLOAD_INLINE: String(payloadExtraction !== true),
     NUXT_RUNTIME_PAYLOAD_EXTRACTION: 'false',
     NUXT_SSR_STREAMING: String(streamingEnabled),
     NUXT_SSR_STREAMING_BOT_RE: streamingEnabled && streaming.botRegex instanceof RegExp ? String(streaming.botRegex) : '/^$/',
+    NUXT_DEFER_PREFETCH_HINTS: String(!!nuxt.options.experimental.deferPrefetchHints),
     appHead: JSON.stringify(app.head),
     appRootTag: JSON.stringify(app.rootTag),
     appRootAttrs: JSON.stringify(app.rootAttrs),
@@ -144,7 +156,7 @@ export function getRendererConfig (options: RendererConfigOptions = {}, nuxt: Nu
   const lines = [
     ...options.prelude ? [options.prelude] : [],
     `export { default as unheadOptions } from ${JSON.stringify(options.unheadOptions || '#build/unhead-options.mjs')}`,
-    `export { iifeChunkFileName, renderSSRHeadOptions } from ${JSON.stringify(options.headConfig || '#build/unhead.config.mjs')}`,
+    `export { appComponentHead, iifeChunkFileName, renderSSRHeadOptions } from ${JSON.stringify(options.headConfig || '#build/unhead.config.mjs')}`,
   ]
   for (const name in values) {
     const key = name as RendererConfigName
@@ -185,6 +197,14 @@ function getServerSurfaceModule (nuxt: Nuxt): string {
   return resolveNuxtModule('nuxt/server', nuxt)
 }
 
+function getRendererPlugins (nuxt: Nuxt): string {
+  const plugins = (nuxt.options._rendererPlugins || []).map(entry => resolveAlias(entry.plugin, nuxt.options.alias))
+  return [
+    ...plugins.map((plugin, index) => `import plugin${index} from ${JSON.stringify(plugin)}`),
+    `export default [${plugins.map((_, index) => `plugin${index}`).join(', ')}]`,
+  ].join('\n')
+}
+
 function resolveNuxtModule (specifier: string, nuxt: Nuxt): string {
   return resolveModulePath(specifier, {
     from: [...(nuxt.options.modulesDir || []).filter(Boolean).map(dir => directoryToURL(dir)), import.meta.url],
@@ -215,9 +235,10 @@ export interface NuxtServerRuntime {
   /** See {@link SERVER_RUNTIME_VERSION}. */
   version: number
   /**
-   * Modules the renderer imports and the builder must resolve, keyed by specifier. A builder
-   * registers each one however its bundler prefers (a virtual module, an alias, a file it
-   * writes) without knowing what any of them mean.
+   * Modules the builder must resolve, keyed by specifier: those the renderer imports, and
+   * those registered with `addServerTemplate()`. A builder registers each one however its
+   * bundler prefers (a virtual module, an alias, a file it writes) without knowing what any
+   * of them mean.
    */
   modules: Record<string, NuxtServerRuntimeModule>
   /**
@@ -243,8 +264,8 @@ export interface ServerRuntimeOptions extends Omit<RendererConfigOptions, 'overr
 
 /**
  * Everything core provides for a server builder to stand up the SSR renderer with: the
- * modules the renderer imports, the defines it must be compiled with, and the specifier
- * its server entry creates the renderer from.
+ * modules the renderer imports and those registered with `addServerTemplate()`, the defines
+ * it must be compiled with, and the specifier its server entry creates the renderer from.
  *
  * Core owns the set of modules, so a builder that iterates them keeps working when the set
  * changes; {@link SERVER_RUNTIME_VERSION} is what tells it when it cannot.
@@ -272,6 +293,11 @@ export function getServerRuntime (options: ServerRuntimeOptions = {}, nuxt: Nuxt
   modules[SERVER_APP_CONFIG_SPECIFIER] = { code: () => nuxt.vfs['#build/app.config.mjs']?.replace(APP_CONFIG_CLIENT_RE, '') || 'export default {}' }
   modules[DEV_ERROR_SPECIFIER] = { code: () => nuxt.options.dev ? `export * from ${JSON.stringify(resolveNuxtModule(DEV_ERROR_SPECIFIER, nuxt))}` : 'export {}' }
   modules[SERVER_RUNTIME_CONFIG_SPECIFIER] = { code: () => `export { useRuntimeConfig } from ${JSON.stringify(useServerBuild(nuxt).runtime.runtimeConfig)}` }
+  modules[RENDERER_PLUGINS_SPECIFIER] = { code: () => getRendererPlugins(nuxt) }
+
+  for (const [specifier, template] of Object.entries(nuxt.options._serverTemplates || {})) {
+    modules[specifier] = { code: () => typeof template === 'function' ? template() : template }
+  }
 
   return {
     version: SERVER_RUNTIME_VERSION,

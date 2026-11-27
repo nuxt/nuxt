@@ -7,6 +7,7 @@ import type { Component } from './components.ts'
 import type { NuxtOptions } from './config.ts'
 import type { NuxtDebugContext } from './debug.ts'
 import type { Import } from 'unimport'
+import type { BuildEnvironment } from 'vite'
 
 export interface NuxtPlugin {
   /** @deprecated use mode */
@@ -24,6 +25,11 @@ export interface NuxtPlugin {
    * @internal
    */
   name?: string
+  /**
+   * Left out of the generated plugin types.
+   * @internal
+   */
+  _skipTypes?: boolean
 }
 
 // Internal type for simpler NuxtTemplate interface extension
@@ -211,8 +217,9 @@ export interface NuxtServerBuildCapabilities {
  */
 export interface NuxtServerBuildRuntime {
   /**
-   * Exports `fetch`, used to back `$fetch` on the server. Omitted by a runtime that installs
-   * its own `$fetch` on `globalThis` rather than exposing a module to import from.
+   * Exports `fetch`, used to back `$fetch` on the server. A request for a path (`/...`) is
+   * handled in-process. Omitted by a runtime that installs its own `$fetch` on `globalThis`
+   * rather than exposing a module to import from.
    */
   fetch?: string
   /** Exports `useRuntimeConfig`. */
@@ -245,6 +252,20 @@ export interface NuxtServerBuildPreview {
   command?: () => string | undefined
   /** Directory to serve statically when there is no server to start. */
   staticDir?: () => string
+}
+
+/**
+ * How to deploy the build output.
+ *
+ * @internal
+ */
+export interface NuxtServerBuildDeploy {
+  /**
+   * Shell command that deploys the build with the deploy target's own tooling, such as
+   * `npx wrangler --cwd .output pages deploy`, when the target has one. Runs from `rootDir`
+   * (`output.root()`), and the paths in it are relative to that directory.
+   */
+  command?: () => string | undefined
 }
 
 /**
@@ -292,6 +313,12 @@ export interface NuxtServerBuild {
   capabilities: NuxtServerBuildCapabilities
   runtime: NuxtServerBuildRuntime
   preview?: NuxtServerBuildPreview
+  deploy?: NuxtServerBuildDeploy
+  /**
+   * Whether the `ssr` environment output restored by a build cache hit can be used as is.
+   * When omitted, or when it resolves to `false`, the `ssr` environment builds again.
+   */
+  canReuseSsrBuild?: (environment: BuildEnvironment) => Promise<boolean>
 }
 
 export interface Nuxt {
@@ -311,6 +338,7 @@ export interface Nuxt {
     endPhase: (name?: string) => void
     collectModuleTimings: (modules: Array<{ meta?: { name?: string }, timings?: Record<string, number | undefined> }>) => void
     recordBundlerPluginHook: (pluginName: string, hookName: string, durationMs: number, startTime?: number) => void
+    timeBundlerHook: <T>(pluginName: string, hookName: string, ctx: unknown, run: (ctx: any) => T) => T
     printReport: (options?: { title?: string }) => void
     writeReport: (buildDir: string, options?: { quiet?: boolean }) => string
     dispose: () => void
@@ -319,12 +347,12 @@ export interface Nuxt {
   '_asyncLocalStorageModule'?: AsyncLocalStorage<NuxtModule>
 
   /**
-   * The Node HTTP(S) server the dev server is listening on, captured from the
+   * The Node HTTP, HTTPS or HTTP/2 server the dev server is listening on, captured from the
    * `listen` hook. Builders use it to attach their HMR websocket to the same
    * server (and therefore the same port and certificate) as the app.
    * @internal
    */
-  '_devServerListener'?: import('node:http').Server | import('node:https').Server
+  '_devServerListener'?: import('node:http').Server | import('node:https').Server | import('node:http2').Http2SecureServer
   /**
    * Names of the bundler environments that build the app for the server, beyond `ssr`.
    * Plugins registered with `addVitePlugin()` apply to these too, so that an environment a
@@ -339,6 +367,17 @@ export interface Nuxt {
    * @internal
    */
   '_moduleOptionsFunctions'?: Map<string | NuxtModule, Array<() => { defaults?: Record<string, unknown>, overrides?: Record<string, unknown> }>>
+  /**
+   * State the client build keeps in memory for the server build, saved and restored by the build cache.
+   * @internal
+   */
+  '_clientBuildState'?: Map<string, { save: () => unknown, restore: (state: any) => void }>
+
+  /**
+   * The client build, while it runs alongside the server build.
+   * @internal
+   */
+  '_clientBuild'?: Promise<void>
 
   /** The resolved Nuxt configuration. */
   'options': NuxtOptions

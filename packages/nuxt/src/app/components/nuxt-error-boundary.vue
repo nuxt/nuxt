@@ -1,7 +1,7 @@
 <template>
   <slot
     v-if="error"
-    v-bind="{ error, clearError }"
+    v-bind="{ error, clearError, clearBoundaryError: clearError }"
     name="error"
   />
 
@@ -12,25 +12,46 @@
 </template>
 
 <script setup lang="ts">
-import { onErrorCaptured, shallowRef } from 'vue'
+import { getCurrentInstance, onErrorCaptured, onMounted, shallowRef, useId } from 'vue'
 import { useNuxtApp } from '../nuxt'
 import { onNuxtReady } from '../composables/ready'
+import { useState } from '../composables/state'
+import type { NuxtError } from '../composables/error'
+import { createIdScope } from './utils'
+import { ssrErrorBoundary } from '#build/nuxt.config.mjs'
+
+type BoundaryError = Error & Partial<Pick<NuxtError, 'status' | 'statusText' | 'data' | 'cause' | 'fatal'>>
 
 defineOptions({
   name: 'NuxtErrorBoundary',
   inheritAttrs: false,
 })
 
+const props = defineProps<{
+  /**
+   * When the error was caught during server-side rendering, re-render the default slot on the
+   * client once mounted (falling back to the `#error` slot again if it throws there too).
+   */
+  retryOnClient?: boolean
+}>()
+
 const emit = defineEmits<{
-  error: [error: Error]
+  error: [error: BoundaryError]
 }>()
 
 defineSlots<{
-  error(props: { error: Error, clearError: () => void }): any
+  error(props: {
+    /** The error that was caught. Errors created with `createError` also carry `status`, `statusText`, `data`, `cause` and `fatal`. */
+    error: BoundaryError
+    /** Clears the boundary's error and re-renders the default slot. */
+    clearBoundaryError: () => void
+    /** @deprecated Use `clearBoundaryError` instead. */
+    clearError: () => void
+  }): any
   default(): any
 }>()
 
-const error = shallowRef<Error | null>(null)
+const error = shallowRef<BoundaryError | null>(null)
 
 function clearError () {
   error.value = null
@@ -38,6 +59,25 @@ function clearError () {
 
 if (import.meta.client) {
   const nuxtApp = useNuxtApp()
+  // after a retry, the default slot is rendered by a client patch rather than by hydration
+  let retried = false
+
+  if (ssrErrorBoundary) {
+    // written by the server component when its default slot threw
+    const ssrError = useState<NuxtError | undefined>(useId())
+    createIdScope(getCurrentInstance()!)
+    if (ssrError.value) {
+      error.value = ssrError.value
+      ssrError.value = undefined
+
+      if (props.retryOnClient) {
+        onMounted(() => {
+          retried = true
+          clearError()
+        })
+      }
+    }
+  }
 
   function handleError (...args: Parameters<Parameters<typeof onErrorCaptured<Error>>[0]>) {
     const [err, instance, info] = args
@@ -50,7 +90,7 @@ if (import.meta.client) {
   }
 
   onErrorCaptured((err, instance, info) => {
-    if (!nuxtApp.isHydrating) {
+    if (retried || !nuxtApp.isHydrating) {
       handleError(err, instance, info)
     } else {
       onNuxtReady(() => handleError(err, instance, info))
@@ -60,5 +100,10 @@ if (import.meta.client) {
   })
 }
 
-defineExpose({ error, clearError })
+defineExpose({
+  error,
+  /** @deprecated Use `clearBoundaryError` instead. */
+  clearError,
+  clearBoundaryError: clearError,
+})
 </script>

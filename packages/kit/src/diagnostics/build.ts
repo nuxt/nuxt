@@ -1,6 +1,10 @@
 import { defineDiagnostics } from 'nostics'
 import { docsBase, reporters } from './_shared.ts'
 
+const builderLoadFix = (p: { builder: string, installCommand: string, installed: boolean }) => p.installed
+  ? `\`${p.builder}\` is installed, so the error above comes from loading it. Fix that error: a package it imports may be missing, or at a version it does not support.`
+  : `Run \`${p.installCommand}\` to install it.`
+
 /**
  * B1xxx
  * Build / compilation diagnostics.
@@ -92,13 +96,13 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
       docs: false,
     },
     NUXT_B1017: {
-      why: (p: { builder: string }) => `Loading \`${p.builder}\` builder failed.`,
-      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
+      why: (p: { builder: string, error: string }) => `Loading \`${p.builder}\` builder failed: ${p.error}`,
+      fix: builderLoadFix,
       docs: false,
     },
     NUXT_B1018: {
-      why: (p: { builder: string }) => `Loading \`${p.builder}\` server builder failed.`,
-      fix: (p: { installCommand: string }) => `Run \`${p.installCommand}\` to install it.`,
+      why: (p: { builder: string, error: string }) => `Loading \`${p.builder}\` server builder failed: ${p.error}`,
+      fix: builderLoadFix,
       docs: false,
     },
     NUXT_B1019: {
@@ -119,6 +123,55 @@ export const buildDiagnostics = /* #__PURE__ */ defineDiagnostics({
     NUXT_B1022: {
       why: (p: { count: number, templates: string }) => `The build stopped with ${p.count} template${p.count === 1 ? '' : 's'} still compiling:\n  - ${p.templates}`,
       fix: 'A `getContents` function returned a promise that never settles. Resolve it before the bundler starts (for example from `pages:resolved` or `nitro:init`), rather than waiting on something that happens during or after bundling.',
+      docs: false,
+    },
+    NUXT_B1023: {
+      why: (p: { name: string, version: string, range: string }) => `Nuxt requires \`${p.name}@${p.range}\`, but \`${p.name}@${p.version}\` is installed.`,
+      fix: (p: { name: string, installCommand: string, range: string }) => `Run \`${p.installCommand}\` to add a version of \`${p.name}\` matching \`${p.range}\` to your dependencies.`,
+      docs: false,
+    },
+    NUXT_B1024: {
+      why: (p: { routes: Array<{ route: string, status?: number }> }) => {
+        const shown = p.routes.slice(0, 5).map(r => r.status ? `\`${r.route}\` (${r.status})` : `\`${r.route}\``).join(', ')
+        const more = p.routes.length > 5 ? ` and ${p.routes.length - 5} more` : ''
+        return `${p.routes.length} route${p.routes.length === 1 ? '' : 's'} failed to prerender: ${shown}${more}.`
+      },
+      fix: 'Fix the errors logged above, skip the routes with `prerender.ignore` or a `prerender: false` route rule, or set `nitro.prerender.failOnError` to `false` to finish the build anyway.',
+      docs: false,
+    },
+    NUXT_B1025: {
+      why: (p: { fn: string, flags: string, file: string }) => `\`@tool\` on \`${p.fn}\` in \`${p.file}\` has unknown flags: ${p.flags}.`,
+      fix: 'Use `readonly`, `consequential` or `confirm`, separated by spaces.',
+      docs: false,
+    },
+    NUXT_B1026: {
+      why: (p: { fn: string, file: string }) => `The \`@tool\` function \`${p.fn}\` in \`${p.file}\` is not bound to an element, so agents cannot call it.`,
+      fix: 'Bind it to `@click` or `@submit` on an element, or to an event on a component, as `fn` or `fn(...args)`.',
+      docs: false,
+    },
+    NUXT_B1027: {
+      why: (p: { handler: string, file: string }) => `\`${p.handler}\` in \`${p.file}\` calls a \`@tool\` function, but only handlers written as \`fn\` or \`fn(...args)\` become agent tools.`,
+      fix: 'Move the extra logic into the `@tool` function and bind it directly.',
+      docs: false,
+    },
+    NUXT_B1028: {
+      why: (p: { fn: string, file: string }) => `The \`@tool\` function \`${p.fn}\` in \`${p.file}\` is inside a \`v-for\` keyed by its index, so agents see positions rather than items.`,
+      fix: 'Key the `v-for` by a stable id, such as `:key="item.id"`.',
+      docs: false,
+    },
+    NUXT_B1029: {
+      why: (p: { tool: string, problem: string, file: string }) => `The agent tool \`${p.tool}\` in \`${p.file}\` does not follow the tool design guidance: ${p.problem}.`,
+      fix: 'Describe what the tool does for the user and when to use it, in up to 500 characters, with a name of up to 30.',
+      docs: false,
+    },
+    NUXT_B1030: {
+      why: (p: { source: string, file: string }) => `The form field bound to \`${p.source}\` in \`${p.file}\` has no label, so agents get no description for it.`,
+      fix: 'Wrap the field in a `<label>`, point a `<label for>` at its `id`, or add `aria-label`.',
+      docs: false,
+    },
+    NUXT_B1031: {
+      why: (p: { file: string }) => `Could not write the agent tools registered while you browse to \`${p.file}\`.`,
+      fix: 'Check that the path set in `experimental.webmcp.schema` is writable.',
       docs: false,
     },
   },

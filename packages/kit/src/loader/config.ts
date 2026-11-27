@@ -1,21 +1,21 @@
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import process from 'node:process'
-import { pathToFileURL } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import type { JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import { loadConfig, setupDotenv } from 'c12'
-import type { NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtOptions } from '@nuxt/schema'
+import type { NitroConfig, NuxtConfig, NuxtConfigLayer, NuxtConfigLayerMeta, NuxtDotenvOptions, NuxtOptions } from '@nuxt/schema'
 import { glob } from 'tinyglobby'
 import { createDefu, defu } from 'defu'
-import { klona } from 'klona'
 import microdiff from 'microdiff'
 import { basename, dirname, join, normalize, relative, resolve } from 'pathe'
 import { resolveModuleURL } from 'exsolve'
 
 import { directoryToURL } from '../internal/esm.ts'
-import { getMissingCjsGlobal, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
+import { describeMissingPackage, describeNativeImportFailure, getMissingCjsGlobal, getMissingPackage, isLoaderError, loadJiti, shouldReportJitiFallbackOnce } from '../internal/jiti.ts'
 import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
+import { extractRuntimeConfigSchemas, mergeRuntimeConfigSchemas, restoreRuntimeConfigSchemaNulls } from '../internal/runtime-config.ts'
 import { ensureDependencyInstalled, getAddDependencyCommand } from '../dependency.ts'
 
 /**
@@ -202,6 +202,48 @@ const CONFIG_EXTENSIONS = ['.js', '.ts', '.mjs', '.cjs', '.mts', '.cts', '.json'
 // and re-reads the file rather than getting the cached module back
 let configImportCounter = 0
 
+const TYPELESS_MODULE_RE = /^Module type of (\S+) is not specified/
+const TYPELESS_PACKAGE_JSON_RE = /add "type": "module" to (.+)\.$/m
+const activeConfigImports = new Map<string, number>()
+let emitWarning: typeof process.emitWarning | undefined
+
+/**
+ * Report Node's warning about the config file at `filePath` being in a package with no `type` as a
+ * Nuxt diagnostic, for as long as the returned function has not been called. Warnings about other
+ * modules are passed through unchanged.
+ */
+function interceptTypelessPackageWarnings (filePath: string): () => void {
+  filePath = normalize(filePath)
+  activeConfigImports.set(filePath, (activeConfigImports.get(filePath) ?? 0) + 1)
+  if (!emitWarning) {
+    const original = emitWarning = process.emitWarning
+    process.emitWarning = function (warning: string | Error, ...args: unknown[]) {
+      const options = args[0]
+      const code = options && typeof options === 'object' ? (options as { code?: unknown }).code : args[1]
+      const message = String(warning)
+      const packageJson = message.match(TYPELESS_PACKAGE_JSON_RE)?.[1]
+      const url = message.match(TYPELESS_MODULE_RE)?.[1]
+      const modulePath = url?.startsWith('file:') ? normalize(fileURLToPath(url)) : undefined
+      if (code !== 'MODULE_TYPELESS_PACKAGE_JSON' || !packageJson || !modulePath || !activeConfigImports.has(modulePath)) {
+        return (original as (...args: unknown[]) => void).call(process, warning, ...args)
+      }
+      configDiagnostics.NUXT_B5040({ filePath: modulePath, packageJson: normalize(packageJson) })
+    } as typeof process.emitWarning
+  }
+  return () => {
+    const remaining = (activeConfigImports.get(filePath) ?? 1) - 1
+    if (remaining) {
+      activeConfigImports.set(filePath, remaining)
+    } else {
+      activeConfigImports.delete(filePath)
+    }
+    if (activeConfigImports.size === 0 && emitWarning) {
+      process.emitWarning = emitWarning
+      emitWarning = undefined
+    }
+  }
+}
+
 // The `extends` sources the config loader hands to `giget`. Kept in step with c12; a prefix that
 // is missing here only means the loader reports the missing downloader in its own words.
 const REMOTE_SOURCE_RE = /^(?:gh|github|gitlab|bitbucket):|^https?:\/\//
@@ -216,7 +258,7 @@ async function assertRemoteLayerSupport (source: string, rootDir: string) {
     throw configDiagnostics.NUXT_B5018({
       source,
       installCommand: await getAddDependencyCommand('giget', rootDir, { dev: true }),
-    })
+    }, { method: 'error' })
   }
 }
 
@@ -229,7 +271,14 @@ function isMissingConfbox (error: unknown): boolean {
   return code === 'ERR_MODULE_NOT_FOUND' && typeof message === 'string' && message.includes(`'confbox`)
 }
 
-const merger = createDefu((obj, key, value) => {
+const merger = createDefu((obj, key, value, namespace) => {
+  if (namespace ? namespace === 'runtimeConfig' || namespace.startsWith('runtimeConfig.') : key === 'runtimeConfig') {
+    const merged = mergeRuntimeConfigSchemas(value, obj[key])
+    if (merged !== undefined) {
+      obj[key] = merged as typeof obj[typeof key]
+      return true
+    }
+  }
   if (Array.isArray(obj[key]) && Array.isArray(value)) {
     obj[key] = obj[key].concat(value)
     return true
@@ -300,7 +349,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   let jitiImporter: ((id: string) => Promise<unknown>) | undefined
   // Reported once `future.compatibilityVersion` is known, since that is part of deciding whether
   // loading through jiti is worth mentioning at all
-  const jitiFallbacks: Array<{ filePath: string, error: string }> = []
+  const jitiFallbacks: Array<{ filePath: string, error: string, hint: string, missingPackage: boolean }> = []
 
   const importConfigFile = async (id: string) => {
     if (jitiImporter) {
@@ -310,15 +359,27 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // edits to a config file; this has to do the same
     const url = pathToFileURL(id)
     url.search = `_${++configImportCounter}`
+    const restoreWarnings = interceptTypelessPackageWarnings(id)
     try {
-      return await import(url.href)
+      return await import(url.href).finally(restoreWarnings)
     } catch (error) {
       const missingGlobal = getMissingCjsGlobal(error)
-      // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat
-      const jitiCanHelp = isLoaderError(error) || !!missingGlobal
+      const missingPackage = getMissingPackage(error)
+      // Whether jiti is the answer, or the file simply has a bug that a second loader will repeat.
+      // jiti may find a package the project does not depend on, which only hides the problem.
+      const jitiCanHelp = !missingPackage && (isLoaderError(error) || !!missingGlobal)
+      const missingPackageError = async (missing: NonNullable<typeof missingPackage>) => configDiagnostics.NUXT_B5017({
+        filePath: id,
+        error: error instanceof Error ? error.message : String(error),
+        hint: await describeMissingPackage(missing, rootCwd),
+        cause: error,
+      }, { method: 'error' })
       // A config file is evaluated for its default export, so any failure is worth a second attempt
       const jiti = await getJiti(jitiCanHelp)
       if (!jiti) {
+        if (missingPackage) {
+          throw await missingPackageError(missingPackage)
+        }
         if (!jitiCanHelp) {
           throw error
         }
@@ -326,15 +387,19 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
         throw diagnostic({
           filePath: id,
           error: error instanceof Error ? error.message : String(error),
+          hint: describeNativeImportFailure(error),
           installCommand: await getAddDependencyCommand('jiti', rootCwd, { dev: true }),
           cause: error,
-        })
+        }, { method: 'error' })
       }
 
       let loaded: unknown
       try {
         loaded = await jiti.import(id)
       } catch (jitiError) {
+        if (missingPackage) {
+          throw await missingPackageError(missingPackage)
+        }
         // jiti's error is only the better one where jiti was expected to get further; a repeat of
         // the same failure keeps the native error and its untransformed stack
         const repeated = missingGlobal && getMissingCjsGlobal(jitiError) === missingGlobal
@@ -344,8 +409,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       jitiFallbacks.push({
         filePath: id,
         error: error instanceof Error ? error.message : String(error),
+        hint: missingPackage ? await describeMissingPackage(missingPackage, rootCwd) : describeNativeImportFailure(error),
+        missingPackage: !!missingPackage,
       })
-      if (isLoaderError(error)) {
+      if (!missingPackage && isLoaderError(error)) {
         jitiImporter = id => jiti.import(id)
       }
       return loaded
@@ -427,7 +494,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       throw configDiagnostics.NUXT_B5022({
         installCommand: await getAddDependencyCommand('confbox', rootCwd, { dev: true }),
         cause: error,
-      })
+      }, { method: 'error' })
     }
     // The abandoned load already recorded the layers it reached, and a layer it has seen resolves
     // to an empty config on the way past
@@ -437,10 +504,12 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   })
 
   const { configFile, layers = [], cwd, meta } = resolved
-  // Clone with `klona` rather than `klona/full`: jiti-imported JSON/CJS modules in user config
-  // carry a non-enumerable, self-referential `default` interop property, which `klona/full`
-  // would follow into infinite recursion.
-  const nuxtConfig = klona(resolved.config)
+  // schemas cannot be cloned, so they are replaced with their defaults first
+  const runtimeConfigSchemas = extractRuntimeConfigSchemas(resolved.config.runtimeConfig)
+  if (runtimeConfigSchemas.entries.length) {
+    resolved.config.runtimeConfig = runtimeConfigSchemas.config as NuxtConfig['runtimeConfig']
+  }
+  const nuxtConfig = cloneConfig(resolved.config)
 
   // Merge of the layers c12 produced, minus the synthetic layer it creates for `overrides`, so
   // caller-supplied `overrides`/`defaults` never appear as user configuration. Taken before the
@@ -451,7 +520,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       .map(layer => layer.config!)) as NuxtConfig
     : undefined
 
-  // Fill config
   nuxtConfig.rootDir ||= cwd
   nuxtConfig._nuxtConfigFile = configFile
   nuxtConfig._nuxtConfigFiles = [configFile]
@@ -484,7 +552,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
 
   const NuxtConfigSchema = await schemaPromise
 
-  const layerSchemaKeys = ['future', 'srcDir', 'rootDir', 'serverDir', 'dir']
+  const layerSchemaKeys = ['srcDir', 'rootDir', 'serverDir', 'dir']
   const layerSchema = Object.create(null)
   for (const key of layerSchemaKeys) {
     if (key in NuxtConfigSchema) {
@@ -515,10 +583,8 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (processedLayers.has(resolvedRootDir)) { continue }
     processedLayers.add(resolvedRootDir)
 
-    // Normalise layer directories
     layer.config = await applyDefaults(layerSchema, layer.config as NuxtConfig & Record<string, JSValue>) as unknown as NuxtConfig
 
-    // Filter layers
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
     // Add layer name for local layers
@@ -527,7 +593,6 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
       layer.meta.name ||= basename(layerCwd)
     }
 
-    // Add layer alias
     if (layer.meta?.name) {
       const alias = `#layers/${layer.meta.name}`
       nuxtConfig.alias[alias] ||= withTrailingSlash(layer.config.rootDir || layer.cwd)
@@ -555,12 +620,17 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     })
   }
 
-  // Resolve and apply defaults
   const options = await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+  options._runtimeConfigSchemas = runtimeConfigSchemas.entries
+  restoreRuntimeConfigSchemaNulls(options.runtimeConfig, runtimeConfigSchemas.config, runtimeConfigSchemas.entries)
+  const nitroRuntimeConfig = (options.nitro as NitroConfig).runtimeConfig
+  if (nitroRuntimeConfig) {
+    restoreRuntimeConfigSchemaNulls(nitroRuntimeConfig, runtimeConfigSchemas.config, runtimeConfigSchemas.entries)
+  }
 
-  for (const fallback of jitiFallbacks) {
-    if (shouldReportJitiFallbackOnce(fallback.filePath, options.rootDir, options.future.compatibilityVersion)) {
-      configDiagnostics.NUXT_B5023(fallback)
+  for (const { missingPackage, ...fallback } of jitiFallbacks) {
+    if (shouldReportJitiFallbackOnce(fallback.filePath, options.rootDir, options.future.compatibilityVersion, missingPackage)) {
+      configDiagnostics.NUXT_B5023({ ...fallback, installCommand: missingPackage ? undefined : await getAddDependencyCommand('jiti', rootCwd, { dev: true }) })
     }
   }
 
@@ -574,6 +644,50 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   }
 
   return options
+}
+
+/**
+ * Copies the plain objects and arrays of a config, so that resolving options does not write
+ * into the configs of its layers. Other values, and the entries of nested `plugins` arrays, are
+ * kept by reference, as bundler plugins can depend on their identity and on symbol-keyed properties.
+ */
+function cloneConfig<T> (config: T): T {
+  const copies = new WeakMap<object, unknown>()
+  const pluginArrayCopies = new WeakMap<object, unknown>()
+  const clone = (value: unknown, keepEntries: boolean): unknown => {
+    if (!Array.isArray(value) && !isPlainObject(value)) {
+      return value
+    }
+    const cache = Array.isArray(value) && keepEntries ? pluginArrayCopies : copies
+    if (cache.has(value)) {
+      return cache.get(value)
+    }
+    if (Array.isArray(value)) {
+      const copy: unknown[] = []
+      cache.set(value, copy)
+      for (const entry of value) {
+        copy.push(keepEntries && !Array.isArray(entry) ? entry : clone(entry, keepEntries))
+      }
+      return copy
+    }
+    const copy = Object.create(Object.getPrototypeOf(value))
+    copies.set(value, copy)
+    for (const key of Reflect.ownKeys(value)) {
+      if (Object.prototype.propertyIsEnumerable.call(value, key)) {
+        Object.defineProperty(copy, key, { value: clone(value[key], value !== config && key === 'plugins'), enumerable: true, writable: true, configurable: true })
+      }
+    }
+    return copy
+  }
+  return clone(config, false) as T
+}
+
+function isPlainObject (value: unknown): value is Record<PropertyKey, unknown> {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+  const prototype = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
 }
 
 /**
@@ -628,14 +742,7 @@ function reorderLocalLayersByExtends (
   extendsOrder: string[],
   localLayerDirs: Set<string>,
 ) {
-  const layerDir = (layer: LoadedConfigLayer) => {
-    const dir = (layer.config?.rootDir ?? layer.cwd ?? '').replace(/\/$/, '')
-    try {
-      return normalize(realpathSync(dir))
-    } catch {
-      return normalize(dir)
-    }
-  }
+  const layerDir = (layer: LoadedConfigLayer) => normalize(tryRealPath((layer.config?.rootDir ?? layer.cwd ?? '').replace(/\/$/, '')))
 
   const priorityByDir = new Map(extendsOrder.map((dir, index) => [dir, index]))
 

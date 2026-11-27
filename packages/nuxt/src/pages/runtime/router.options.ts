@@ -10,11 +10,17 @@ type ScrollPosition = Awaited<ReturnType<RouterScrollBehavior>>
 // Default router options
 // https://router.vuejs.org/api/interfaces/routeroptions
 export default <RouterConfig>{
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   scrollBehavior (to, from, savedPosition) {
     const nuxtApp = useNuxtApp()
     const router = useRouter()
     // @ts-expect-error untyped, nuxt-injected option
     const hashScrollBehaviour = router.options?.scrollBehaviorType ?? 'auto'
+
+    // keep the position the browser restored on load (see `scrollRestoration` in the router plugin)
+    if (from === START_LOCATION && !savedPosition && !to.hash) {
+      return false
+    }
 
     // Hash routes on the same page, no page hook is fired so resolve here
     if (to.path.replace(/\/$/, '') === from.path.replace(/\/$/, '')) {

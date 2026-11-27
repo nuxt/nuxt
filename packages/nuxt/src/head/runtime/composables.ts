@@ -10,6 +10,7 @@ import {
 import { useNuxtApp } from '#app/nuxt'
 import type { NuxtApp } from '#app/nuxt'
 import { unheadDiagnostics } from '../../app/diagnostics/head'
+import { useClientHead } from './client-head'
 
 /**
  * Injects the head client from the Nuxt context or Vue inject.
@@ -17,6 +18,10 @@ import { unheadDiagnostics } from '../../app/diagnostics/head'
 export function injectHead (nuxtApp?: NuxtApp): VueHeadClient {
   // Nuxt 4 will throw an error if the context is missing
   const nuxt = nuxtApp || useNuxtApp()
+  if (import.meta.client) {
+    const injected = nuxt.runWithContext(() => hasInjectionContext() ? inject<VueHeadClient | null>(headSymbol, null) : null) as VueHeadClient | null
+    return injected || useClientHead(nuxt)
+  }
   return nuxt.ssrContext?.head || nuxt.runWithContext(() => {
     if (hasInjectionContext()) {
       const head = inject<VueHeadClient>(headSymbol)
@@ -48,10 +53,15 @@ export function useSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions 
   return seoMeta(input, { head, ...options }) as ActiveHeadEntry<UseSeoMetaInput>
 }
 
+function noopHeadEntry<T> (): ActiveHeadEntry<T> {
+  return { patch: () => {}, dispose: () => {}, _i: -1 }
+}
+
 /**
  * @deprecated Use `useHead` instead and wrap with `if (import.meta.server)`
  */
 export function useServerHead (input: UseHeadInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadInput> {
+  if (import.meta.client) { return noopHeadEntry() }
   const head = options.head || injectHead(options.nuxt)
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   return serverHead(input, { head, ...options }) as ActiveHeadEntry<UseHeadInput>
@@ -61,6 +71,7 @@ export function useServerHead (input: UseHeadInput, options: NuxtUseHeadOptions 
  * @deprecated Use `useHeadSafe` instead and wrap with `if (import.meta.server)`
  */
 export function useServerHeadSafe (input: UseHeadSafeInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseHeadSafeInput> {
+  if (import.meta.client) { return noopHeadEntry() }
   const head = options.head || injectHead(options.nuxt)
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   return serverHeadSafe(input, { head, ...options }) as ActiveHeadEntry<UseHeadSafeInput>
@@ -70,6 +81,7 @@ export function useServerHeadSafe (input: UseHeadSafeInput, options: NuxtUseHead
  * @deprecated Use `useSeoMeta` instead and wrap with `if (import.meta.server)`
  */
 export function useServerSeoMeta (input: UseSeoMetaInput, options: NuxtUseHeadOptions = {}): ActiveHeadEntry<UseSeoMetaInput> {
+  if (import.meta.client) { return noopHeadEntry() }
   const head = options.head || injectHead(options.nuxt)
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   return serverSeoMeta(input, { head, ...options }) as ActiveHeadEntry<UseSeoMetaInput>

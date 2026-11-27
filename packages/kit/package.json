@@ -6,7 +6,7 @@
     "url": "git+https://github.com/nuxt/nuxt.git",
     "directory": "packages/kit"
   },
-  "homepage": "https://nuxt.com/docs/4.x/api/kit",
+  "homepage": "https://nuxt.com/docs/5.x/api/kit",
   "description": "Toolkit for authoring modules and interacting with Nuxt",
   "license": "MIT",
   "type": "module",
@@ -44,6 +44,7 @@
     "package-manager-detector": "catalog:build",
     "pathe": "catalog:build",
     "rc9": "catalog:build",
+    "rou3": "catalog:build",
     "scule": "catalog:build",
     "std-env": "catalog:build",
     "tinyexec": "catalog:build",
@@ -99,6 +100,7 @@
     "mlly": "catalog:build",
     "oxc-parser": "catalog:build",
     "pkg-types": "catalog:build",
+    "radix3": "1.1.2",
     "rolldown": "catalog:vite",
     "tsdown": "catalog:dev",
     "untyped": "catalog:build",
@@ -117,8 +119,8 @@
     "types": "./dist/index.d.mts"
   },
   "inlinedDependencies": {
-    "c12": "4.0.0-rc.2",
-    "pkg-types": "2.3.3",
+    "c12": "4.0.0-rc.4",
+    "pkg-types": "2.4.0",
     "untyped": "2.0.0"
   }
 }

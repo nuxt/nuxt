@@ -19,6 +19,7 @@ export interface H3ErrorInput {
 }
 
 const kLegacyShape = Symbol.for('nuxt.compat.h3v1.error')
+const kExplicitCause = Symbol.for('nuxt.compat.h3v1.cause')
 
 /** v1 input carries `statusCode`/`statusMessage`, where v3 carries `status`/`statusText`. */
 function hasLegacyErrorKeys (input: unknown): boolean {
@@ -29,6 +30,8 @@ function hasLegacyErrorKeys (input: unknown): boolean {
  * v1-shaped `createError`, returning an `HTTPError` whose serialised body keeps the v1 key
  * names alongside the v2 ones. Input that is already v3-shaped is passed through
  * untouched, since the extra body keys are an observable change migrated code did not ask for.
+ *
+ * `cause` is the `cause` of the input where it has one, as it was in h3 v1.
  */
 export function createError (input: string | (Error & H3ErrorInput) | H3ErrorInput): HTTPError {
   if (HTTPError.isError(input)) {
@@ -36,27 +39,48 @@ export function createError (input: string | (Error & H3ErrorInput) | H3ErrorInp
   }
 
   const error = new HTTPError(input as any)
+  if (input && typeof input === 'object' && input.cause) {
+    Object.defineProperties(error, {
+      cause: { value: input.cause, configurable: true, writable: true },
+      [kExplicitCause]: { value: true },
+    })
+  }
   if (!hasLegacyErrorKeys(input)) {
     return error
   }
 
   if (typeof input === 'object' && input.fatal !== undefined) {
-    Object.defineProperty(error, 'fatal', { value: input.fatal, configurable: true, enumerable: false })
+    Object.defineProperty(error, 'fatal', { value: input.fatal, configurable: true, enumerable: false, writable: true })
   }
 
   return withLegacyErrorShape(error)
 }
 
-/** Serialise an error with the v1 body keys as well as the v2 ones. */
+/**
+ * Serialise an error with the v1 body keys as well as the v2 ones, and accept writes to
+ * `statusCode` and `statusMessage` as h3 v1 did.
+ */
 export function withLegacyErrorShape<T extends HTTPError> (error: T): T {
   if ((error as any)[kLegacyShape]) {
     return error
   }
   const toJSON = error.toJSON.bind(error)
+  const fields = error as { status: number, statusText?: string }
   Object.defineProperties(error, {
     [kLegacyShape]: { value: true },
+    statusCode: {
+      configurable: true,
+      get: () => fields.status,
+      set: (value: number) => { fields.status = value },
+    },
+    statusMessage: {
+      configurable: true,
+      get: () => fields.statusText,
+      set: (value: string | undefined) => { fields.statusText = value },
+    },
     toJSON: {
       configurable: true,
+      writable: true,
       value: () => {
         const json = toJSON()
         return {
@@ -146,7 +170,7 @@ export function toLegacyError (input: unknown): HTTPError {
     const error = input as HTTPError
     // h3 wraps a foreign error as an unhandled 500, which loses the status a wrapped h3 v1
     // error carries
-    if (error.unhandled && isLegacyH3Error(error.cause)) {
+    if (error.unhandled && !(error as any)[kExplicitCause] && isLegacyH3Error(error.cause)) {
       return fromLegacyH3Error(error.cause as H3ErrorInput)
     }
     return error

@@ -14,19 +14,19 @@ permissions:
 
 jobs:
   code:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
+      - uses: voidzero-dev/setup-vp@cab1ab9eaff52d4857875f4f2c016e36af8f2c76 # v1.22.0
         with:
           node-version: lts
           cache: true
 
       - name: Check engine ranges, peer dependency ranges and installed versions
-        run: vp run test:engines:fix
+        run: vp run test:engines --fix
         continue-on-error: true
 
       - name: Prepare
@@ -47,20 +47,20 @@ jobs:
             run: vp run test:unit -u
 
           - name: Lint (code)
-            run: vp run lint:fix
+            run: vp run lint --fix
 
       - name: Assert bundle size (renovate)
         if: ${{ contains(github.head_ref, 'renovate') }}
-        run: vp exec vitest run bundle
+        run: vp run test:bundle
 
       - name: Update bundle size (renovate)
         if: failure()
         run: |
-          vp exec vitest run bundle -u
+          vp run test:bundle -u
           vp dedupe
 
       - name: Update bundle size
         if: ${{ !contains(github.head_ref, 'renovate') }}
-        run: vp exec vitest run bundle -u
+        run: vp run test:bundle -u
 
       - uses: autofix-ci/action@c5b2d67aa2274e7b5a18224e8171550871fc7e4a # v1.3.4

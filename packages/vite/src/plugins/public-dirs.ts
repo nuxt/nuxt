@@ -5,7 +5,6 @@ import { dirname, relative } from 'pathe'
 import { generateTransform, rolldownString } from 'rolldown-string'
 import jsTokens from 'js-tokens'
 import type { Token } from 'js-tokens'
-import { isCSSRequest } from 'vite'
 import type { Plugin } from 'vite'
 
 import { isInlineStyleId } from '../utils/inline-styles.ts'
@@ -14,6 +13,7 @@ const PREFIX = '\0virtual:public?'
 const PREFIX_RE = /^\0virtual:public\?/
 const CSS_URL_RE = /url\((\/[^)]+)\)/g
 const CSS_URL_SINGLE_RE = /url\(\/[^)]+\)/
+const CSS_REQUEST_RE = /\.(?:css|less|sass|scss|styl|stylus|pcss|postcss|sss)(?:$|\?)/
 
 function stringDelimiter (token: Token) {
   switch (token.type) {
@@ -41,18 +41,19 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
       apply () {
         return !!options.dev && !!options.baseURL && options.baseURL !== '/'
       },
-      transform (code, id, meta?: unknown) {
-        if (!isCSSRequest(id) || !CSS_URL_SINGLE_RE.test(code)) { return }
-
-        const s = rolldownString(code, id, meta)
-        for (const match of code.matchAll(CSS_URL_RE)) {
-          const [full, url] = match
-          if (url && resolveFromPublicAssets(url)) {
-            s.update(match.index, match.index + full.length, `url(${joinURL(options.baseURL!, url)})`)
+      transform: {
+        filter: { id: CSS_REQUEST_RE, code: CSS_URL_SINGLE_RE },
+        handler (code, id, meta?: unknown) {
+          const s = rolldownString(code, id, meta)
+          for (const match of code.matchAll(CSS_URL_RE)) {
+            const [full, url] = match
+            if (url && resolveFromPublicAssets(url)) {
+              s.update(match.index, match.index + full.length, `url(${joinURL(options.baseURL!, url)})`)
+            }
           }
-        }
 
-        return generateTransform(s, id)
+          return generateTransform(s, id)
+        },
       },
     },
     {
@@ -79,29 +80,33 @@ export const PublicDirsPlugin = (options: VitePublicDirsPluginOptions): Plugin[]
           }
         },
       },
-      renderChunk (code, chunk) {
-        if (!isInlineStyleId(chunk.facadeModuleId) || !CSS_URL_SINGLE_RE.test(code)) { return }
+      renderChunk: {
+        // only chunks with a root-relative `url()` can reference a public asset
+        filter: { code: CSS_URL_SINGLE_RE },
+        handler (code, chunk) {
+          if (!isInlineStyleId(chunk.facadeModuleId)) { return }
 
-        const s = rolldownString(code, chunk.fileName)
-        let offset = 0
-        for (const token of jsTokens(code)) {
-          const start = offset
-          offset += token.value.length
-          const q = stringDelimiter(token)
-          if (!q) { continue }
-          for (const match of token.value.matchAll(CSS_URL_RE)) {
-            const [full, url] = match
-            if (url && resolveFromPublicAssets(url)) {
-              const index = start + match.index
-              s.update(index, index + full.length, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
+          const s = rolldownString(code, chunk.fileName)
+          let offset = 0
+          for (const token of jsTokens(code)) {
+            const start = offset
+            offset += token.value.length
+            const q = stringDelimiter(token)
+            if (!q) { continue }
+            for (const match of token.value.matchAll(CSS_URL_RE)) {
+              const [full, url] = match
+              if (url && resolveFromPublicAssets(url)) {
+                const index = start + match.index
+                s.update(index, index + full.length, `url(${q} + publicAssetsURL(${q}${url}${q}) + ${q})`)
+              }
             }
           }
-        }
 
-        if (s.hasChanged()) {
-          s.prepend(`import { publicAssetsURL } from '#internal/nuxt/paths';`)
-        }
-        return generateTransform(s, chunk.fileName)
+          if (s.hasChanged()) {
+            s.prepend(`import { publicAssetsURL } from '#internal/nuxt/paths';`)
+          }
+          return generateTransform(s, chunk.fileName)
+        },
       },
       generateBundle (_outputOptions, bundle) {
         for (const [file, chunk] of Object.entries(bundle)) {

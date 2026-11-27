@@ -1,20 +1,12 @@
 import { existsSync } from 'node:fs'
-import { fileURLToPath } from 'node:url'
 import { rm } from 'node:fs/promises'
 import { test as teardown } from '@playwright/test'
+import type { TempFixture } from './temp-fixture'
+import { tempFixtureDir, tempFixtures } from './temp-fixture'
 
-const fixtureDirs = [
-  fileURLToPath(new URL('../fixtures-temp/hmr', import.meta.url)),
-  fileURLToPath(new URL('../fixtures-temp/hmr-sibling-layer', import.meta.url)),
-  fileURLToPath(new URL('../fixtures-temp/dev-error-sourcemap', import.meta.url)),
-  fileURLToPath(new URL('../fixtures-temp/dev-error-client', import.meta.url)),
-  fileURLToPath(new URL('../fixtures-temp/dev-error-recovery', import.meta.url)),
-  fileURLToPath(new URL('../fixtures-temp/dev-error-compile', import.meta.url)),
-  fileURLToPath(new URL('../fixtures-temp/dev-error-expected', import.meta.url)),
-]
-
-teardown('remove temporary hmr fixture directory', async () => {
-  for (const fixtureDir of fixtureDirs) {
+teardown('remove temporary fixture directories', async () => {
+  for (const name of Object.keys(tempFixtures) as TempFixture[]) {
+    const fixtureDir = tempFixtureDir(name)
     if (!existsSync(fixtureDir)) { continue }
 
     let removed = false
@@ -28,7 +20,7 @@ teardown('remove temporary hmr fixture directory', async () => {
       }
     }
     if (!removed) {
-      console.warn(`[teardown] Could not remove ${fixtureDir} — file handles may still be held by a dev server process.`)
+      console.warn(`[teardown] Could not remove ${fixtureDir}: file handles may still be held by a dev server process.`)
     }
   }
 })

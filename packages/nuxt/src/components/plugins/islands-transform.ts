@@ -1,4 +1,4 @@
-import type { Component } from '@nuxt/schema'
+import type { Component, Nuxt } from '@nuxt/schema'
 import { componentDiagnostics } from '@nuxt/kit/internal'
 import { linkToAlias } from '../../utils.ts'
 import { createUnplugin } from 'unplugin'
@@ -7,7 +7,7 @@ import { ELEMENT_NODE, parse, walk, walkSync } from 'ultrahtml'
 import { genObjectFromRawEntries, genString } from 'knitwork'
 import type { Plugin } from 'vite'
 import { normalize } from 'pathe'
-import { isVue, parseModuleId } from '../../core/utils/index.ts'
+import { createReportOnce, isVue, parseModuleId } from '../../core/utils/index.ts'
 
 interface ServerOnlyComponentTransformPluginOptions {
   getComponents: () => Component[]
@@ -22,6 +22,7 @@ interface ServerOnlyComponentTransformPluginOptions {
    * allow using `nuxt-client` attribute on components
    */
   selectiveClient?: boolean | 'deep'
+  nuxt?: Nuxt
 }
 
 const HAS_SLOT_OR_CLIENT_RE = /<slot[^>]*>|nuxt-client/
@@ -51,120 +52,123 @@ function findScriptBlocks (code: string): ScriptBlock[] {
   return blocks
 }
 
-export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => createUnplugin((_options, meta) => {
-  const isVite = meta.framework === 'vite'
-  return {
-    name: 'nuxt:server-only-component-transform',
-    enforce: 'pre',
-    transformInclude (id) {
-      if (!isVue(id)) { return false }
-      if (isVite && options.selectiveClient === 'deep') { return true }
-      const { pathname } = parseModuleId(normalize(id))
-      return isIslandFile(pathname, options)
-    },
-    transform: {
-      filter: {
-        code: {
-          include: HAS_SLOT_OR_CLIENT_RE,
+export const IslandsTransformPlugin = (options: ServerOnlyComponentTransformPluginOptions) => {
+  const reportOnce = createReportOnce(options.nuxt)
+  return createUnplugin((_options, meta) => {
+    const isVite = meta.framework === 'vite'
+    return {
+      name: 'nuxt:server-only-component-transform',
+      enforce: 'pre',
+      transformInclude (id) {
+        if (!isVue(id)) { return false }
+        if (isVite && options.selectiveClient === 'deep') { return true }
+        const { pathname } = parseModuleId(normalize(id))
+        return isIslandFile(pathname, options)
+      },
+      transform: {
+        filter: {
+          code: {
+            include: HAS_SLOT_OR_CLIENT_RE,
+          },
+        },
+        async handler (code, id, transformMeta?: unknown) {
+          const template = code.match(TEMPLATE_RE)
+          if (!template) { return }
+          const startingIndex = template.index || 0
+          const s = rolldownString(code, id, transformMeta)
+
+          const { pathname } = parseModuleId(normalize(id))
+          const isIsland = isIslandFile(pathname, options)
+
+          // The injected helpers are referenced from the template, so they must be setup bindings:
+          // adding them to a plain `<script>` leaves them in module scope only and the template
+          // compiler resolves them off `_ctx` instead, which is `undefined` at render time.
+          const scriptBlocks = findScriptBlocks(code)
+          const setupBlock = scriptBlocks.find(({ attributes }) => 'setup' in attributes)
+          if (setupBlock) {
+            s.appendRight(setupBlock.contentStart, IMPORT_CODE)
+          } else {
+          // `<script>` and `<script setup>` in one SFC must agree on `lang`.
+            const lang = scriptBlocks[0]?.attributes.lang
+            s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + IMPORT_CODE + '</script>')
+          }
+
+          let hasNuxtClient = false
+
+          const ast = parse(template[0])
+          await walk(ast, (node) => {
+            if (node.type !== ELEMENT_NODE) {
+              return
+            }
+            if (node.name === 'slot') {
+              if (!isIsland) { return }
+              const { attributes, children, loc } = node
+
+              const slotName = attributes.name ?? 'default'
+
+              if (attributes.name) { delete attributes.name }
+              if (attributes['v-bind']) {
+                attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
+              }
+              const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+              const bindings = getPropsToString(attributes)
+              // add the wrapper
+              s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
+
+              if (children.length) {
+              // pass slot fallback to NuxtTeleportSsrSlot fallback
+                const attrString = attributeToString(attributes)
+                const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
+                s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
+              } else {
+                s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
+              }
+
+              s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
+              return
+            }
+
+            if (node.name === 'NuxtTeleportIslandComponent') {
+              return
+            }
+
+            const hasNuxtClientAttr = 'nuxt-client' in node.attributes || ':nuxt-client' in node.attributes
+            if (hasNuxtClientAttr) {
+              hasNuxtClient = true
+            }
+
+            if (!hasNuxtClientAttr || !isVite || !options.selectiveClient) {
+              return
+            }
+
+            const { loc, attributes } = node
+            const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
+            const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
+
+            let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
+            if (wrapperAttributes) {
+              startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
+            }
+
+            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
+            s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
+            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
+          })
+
+          if (hasNuxtClient) {
+            if (!options.selectiveClient) {
+              reportOnce(pathname, code, () => componentDiagnostics.NUXT_B3007({ file: linkToAlias(id) }))
+            } else if (!isVite) {
+              reportOnce(pathname, code, () => componentDiagnostics.NUXT_B3013({ file: linkToAlias(id) }))
+            }
+          }
+
+          return generateTransform(s, id)
         },
       },
-      async handler (code, id, transformMeta?: unknown) {
-        const template = code.match(TEMPLATE_RE)
-        if (!template) { return }
-        const startingIndex = template.index || 0
-        const s = rolldownString(code, id, transformMeta)
-
-        const { pathname } = parseModuleId(normalize(id))
-        const isIsland = isIslandFile(pathname, options)
-
-        // The injected helpers are referenced from the template, so they must be setup bindings:
-        // adding them to a plain `<script>` leaves them in module scope only and the template
-        // compiler resolves them off `_ctx` instead, which is `undefined` at render time.
-        const scriptBlocks = findScriptBlocks(code)
-        const setupBlock = scriptBlocks.find(({ attributes }) => 'setup' in attributes)
-        if (setupBlock) {
-          s.appendRight(setupBlock.contentStart, IMPORT_CODE)
-        } else {
-          // `<script>` and `<script setup>` in one SFC must agree on `lang`.
-          const lang = scriptBlocks[0]?.attributes.lang
-          s.prepend(`<script setup${lang ? ` lang="${lang}"` : ''}>` + IMPORT_CODE + '</script>')
-        }
-
-        let hasNuxtClient = false
-
-        const ast = parse(template[0])
-        await walk(ast, (node) => {
-          if (node.type !== ELEMENT_NODE) {
-            return
-          }
-          if (node.name === 'slot') {
-            if (!isIsland) { return }
-            const { attributes, children, loc } = node
-
-            const slotName = attributes.name ?? 'default'
-
-            if (attributes.name) { delete attributes.name }
-            if (attributes['v-bind']) {
-              attributes._bind = extractAttributes(attributes, ['v-bind'])['v-bind']!
-            }
-            const teleportAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-            const bindings = getPropsToString(attributes)
-            // add the wrapper
-            s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportSsrSlot${attributeToString(teleportAttributes)} name="${slotName}" :props="${bindings}">`)
-
-            if (children.length) {
-              // pass slot fallback to NuxtTeleportSsrSlot fallback
-              const attrString = attributeToString(attributes)
-              const slice = code.slice(startingIndex + loc[0].end, startingIndex + loc[1].start).replaceAll(KEY_RE, '')
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[1].end, `<slot${attrString.replaceAll(EXTRACTED_ATTRS_RE, '')}/><template #fallback>${attributes['v-for'] ? wrapWithVForDiv(slice, attributes['v-for']) : slice}</template>`)
-            } else {
-              s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replaceAll(EXTRACTED_ATTRS_RE, ''))
-            }
-
-            s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportSsrSlot>')
-            return
-          }
-
-          if (node.name === 'NuxtTeleportIslandComponent') {
-            return
-          }
-
-          const hasNuxtClientAttr = 'nuxt-client' in node.attributes || ':nuxt-client' in node.attributes
-          if (hasNuxtClientAttr) {
-            hasNuxtClient = true
-          }
-
-          if (!hasNuxtClientAttr || !isVite || !options.selectiveClient) {
-            return
-          }
-
-          const { loc, attributes } = node
-          const attributeValue = attributes[':nuxt-client'] || attributes['nuxt-client'] || 'true'
-          const wrapperAttributes = extractAttributes(attributes, ['v-if', 'v-else-if', 'v-else'])
-
-          let startTag = code.slice(startingIndex + loc[0].start, startingIndex + loc[0].end).replace(NUXTCLIENT_ATTR_RE, '')
-          if (wrapperAttributes) {
-            startTag = startTag.replaceAll(EXTRACTED_ATTRS_RE, '')
-          }
-
-          s.appendLeft(startingIndex + loc[0].start, `<NuxtTeleportIslandComponent${attributeToString(wrapperAttributes)} :nuxt-client="${attributeValue}">`)
-          s.overwrite(startingIndex + loc[0].start, startingIndex + loc[0].end, startTag)
-          s.appendRight(startingIndex + loc[1].end, '</NuxtTeleportIslandComponent>')
-        })
-
-        if (hasNuxtClient) {
-          if (!options.selectiveClient) {
-            componentDiagnostics.NUXT_B3007({ file: linkToAlias(id) })
-          } else if (!isVite) {
-            componentDiagnostics.NUXT_B3013({ file: linkToAlias(id) })
-          }
-        }
-
-        return generateTransform(s, id)
-      },
-    },
-  }
-})
+    }
+  })
+}
 
 function isIslandFile (pathname: string, options: ServerOnlyComponentTransformPluginOptions): boolean {
   const components = options.getComponents()
@@ -219,6 +223,7 @@ function getPropsToString (bindings: Record<string, string>): string {
 type ChunkPluginOptions = {
   dev: boolean
   getComponents: () => Component[]
+  waitForClientBuild: () => Promise<void>
 }
 
 const COMPONENT_CHUNK_ID = `#build/component-chunk`
@@ -276,7 +281,7 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
         filter: {
           id: COMPONENT_CHUNK_RESOLVED_ID_RE,
         },
-        handler () {
+        async handler () {
           if (options.dev) {
             const filePaths: Record<string, string> = {}
             for (const c of options.getComponents()) {
@@ -288,6 +293,9 @@ export const ComponentsChunkPlugin = (options: ChunkPluginOptions): Plugin[] => 
             return `export default ${genObjectFromRawEntries(Object.entries(filePaths).map(([name, path]) => [name, genString(path)]))}`
           }
 
+          if (this.environment.name !== 'client') {
+            await options.waitForClientBuild()
+          }
           return `export default ${
             genObjectFromRawEntries(Array.from(paths.entries())
               .map(([name, id]) => [name, genString('/' + id)]))

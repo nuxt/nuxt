@@ -1,0 +1,11 @@
+{
+  "name": "nuxt-bench-ui",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@iconify-json/lucide": "1.2.158",
+    "@iconify-json/simple-icons": "1.2.103",
+    "@nuxt/ui": "4.13.0",
+    "tailwindcss": "4.3.5"
+  }
+}

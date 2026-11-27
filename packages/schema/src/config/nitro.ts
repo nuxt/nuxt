@@ -82,6 +82,8 @@ export default defineResolvers({
   serverHandlers: [],
   devServerHandlers: [],
   _serverPlugins: [],
+  _rendererPlugins: [],
+  _serverTemplates: {},
   tracingChannel: {
     $resolve: (val) => {
       if (val === true) {

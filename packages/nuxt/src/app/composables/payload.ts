@@ -1,10 +1,9 @@
 import { hasProtocol, joinURL } from 'ufo'
-import { parse } from 'devalue'
+import { parse, unflatten } from 'devalue'
 import { defineLink } from '@unhead/vue'
 import { onServerPrefetch, reactive } from 'vue'
 import { isInComponentSetup, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from '../nuxt'
 import type { NuxtPayload } from '../nuxt'
-import { useHead } from './head'
 import { onServerPrefetch as markServerPrefetch } from './server-prefetch'
 
 import { useRoute } from './router'
@@ -23,16 +22,34 @@ interface LoadPayloadOptions {
 
 /** @since 3.0.0 */
 export async function loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
+  const payload = await _loadPayload(url, opts)
+  return payload && isOutdatedPayload(payload) ? null : payload
+}
+
+/** @internal */
+export function isOutdatedPayload (payload: Record<string, any>): boolean {
+  const buildId = useRuntimeConfig().app.buildId
+  return !!payload.buildId && !!buildId && payload.buildId !== buildId
+}
+
+/** @internal */
+export async function _loadPayload (url: string, opts: LoadPayloadOptions = {}): Promise<Record<string, any> | null> {
   if (import.meta.server || !payloadExtraction) { return null }
-  if (await shouldLoadPayload(url)) {
-    const payloadURL = await _getPayloadURL(url, opts)
-    // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so `?buildId`
-    // cannot invalidate them - defer to normal HTTP cache semantics instead
-    const cache: RequestCache = isCachedPayloadRoute(url) ? 'default' : 'force-cache'
-    if (opts.fresh) {
-      return await _importPayload(payloadURL, cache, opts.signal, opts.promoted) || null
+  const rules = getRouteRules({ path: _getRoutePath(url) })
+  if (await _shouldLoadPayload(url, rules)) {
+    const payloadURL = await _getPayloadURL(url, opts, rules)
+    // cached (`isr`/`swr`/`cache`) payloads are mutable within a deploy, so they defer to
+    // normal HTTP cache semantics and are not keyed on the build id
+    const cache: RequestCache = rules.payload ? 'default' : 'force-cache'
+    const payload = opts.fresh
+      ? await _importPayload(payloadURL, cache, opts.signal, opts.promoted, true)
+      : await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted)
+    // an HTTP cache may still hold a payload from a previous build
+    if (payload && cache === 'default' && !opts.fresh && isOutdatedPayload(payload)) {
+      const revalidated = await _importPayload(payloadURL, 'no-cache', opts.signal, opts.promoted, true)
+      return revalidated || (opts.signal?.aborted ? null : payload)
     }
-    return await _sharedImportPayload(payloadURL, cache, opts.signal, opts.promoted) || null
+    return payload || null
   }
   return null
 }
@@ -57,7 +74,7 @@ function _sharedImportPayload (payloadURL: string, cache: RequestCache, signal?:
     })
   }
 
-  const attempt = _importPayload(payloadURL, cache, signal, promoted)
+  const attempt = _importPayload(payloadURL, cache, signal, promoted, true)
     .then(payload => ({ payload, aborted: !payload && !!signal?.aborted }))
   attempt.finally(() => {
     if (inFlightPayloads.get(payloadURL) === attempt) {
@@ -84,27 +101,34 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
     }
     const payloadURL = await _getPayloadURL(url, opts)
     const rel = detectLinkRelType()
-    const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
 
     if (import.meta.server) {
+      const link = defineLink({ rel, as: 'fetch', crossorigin: 'anonymous', href: payloadURL })
+      const { useHead } = await import('./head')
       nuxtApp.runWithContext(() => useHead({ link: [link] }))
     } else {
+      const existing = preloadedPayloads.get(payloadURL)
+      if (existing) { return existing }
       const linkEl = document.createElement('link')
       linkEl.rel = rel
       linkEl.setAttribute('as', 'fetch')
       linkEl.crossOrigin = 'anonymous'
       linkEl.href = payloadURL
       document.head.appendChild(linkEl)
-      return new Promise<void>((resolve, reject) => {
+      const preloaded = new Promise<void>((resolve, reject) => {
         const cleanup = () => {
           linkEl.removeEventListener('load', onLoad)
           linkEl.removeEventListener('error', onError)
+          preloadedPayloads.delete(payloadURL)
+          linkEl.remove()
         }
         const onLoad = () => { cleanup(); resolve() }
         const onError = () => { cleanup(); reject() }
         linkEl.addEventListener('load', onLoad)
         linkEl.addEventListener('error', onError)
       })
+      preloadedPayloads.set(payloadURL, preloaded)
+      return preloaded
     }
   })
   if (import.meta.server) {
@@ -117,20 +141,22 @@ export function preloadPayload (url: string, opts: LoadPayloadOptions = {}): Pro
 
 // --- Internal ---
 
+const preloadedPayloads = new Map<string, Promise<void>>()
 const filename = '_payload.json'
 const payloadBuildIdParam = '_b'
-async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
+async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}, rules = getRouteRules({ path: _getRoutePath(url) })) {
   const u = new URL(url, 'http://localhost')
   if (u.host !== 'localhost' || hasProtocol(u.pathname, { acceptRelative: true })) {
     throw stateDiagnostics.NUXT_E7001({ url })
   }
   const config = useRuntimeConfig()
-  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : config.app.buildId)
+  const cached = !!rules.payload
+  const hash = opts.hash || (opts.fresh || import.meta.dev ? Date.now() : cached ? undefined : config.app.buildId)
   const cdnURL = config.app.cdnURL
   const baseOrCdnURL = cdnURL && await isPrerendered(url) ? cdnURL : config.app.baseURL
   const payloadURL = joinURL(baseOrCdnURL, u.pathname, filename)
 
-  if (!isCachedPayloadRoute(url)) {
+  if (!cached) {
     u.search = ''
   }
   if (hash) {
@@ -140,7 +166,7 @@ async function _getPayloadURL (url: string, opts: LoadPayloadOptions = {}) {
   return payloadURL + u.search
 }
 
-async function _importPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean) {
+async function _importPayload (payloadURL: string, cache: RequestCache, signal?: AbortSignal, promoted?: boolean, checkBuild?: boolean) {
   if (import.meta.server || !payloadExtraction) { return null }
   const priority = promoted ? 'high' : undefined
   try {
@@ -151,13 +177,25 @@ async function _importPayload (payloadURL: string, cache: RequestCache, signal?:
       }
       return null
     }
-    return await parsePayload(await res.text())
+    const text = await res.text()
+    return checkBuild ? await _parseCurrentBuildPayload(text) : await parsePayload(text)
   } catch (err) {
     if (!signal?.aborted) {
       stateDiagnostics.NUXT_E7002({ url: payloadURL, cause: err })
     }
   }
   return null
+}
+
+/** A payload from another build is returned as `{ buildId }`, as its types may have no reviver in this build. */
+async function _parseCurrentBuildPayload (text: string) {
+  const flat = JSON.parse(text)
+  const index = Array.isArray(flat) ? flat[0]?.buildId : undefined
+  const buildId = typeof index === 'number' ? flat[index] : undefined
+  if (typeof buildId === 'string' && isOutdatedPayload({ buildId })) {
+    return { buildId }
+  }
+  return await unflatten(flat, useNuxtApp()._payloadRevivers)
 }
 
 function _shouldLoadPrerenderedPayload (rules: Record<string, any>) {
@@ -197,7 +235,11 @@ async function _isPrerenderedInManifest (url: string) {
  * @internal
  */
 export async function shouldLoadPayload (url: string = useRoute().path): Promise<boolean> {
-  const rules = getRouteRules({ path: _getRoutePath(url) })
+  const shouldLoad = await _shouldLoadPayload(url, getRouteRules({ path: _getRoutePath(url) }))
+  return shouldLoad
+}
+
+async function _shouldLoadPayload (url: string, rules: Record<string, any>): Promise<boolean> {
   if (rules.ssr === false) {
     return false
   }

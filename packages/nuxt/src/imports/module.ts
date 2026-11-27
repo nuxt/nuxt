@@ -1,16 +1,23 @@
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { addBuildPlugin, addTemplate, addTypeTemplate, createIsIgnored, defineNuxtModule, getLayerDirectories, packageName, resolveAlias, resolveDeclarationPath, resolveTypePaths, updateTemplates, useNuxt } from '@nuxt/kit'
-import { headDiagnostics, useServerBuild } from '@nuxt/kit/internal'
+import { headDiagnostics, isWithinDir, useServerBuild } from '@nuxt/kit/internal'
 import { isAbsolute, join, normalize, relative, resolve } from 'pathe'
 import type { Import, InlinePreset, Unimport } from 'unimport'
 import { createUnimport, scanDirExports, toExports, toTypeDeclarationFile, toTypeReExports } from 'unimport'
 import escapeRE from 'escape-string-regexp'
+import { withTrailingSlash } from 'ufo'
 import { klona } from 'klona'
 import { resolveModulePath } from 'exsolve'
+import { hash } from 'ohash'
+import { parseAndWalk } from 'oxc-walker'
+import type { ESTree } from 'rolldown/utils'
 
-import { isDirectory, linkToAlias, logger } from '../utils.ts'
-import { TransformPlugin } from './transform.ts'
-import { appCompatPresets, defaultPresets } from './presets.ts'
+import { isDirectory, linkToAlias, logger, offsetToPosition, resolveToAlias } from '../utils.ts'
+import { createScanProblems } from '../core/scan-problems.ts'
+import { createFsAccessCheck } from '../runtime/server/dev-error/index.ts'
+import type { ProblemScan } from '../core/scan-problems.ts'
+import { RemovedImportsPlugin, TransformPlugin, getImportsSignature } from './transform.ts'
+import { appCompatPresets, defaultPresets, removedImports } from './presets.ts'
 import type { ImportsOptions, ResolvedNuxtTemplate } from 'nuxt/schema'
 
 import { pagesImportPresets, routeRulesPresets } from '../pages/module.ts'
@@ -35,7 +42,7 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     dirs: [],
     transform: {
       include: [
-        new RegExp('^' + escapeRE(nuxt.options.buildDir)),
+        new RegExp('^' + escapeRE(withTrailingSlash(nuxt.options.buildDir))),
       ],
       exclude: undefined,
     },
@@ -93,6 +100,13 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
 
     let ctx: Unimport
 
+    const problems = createScanProblems(nuxt, 'nuxt:imports', 'Imports')
+    // scans whose imports unimport is deduplicating, which it warns about as it goes, and how
+    // each locates the files a warning names
+    const dedupingScans = new Map<ProblemScan, (file: string, name: string) => string>()
+    const warn = options.warn ?? console.warn
+    let canRead: Promise<(file: string) => boolean> | undefined
+
     // initialise unimport only after all modules
     // have had a chance to register their hooks
     nuxt.hook('modules:done', async () => {
@@ -106,6 +120,19 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         injectAtEnd: true,
         parser: 'oxc',
         ...rest,
+        warn (message) {
+          if (!dedupingScans.size) {
+            return warn(message)
+          }
+          const [name, ...sources] = [...message.matchAll(QUOTED_RE)].map(match => match[1]!)
+          for (const [scan, locate] of dedupingScans) {
+            const files = sources.filter(path => isAbsolute(path)).map(path => locate(path, name!))
+            scan.report(`unimport\0${message}`, files, () => {
+              warn(message)
+              return { message: message.replace(QUOTED_RE, (quoted, value: string) => isAbsolute(value) ? `"${resolveToAlias(value, nuxt)}"` : quoted) }
+            })
+          }
+        },
         addons: {
           addons,
           vueTemplate: options.autoImport,
@@ -134,7 +161,36 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
       options,
       sourcemap: !!nuxt.options.sourcemap.server || !!nuxt.options.sourcemap.client,
       refreshImports: file => refreshImports(file),
+      getImportsVersion: () => importsVersion,
+      getImportsHash: () => importsHash ??= hash(getImportsSignature(resolvedImports)),
     }))
+
+    // runs ahead of other build plugins, which may rewrite calls to former auto-imports
+    const reportedRemovedImports = new Set<string>()
+    addBuildPlugin(RemovedImportsPlugin({
+      ctx: {
+        injectImports: (code, id, options) => ctx.injectImports(code, id, options),
+      },
+      options,
+      imports: removedImports,
+      onRemovedImports (id, imports) {
+        const file = relative(nuxt.options.rootDir, id.split('?')[0]!)
+        const bySource = new Map<string, Set<string>>()
+        for (const i of imports) {
+          bySource.set(i.from, (bySource.get(i.from) || new Set()).add(i.name))
+        }
+        const names = [...new Set(imports.map(i => i.name))].sort()
+        const key = file + '\0' + names.join('\0')
+        if (reportedRemovedImports.has(key)) { return }
+        reportedRemovedImports.add(key)
+        headDiagnostics.NUXT_B6006({
+          file,
+          count: names.length,
+          names: names.map(n => `\`${n}\``).join(', '),
+          imports: [...bySource].map(([from, names]) => `\`import { ${[...names].sort().join(', ')} } from '${from}'\``).join(', '),
+        })
+      },
+    }), { prepend: true })
 
     const priorities = getLayerDirectories(nuxt).map((dirs, i) => [dirs.app, -i] as const).sort(([a], [b]) => b.length - a.length)
 
@@ -149,20 +205,40 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     const isIgnored = createIsIgnored(nuxt)
     const nuxtImportSources = new Set(allNuxtPresets.flatMap(i => i.from))
     const nuxtImports = new Set(presets.flatMap(p => nuxtImportSources.has(p.from) ? p.imports : []))
-    const regenerateImports = async () => {
+    let lastScanStartedAt = Number.NEGATIVE_INFINITY
+    let lastScannedFiles = new Set<string>()
+    let lastScannedImports: Import[] | undefined
+    let importsSignature: string | undefined
+    let importsVersion = 0
+    let resolvedImports: Import[] = []
+    let importsHash: string | undefined
+    const regenerateImports = async ({ rescan = true } = {}) => {
+      const scan = problems.scan()
+      let registeredFiles = new Set<string>()
       await ctx.modifyDynamicImports(async (imports) => {
         // Clear old imports
         imports.length = 0
 
         // Scan for `composables/` and `utils/` directories
         if (options.scan) {
-          const scannedImports = await scanDirExports(composablesDirs, {
-            fileFilter: file => !isIgnored(file),
-          })
-          for (const i of scannedImports) {
-            i.priority ||= priorities.find(([dir]) => i.from.startsWith(dir))?.[1]
+          if (rescan || !lastScannedImports) {
+            const scanStartedAt = Date.now()
+            const scannedFiles = new Set<string>()
+            lastScannedImports = await scanDirExports(composablesDirs, {
+              fileFilter: (file) => {
+                if (isIgnored(file)) { return false }
+                scannedFiles.add(file)
+                return true
+              },
+            })
+            lastScanStartedAt = scanStartedAt
+            lastScannedFiles = new Set([...scannedFiles, ...lastScannedImports.map(i => i.from)])
+            for (const i of lastScannedImports) {
+              i.priority ||= priorities.find(([dir]) => isWithinDir(i.from, dir))?.[1]
+            }
           }
-          imports.push(...scannedImports)
+          // `imports:extend` hooks may change the entries they are given
+          imports.push(...lastScannedImports.map(i => ({ ...i })))
         }
 
         // Modules extending
@@ -172,24 +248,59 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
             const value = i.as || i.name
             if (nuxtImports.has(value) && (!i.priority || i.priority >= 0 /* default priority */)) {
               const relativePath = isAbsolute(i.from) ? linkToAlias(i.from, nuxt) : i.from
-              headDiagnostics.NUXT_B6002({ name: value, file: relativePath })
+              scan.report(`NUXT_B6002\0${value}\0${i.from}`, isAbsolute(i.from) ? [i.from] : [], () => headDiagnostics.NUXT_B6002({ name: value, file: relativePath }))
             }
           }
         }
 
+        const signature = getImportsSignature(imports)
+        if (importsSignature !== undefined && signature !== importsSignature) {
+          importsVersion++
+        }
+        importsSignature = signature
+
+        registeredFiles = new Set(imports.map(i => i.from).filter(from => isAbsolute(from)))
         return imports
       })
+
+      const readable = nuxt.options.dev
+        ? await (canRead ||= createFsAccessCheck({
+            allow: [nuxt.options.workspaceDir, nuxt.options.rootDir, ...getLayerDirectories(nuxt).map(layer => layer.root)],
+            deny: [],
+          }))
+        : () => false
+      // the files a warning names are only read when this scan registered them
+      dedupingScans.set(scan, (file, name) => registeredFiles.has(file) && readable(file) ? locateExport(file, name) : file)
+      try {
+        ctx.getInternalContext().invalidate()
+        resolvedImports = await ctx.getImports()
+        importsHash = undefined
+      } finally {
+        dedupingScans.delete(scan)
+      }
+      scan.done()
 
       await updateTemplates({
         filter: isImportsTemplate,
       })
     }
 
+    function isScanned (path: string) {
+      let modified: number | undefined
+      try {
+        modified = statSync(path, { throwIfNoEntry: false })?.mtimeMs
+      } catch {
+        return false
+      }
+      return modified === undefined ? !lastScannedFiles.has(path) : lastScannedFiles.has(path) && modified < lastScanStartedAt
+    }
+
     /** Rescan the files we scan for imports, deduping concurrent requests to do so. */
     let pendingRegeneration: Promise<void> | undefined
     let staleScan = false
+    const isComposablesPath = (path: string) => composablesDirs.some(dir => isWithinDir(path, dir))
     function refreshImports (path: string) {
-      if (!options.scan || !composablesDirs.some(dir => dir === path || path.startsWith(dir + '/'))) {
+      if (!options.scan || !isComposablesPath(path)) {
         return
       }
       if (pendingRegeneration) {
@@ -197,6 +308,9 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
         // so schedule a single extra pass rather than resolving with stale imports
         staleScan = true
         return pendingRegeneration
+      }
+      if (isScanned(path)) {
+        return Promise.resolve()
       }
       pendingRegeneration = (async () => {
         staleScan = false
@@ -225,11 +339,50 @@ export default defineNuxtModule<Partial<ImportsOptions>>({
     nuxt.hook('app:templatesGenerated', async (_app, templates) => {
       // Only regenerate when non-imports templates are updated
       if (templates.some(t => !isImportsTemplate(t))) {
-        await regenerateImports()
+        await regenerateImports({ rescan: templates.some(t => t.write && isComposablesPath(t.dst)) })
       }
     })
   },
 })
+
+/** A name or path unimport quotes in a warning, such as the sources of a duplicated import. */
+const QUOTED_RE = /"([^"]+)"/g
+
+/** Where `file` exports `name`, or its default export, as `file:line:column`. */
+function locateExport (file: string, name: string): string {
+  let code: string
+  try {
+    code = readFileSync(file, 'utf-8')
+  } catch {
+    return file
+  }
+  let named: number | undefined
+  let fallback: number | undefined
+  const nameOf = (node: ESTree.Node | null | undefined) => node && (node.type === 'Identifier' ? node.name : node.type === 'Literal' ? String(node.value) : undefined)
+  try {
+    parseAndWalk(code, file, (node) => {
+      if (node.type === 'ExportDefaultDeclaration') {
+        fallback ??= node.start
+      }
+      if (named !== undefined || node.type !== 'ExportNamedDeclaration') {
+        return
+      }
+      const declaration = node.declaration
+      const ids = declaration?.type === 'VariableDeclaration'
+        ? declaration.declarations.map(declarator => declarator.id)
+        : [declaration && 'id' in declaration ? declaration.id : undefined, ...node.specifiers.map(specifier => specifier.exported)]
+      named = ids.find(id => nameOf(id) === name)?.start
+    })
+  } catch {
+    return file
+  }
+  const offset = named ?? fallback
+  if (offset === undefined) {
+    return file
+  }
+  const { line, column } = offsetToPosition(code, offset)
+  return `${file}:${line}:${column}`
+}
 
 function addDeclarationTemplates (ctx: Pick<Unimport, 'getImports' | 'generateTypeDeclarations'>, options: Partial<ImportsOptions>) {
   const nuxt = useNuxt()
