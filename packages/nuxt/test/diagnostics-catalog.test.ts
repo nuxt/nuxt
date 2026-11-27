@@ -22,8 +22,8 @@ import { nitroBuildDiagnostics } from '../../nitro-server/src/diagnostics.ts'
 import { prerenderDiagnostics, rendererDiagnostics } from '../src/runtime/server/renderer/diagnostics.ts'
 import { runtimeConfigDiagnostics } from '../src/runtime/server/runtime-config/diagnostics.ts'
 
-// Schema continues kit's B5xxx configuration range, so it has to be swept too.
-import { schemaDiagnostics } from '../../schema/src/diagnostics.ts'
+// `nuxt/config` continues kit's B5xxx configuration range, so it has to be swept too.
+import { optionsDiagnostics } from '../src/config/diagnostics.ts'
 
 const catalogs = {
   buildDiagnostics,
@@ -47,7 +47,7 @@ const catalogs = {
   rendererDiagnostics,
   runtimeConfigDiagnostics,
   prerenderDiagnostics,
-  schemaDiagnostics,
+  optionsDiagnostics,
 }
 
 const packagesDir = fileURLToPath(new URL('../..', import.meta.url))

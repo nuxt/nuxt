@@ -256,11 +256,7 @@ exports[`options resolution > resolves defaults 1`] = `
 {
   "diagnostics": [],
   "options": {
-    "_build": false,
-    "_cli": false,
-    "_generate": false,
     "_installedModules": [],
-    "_legacyGenerate": false,
     "_majorVersion": 4,
     "_modules": [],
     "_nitroMajor": 3,
@@ -272,7 +268,6 @@ exports[`options resolution > resolves defaults 1`] = `
     "_serverPlugins": [],
     "_serverTemplates": {},
     "_spaOnlyPageSources": [],
-    "_start": false,
     "alias": {
       "#build": "<tmp>/project/.nuxt/",
       "#internal/nuxt/paths": "<tmp>/project/.nuxt/paths.mjs",
@@ -502,10 +497,6 @@ exports[`options resolution > resolves defaults 1`] = `
       "compatibilityVersion": 5,
       "multiApp": false,
       "typescriptBundlerResolution": true,
-    },
-    "generate": {
-      "exclude": [],
-      "routes": [],
     },
     "ignore": [
       "**/*.stories.{js,cts,mts,ts,jsx,tsx}",
@@ -783,9 +774,7 @@ exports[`options resolution > resolves defaults 1`] = `
           "propsDestructure": true,
         },
         "isProduction": true,
-        "script": {
-          "hoistStatic": {},
-        },
+        "script": {},
         "template": {
           "compilerOptions": {},
           "transformAssetUrls": {
@@ -1054,7 +1043,11 @@ exports[`options resolution > resolves inline styles disabled 1`] = `
 exports[`options resolution > resolves invalid booleans 1`] = `
 {
   "changes": {},
-  "diagnostics": [],
+  "diagnostics": [
+    "NUXT_B5041",
+    "NUXT_B5041",
+    "NUXT_B5041",
+  ],
 }
 `;
 
@@ -1071,9 +1064,7 @@ exports[`options resolution > resolves invalid css entries 1`] = `
 
 exports[`options resolution > resolves invalid log level 1`] = `
 {
-  "changes": {
-    "logLevel": "loud",
-  },
+  "changes": {},
   "diagnostics": [
     "NUXT_B5012",
   ],
@@ -1092,7 +1083,9 @@ exports[`options resolution > resolves invalid vite publicDir 1`] = `
 exports[`options resolution > resolves invalid watcher 1`] = `
 {
   "changes": {},
-  "diagnostics": [],
+  "diagnostics": [
+    "NUXT_B5041",
+  ],
 }
 `;
 
@@ -1573,6 +1566,7 @@ exports[`options resolution > resolves vue options 1`] = `
     ],
     "webpack.loaders.vue.compilerOptions": "<removed>",
     "webpack.loaders.vue.compilerOptions.comments": true,
+    "webpack.loaders.vue.propsDestructure": false,
     "webpack.loaders.vue.transformAssetUrls.img": [
       "data-src",
     ],

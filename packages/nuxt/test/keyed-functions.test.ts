@@ -467,7 +467,7 @@ useKeyTwo(...args)
 })
 
 describe('core keyed functions', () => {
-  // these entries must match those in `packages/schema/src/config/build.ts`, as some values are
+  // these entries must match those in `packages/nuxt/src/config/resolve/core.ts`, as some values are
   // hard-coded in the plugin implementation
   const transform = createTransform({
     keyedFunctions: [

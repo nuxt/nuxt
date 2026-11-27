@@ -2,10 +2,10 @@ import { createConsoleReporter, defineDiagnostics } from 'nostics'
 import type { ConsoleMethod, DiagnosticReporter } from 'nostics'
 
 /**
- * B5xxx (schema-resolved configuration)
- * Diagnostics raised while resolving `nuxt.config` values against the schema.
- * Codes continue the configuration (B5xxx) range defined in `@nuxt/kit`, which
- * schema cannot import without creating a dependency cycle.
+ * B5xxx (configuration)
+ * Diagnostics raised while resolving `nuxt.config` into `nuxt.options`. Codes continue the
+ * configuration range defined in `@nuxt/kit`, which `nuxt/config` does not import so that loading
+ * a `nuxt.config` stays cheap.
  */
 const docsBase = (code: string): string =>
   `https://nuxt.com/docs/5.x/errors/${code.replace('NUXT_', '').toLowerCase()}`
@@ -17,7 +17,7 @@ const reporter: DiagnosticReporter<{ method?: ConsoleMethod }> = (diagnostic, op
   Object.defineProperty(diagnostic, Symbol.for('nuxt.diagnostic.reported'), { value: true })
 }
 
-export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
+export const optionsDiagnostics = /* #__PURE__ */ defineDiagnostics({
   docsBase,
   reporters: [reporter] as const,
   codes: {
@@ -61,9 +61,9 @@ export const schemaDiagnostics = /* #__PURE__ */ defineDiagnostics({
       fix: 'Remove `future.compatibilityVersion` from your `nuxt.config` (or the layer that sets it). To keep Nuxt 4 behaviour, stay on Nuxt 4.',
       docs: false,
     },
-    NUXT_B5039: {
-      why: '`experimental.nitroViteEnvironment` is not supported in Nuxt 4, so it has been disabled. The server is built with Nitro\'s own bundler.',
-      fix: 'Remove `experimental.nitroViteEnvironment` from your `nuxt.config`.',
+    NUXT_B5041: {
+      why: (p: { path: string, value: string, expected: string }) => `\`${p.path}\` was set to ${p.value}, but it has to be ${p.expected}. The default value is used instead.`,
+      fix: 'Change the value in your `nuxt.config`, or in the layer or module that sets it.',
       docs: false,
     },
   },

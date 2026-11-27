@@ -386,9 +386,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       ignoreUnprefixedPublicAssets: true,
       failOnError: true,
       concurrency: cpus().length * 4 || 4,
-      routes: ([] as string[])
-        // @ts-expect-error TODO: remove in nuxt v5
-        .concat(nuxt.options.generate.routes),
+      routes: [],
     },
     sourcemap: !!nuxt.options.sourcemap.server,
     traceDeps: [

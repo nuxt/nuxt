@@ -2,10 +2,8 @@ import { mkdir, mkdtemp, realpath, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'pathe'
 import { afterEach, describe, expect, it } from 'vitest'
-import { applyDefaults } from 'untyped'
 
-import { NuxtConfigSchema } from '../src/index.ts'
-import type { NuxtOptions } from '../src/index.ts'
+import { resolveNuxtOptions } from '../../src/config/index.ts'
 
 let parentDir: string
 
@@ -19,7 +17,7 @@ async function resolveWorkspaceDir (parentFiles: Record<string, string>, project
     }
   }
   await mkdir(rootDir, { recursive: true })
-  const options = await applyDefaults(NuxtConfigSchema, { rootDir, ...config }) as unknown as NuxtOptions
+  const options = resolveNuxtOptions({ rootDir, ...config })
   return options.workspaceDir === rootDir ? 'project' : options.workspaceDir === parentDir ? 'parent' : options.workspaceDir
 }
 

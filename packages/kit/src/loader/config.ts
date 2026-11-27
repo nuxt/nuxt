@@ -1,7 +1,7 @@
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import process from 'node:process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import type { JSValue } from 'untyped'
+import type { InputObject, JSValue } from 'untyped'
 import { applyDefaults } from 'untyped'
 import { loadConfig, setupDotenv } from 'c12'
 import type { LoadNuxtConfigOptions, NitroConfig, NuxtConfig, NuxtConfigLayer, NuxtOptions, ResolvedNuxtLayer } from '@nuxt/schema'
@@ -17,6 +17,7 @@ import type { Jiti } from '../internal/jiti.ts'
 import { configDiagnostics } from '../diagnostics/config.ts'
 import { extractRuntimeConfigSchemas, mergeRuntimeConfigSchemas, restoreRuntimeConfigSchemaNulls } from '../internal/runtime-config.ts'
 import { ensureDependencyInstalled, getAddDependencyCommand } from '../dependency.ts'
+import { kitDiagnostics } from '../diagnostics/kit-api.ts'
 
 /**
  * A layer as it comes back from the underlying config loader, before its directory options have
@@ -215,7 +216,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     })
   }
 
-  const schemaPromise = loadNuxtSchema(opts.cwd || process.cwd())
+  const resolverPromise = loadOptionsResolver(opts.cwd || process.cwd())
 
   // Dedupe local layer directories reached more than once (auto-scanned from
   // `layers/` and also listed in `extends`) to avoid merging them twice (#34667)
@@ -449,15 +450,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     nuxtConfig.buildDir = join(nuxtConfig.rootDir!, 'node_modules/.cache/nuxt/.nuxt')
   }
 
-  const NuxtConfigSchema = await schemaPromise
-
-  const layerSchemaKeys = ['srcDir', 'rootDir', 'serverDir', 'dir']
-  const layerSchema = Object.create(null)
-  for (const key of layerSchemaKeys) {
-    if (key in NuxtConfigSchema) {
-      layerSchema[key] = NuxtConfigSchema[key]
-    }
-  }
+  const resolver = await resolverPromise
 
   const _layers: LoadedConfigLayer[] = []
   const processedLayers = new Set<string>()
@@ -482,7 +475,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     if (processedLayers.has(resolvedRootDir)) { continue }
     processedLayers.add(resolvedRootDir)
 
-    layer.config = await applyDefaults(layerSchema, layer.config as NuxtConfig & Record<string, JSValue>) as unknown as NuxtConfig
+    layer.config = await resolver.resolveLayerOptions(layer.config)
 
     if (!layer.configFile || layer.configFile.endsWith('.nuxtrc')) { continue }
 
@@ -519,7 +512,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     })
   }
 
-  const options = await applyDefaults(NuxtConfigSchema, nuxtConfig as NuxtConfig & Record<string, JSValue>) as unknown as NuxtOptions
+  const options = await resolver.resolveNuxtOptions(nuxtConfig)
   options._runtimeConfigSchemas = runtimeConfigSchemas.entries
   restoreRuntimeConfigSchemaNulls(options.runtimeConfig, runtimeConfigSchemas.config, runtimeConfigSchemas.entries)
   const nitroRuntimeConfig = (options.nitro as NitroConfig).runtimeConfig
@@ -668,15 +661,54 @@ function reorderLocalLayersByExtends (
   })
 }
 
-function loadNuxtSchema (cwd: string) {
-  const url = directoryToURL(cwd)
-  const urls: Array<URL | string> = [url]
-  const nuxtPath = resolveModuleURL('nuxt', { try: true, from: url }) ?? resolveModuleURL('nuxt-nightly', { try: true, from: url })
-  if (nuxtPath) {
-    urls.unshift(nuxtPath)
+interface OptionsResolver {
+  resolveNuxtOptions: (config: NuxtConfig) => NuxtOptions | Promise<NuxtOptions>
+  resolveLayerOptions: (config: NuxtConfig) => NuxtConfig | Promise<NuxtConfig>
+}
+
+const LAYER_SCHEMA_KEYS = ['srcDir', 'rootDir', 'serverDir', 'dir']
+
+/**
+ * Load the options resolver of the Nuxt version installed in `cwd`, falling back to the one
+ * installed alongside kit. Nuxt 3 and 4 have no resolver, so their `@nuxt/schema` defaults are
+ * applied instead.
+ */
+async function loadOptionsResolver (cwd: string): Promise<OptionsResolver> {
+  for (const from of [directoryToURL(cwd), import.meta.url]) {
+    for (const name of ['nuxt', 'nuxt-nightly']) {
+      const resolver = await loadOptionsResolverFrom(name, from)
+      if (resolver) {
+        return resolver
+      }
+    }
   }
-  const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: urls }) ?? '@nuxt/schema'
-  return import(schemaPath).then(r => r.NuxtConfigSchema)
+  throw kitDiagnostics.NUXT_B8006({ cwd, installCommand: await getAddDependencyCommand('nuxt', cwd) }, { method: 'error' })
+}
+
+async function loadOptionsResolverFrom (name: string, from: URL | string): Promise<OptionsResolver | undefined> {
+  const configPath = resolveModuleURL(`${name}/config`, { try: true, from })
+  if (!configPath) {
+    return
+  }
+  const config = await import(configPath) as Partial<OptionsResolver>
+  if (config.resolveNuxtOptions && config.resolveLayerOptions) {
+    return config as OptionsResolver
+  }
+  const schemaPath = resolveModuleURL('@nuxt/schema', { try: true, from: [configPath, from] })
+  const schema: InputObject | undefined = schemaPath ? (await import(schemaPath)).NuxtConfigSchema : undefined
+  if (!schema) {
+    return
+  }
+  const layerSchema: InputObject = Object.create(null)
+  for (const key of LAYER_SCHEMA_KEYS) {
+    if (key in schema) {
+      layerSchema[key] = schema[key]
+    }
+  }
+  return {
+    resolveNuxtOptions: config => applyDefaults(schema, config as NuxtConfig & Record<string, JSValue>) as unknown as Promise<NuxtOptions>,
+    resolveLayerOptions: config => applyDefaults(layerSchema, config as NuxtConfig & Record<string, JSValue>) as unknown as Promise<NuxtConfig>,
+  }
 }
 
 async function withDefineNuxtConfig<T> (fn: () => Promise<T>) {

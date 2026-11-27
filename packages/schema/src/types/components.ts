@@ -1,5 +1,5 @@
 import type { CompilerScanDir } from './compiler.ts'
-import type { AugmentProperty, VueExtension } from '../utils/definition.ts'
+import type { AugmentProperty, VueExtension } from './utils.ts'
 
 export interface ComponentMeta {
   /**

@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { applyDefaults } from 'untyped'
 import { createUnimport } from 'unimport'
-import { NuxtConfigSchema } from '@nuxt/schema'
-import type { NuxtOptions } from '@nuxt/schema'
 
+import { resolveNuxtOptions } from '../src/config/index.ts'
 import { TreeShakeComposablesPlugin } from '../src/core/plugins/tree-shake.ts'
 import { defaultPresets } from '../src/imports/presets.ts'
 import { pagesImportPresets } from '../src/pages/module.ts'
@@ -86,7 +84,7 @@ describe('tree-shake', () => {
   })
 
   it('should tree-shake the default #app composables when they are auto-imported', async () => {
-    const { optimization } = await applyDefaults(NuxtConfigSchema, { dev: false }) as unknown as NuxtOptions
+    const { optimization } = resolveNuxtOptions({ dev: false })
     const ctx = createUnimport({ presets: [...defaultPresets, ...pagesImportPresets] })
     const transform = async (composables: Record<string, string[]>) => {
       const { code } = await ctx.injectImports(composables['#app']!.map(name => `${name}()`).join('\n'))

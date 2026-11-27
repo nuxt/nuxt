@@ -19,6 +19,3 @@ export type { DevServerHandler, DevServerHandlerFallback, DevServerHandlerFuncti
 export type { AppRouteRules, AppRouteRulesBase, AppRouteRulesExtensions, NuxtRequestContext, RequestEventContext, RequestEvent, NuxtRequestEvent, NuxtServerHooks, ServerEventHandler, ServerRequestTypes, ServerRouteHandler, ServerRoutes, ServerRouteSegment, ServerTypes } from './types/server.ts'
 export type { ConfigSchema } from './types/schema.ts'
 export type { NuxtDebugContext, NuxtDebugOptions, NuxtDebugModuleMutationRecord } from './types/debug.ts'
-
-// Schema
-export { default as NuxtConfigSchema } from './config/index.ts'

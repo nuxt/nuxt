@@ -1739,24 +1739,9 @@ importers:
 
   packages/schema:
     dependencies:
-      '@vue/shared':
-        specifier: catalog:build
-        version: 3.5.46
-      defu:
-        specifier: catalog:build
-        version: 6.1.7
-      nostics:
-        specifier: catalog:build
-        version: 1.4.0
-      pathe:
-        specifier: catalog:build
-        version: 2.0.3
       pkg-types:
         specifier: catalog:build
         version: 2.4.0
-      std-env:
-        specifier: catalog:build
-        version: 4.3.0
     devDependencies:
       '@rsbuild/core':
         specifier: catalog:webpack

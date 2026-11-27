@@ -35,12 +35,7 @@
     "test:attw": "node ../../scripts/test-attw.ts"
   },
   "dependencies": {
-    "@vue/shared": "catalog:build",
-    "defu": "catalog:build",
-    "nostics": "catalog:build",
-    "pathe": "catalog:build",
-    "pkg-types": "catalog:build",
-    "std-env": "catalog:build"
+    "pkg-types": "catalog:build"
   },
   "devDependencies": {
     "@rsbuild/core": "catalog:webpack",

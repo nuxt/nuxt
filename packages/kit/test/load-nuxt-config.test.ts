@@ -9,7 +9,7 @@ import type { LoadNuxtConfigOptions, NitroConfig, Nuxt, NuxtConfig } from '@nuxt
 
 import { diffNuxtConfig, loadNuxtConfig } from '../src/loader/config.ts'
 import { getLayerDirectories } from '../src/layers.ts'
-import { withTempDir, writeFiles } from './utils.ts'
+import { fakePackage, withTempDir, writeFiles } from './utils.ts'
 import type { FixtureFiles } from './utils.ts'
 
 const repoRoot = await findWorkspaceDir()
@@ -417,4 +417,42 @@ export default defineNuxtConfig({
       ['public.limit', false],
     ])
   })
+})
+
+describe('loadNuxtConfig options resolver', () => {
+  const nuxtPackage = (name: string, config: string): FixtureFiles => ({
+    [`node_modules/${name}/package.json`]: { name, version: '4.0.0', type: 'module', exports: { '.': './index.js', './config': './config.js' } },
+    [`node_modules/${name}/index.js`]: 'export {}\n',
+    [`node_modules/${name}/config.js`]: config,
+  })
+
+  it('should apply the `@nuxt/schema` defaults of a Nuxt version without an options resolver', () => withTempDir({
+    ...nuxtPackage('nuxt', 'export const defineNuxtConfig = config => config\n'),
+    ...fakePackage('@nuxt/schema', `export const NuxtConfigSchema = {
+      rootDir: { $resolve: val => val ?? process.cwd() },
+      srcDir: { $resolve: async (val, get) => val ?? await get('rootDir') },
+      dir: { pages: 'pages' },
+      runtimeConfig: { public: {}, app: {} },
+      nitro: {},
+      resolvedBy: 'legacy',
+    }\n`),
+    'nuxt.config.ts': 'export default defineNuxtConfig({ ssr: false })\n',
+    'layers/base/nuxt.config.ts': `export default defineNuxtConfig({ dir: { pages: 'custom-pages' } })\n`,
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    expect(config).toMatchObject({ ssr: false, srcDir: dir, resolvedBy: 'legacy', dir: { pages: 'custom-pages' } })
+
+    const layer = config._layers.find(layer => layer.cwd === join(dir, 'layers/base'))
+    expect(layer?.config).toMatchObject({ srcDir: join(dir, 'layers/base'), dir: { pages: 'custom-pages' } })
+    expect(layer?.config).not.toHaveProperty('resolvedBy')
+  }))
+
+  it('should prefer `nuxt-nightly` installed in the project over `nuxt` installed alongside kit', () => withTempDir({
+    ...nuxtPackage('nuxt-nightly', `export const defineNuxtConfig = config => config
+export const resolveLayerOptions = config => config
+export const resolveNuxtOptions = config => ({ ...config, runtimeConfig: {}, nitro: {}, resolvedBy: 'nuxt-nightly' })\n`),
+  }, async (dir) => {
+    const config = await loadNuxtConfig({ cwd: dir })
+    expect(config).toMatchObject({ resolvedBy: 'nuxt-nightly' })
+  }))
 })

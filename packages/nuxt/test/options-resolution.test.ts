@@ -2,9 +2,9 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'pathe'
 import { afterAll, describe, expect, it, vi } from 'vitest'
-import { applyDefaults } from 'untyped'
-import { NuxtConfigSchema } from '@nuxt/schema'
 import type { NuxtConfig } from '@nuxt/schema'
+
+import { resolveNuxtOptions } from '../src/config/index.ts'
 
 const tmp = realpathSync(mkdtempSync(join(tmpdir(), 'nuxt-options-')))
 const rootDir = join(tmp, 'project')
@@ -14,11 +14,11 @@ mkdirSync(rootDirWithoutApp, { recursive: true })
 
 afterAll(() => rmSync(tmp, { recursive: true, force: true }))
 
-async function resolveOptions (config: NuxtConfig) {
+function resolveOptions (config: NuxtConfig) {
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
   const error = vi.spyOn(console, 'error').mockImplementation(() => {})
   try {
-    const options = await applyDefaults(NuxtConfigSchema, { rootDir, workspaceDir: rootDir, dev: false, test: false, ...config } as never)
+    const options = resolveNuxtOptions({ rootDir, workspaceDir: rootDir, dev: false, test: false, ...config })
     const diagnostics = [...warn.mock.calls, ...error.mock.calls]
       .flatMap(call => String(call[0]).match(/NUXT_[A-Z]\d+/g) ?? [])
     return { options: normalise(options), diagnostics }
