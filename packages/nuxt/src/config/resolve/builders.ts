@@ -152,6 +152,7 @@ function resolveViteCacheDir (rootDir: string, workspaceDir: string): string {
 }
 
 const STYLE_LOADERS = ['css', 'cssModules', 'less', 'sass', 'scss', 'stylus', 'vueStyle'] as const
+const CSS_LOADERS = ['css', 'cssModules'] as const
 
 function resolveWebpack (value: unknown, resolved: Resolved, esbuildOptions: NuxtOptions['esbuild']['options']): NuxtOptions['webpack'] {
   const { dev, vue } = resolved
@@ -183,16 +184,10 @@ function resolveWebpack (value: unknown, resolved: Resolved, esbuildOptions: Nux
     pugPlain: {},
     css: {
       importLoaders: 0,
-      url: {
-        filter: (url: string, _resourcePath: string) => url[0] !== '/',
-      },
       esModule: false,
     },
     cssModules: {
       importLoaders: 0,
-      url: {
-        filter: (url: string, _resourcePath: string) => url[0] !== '/',
-      },
       esModule: false,
       modules: {
         localIdentName: '[local]_[hash:base64:5]',
@@ -208,6 +203,17 @@ function resolveWebpack (value: unknown, resolved: Resolved, esbuildOptions: Nux
     stylus: {},
     vueStyle: {},
   })
+  for (const name of CSS_LOADERS) {
+    const loader = loaders[name]
+    loaders[name] = {
+      ...loader,
+      url: typeof loader.url === 'boolean'
+        ? loader.url
+        : withDefaults(`webpack.loaders.${name}.url`, loader.url, {
+            filter: (url: string, _resourcePath: string) => url[0] !== '/',
+          }),
+    }
+  }
   for (const name of STYLE_LOADERS) {
     const loader = loaders[name]
     if (loader && loader.sourceMap === undefined) {
@@ -223,9 +229,11 @@ function resolveWebpack (value: unknown, resolved: Resolved, esbuildOptions: Nux
     propsDestructure: Boolean(vueLoader.propsDestructure ?? vue.propsDestructure),
   }
 
-  const optimization = withDefaults('webpack.optimization', webpack.optimization, {
-    runtimeChunk: 'single',
-  })
+  const optimization = webpack.optimization === false
+    ? false
+    : withDefaults('webpack.optimization', webpack.optimization, {
+        runtimeChunk: 'single',
+      })
   const postcss = objectOrEmpty(webpack.postcss)
   const postcssOptions = objectOrEmpty(postcss.postcssOptions)
 
@@ -235,7 +243,7 @@ function resolveWebpack (value: unknown, resolved: Resolved, esbuildOptions: Nux
     cssSourceMap: typeof webpack.cssSourceMap === 'boolean' ? webpack.cssSourceMap : dev,
     loaders,
     optimizeCSS: webpack.optimizeCSS === false || isObject(webpack.optimizeCSS) ? webpack.optimizeCSS : false,
-    optimization: {
+    optimization: optimization && {
       ...optimization,
       minimize: typeof optimization.minimize === 'boolean' ? optimization.minimize : !dev,
       splitChunks: optimization.splitChunks === false

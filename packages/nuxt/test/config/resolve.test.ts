@@ -130,6 +130,33 @@ describe('invalid values', () => {
   })
 })
 
+describe('webpack', () => {
+  it.each([true, false])('keeps `url: %s` on the css loaders', (url) => {
+    const { result, warnings } = withWarnings(() => resolveConfig({ webpack: { loaders: { css: { url }, cssModules: { url } } } }))
+    expect(result.webpack.loaders.css.url).toBe(url)
+    expect(result.webpack.loaders.cssModules.url).toBe(url)
+    expect(result.webpack.loaders.css.importLoaders).toBe(0)
+    expect(result.webpack.loaders.cssModules.modules).toEqual({ localIdentName: '[local]_[hash:base64:5]' })
+    expect(warnings).not.toContain('NUXT_B5041')
+  })
+
+  it('merges a partial css loader `url` object with the default filter', () => {
+    const { css } = resolveConfig({ webpack: { loaders: { css: { url: {} } } } }).webpack.loaders
+    expect(css.url).toEqual({ filter: expect.any(Function) })
+  })
+
+  it('keeps `optimization: false`', () => {
+    const { result, warnings } = withWarnings(() => resolveConfig({ webpack: { optimization: false } }))
+    expect(result.webpack.optimization).toBe(false)
+    expect(warnings).not.toContain('NUXT_B5041')
+  })
+
+  it('keeps `optimization.splitChunks: false`', () => {
+    const { optimization } = resolveConfig({ webpack: { optimization: { splitChunks: false } } }).webpack
+    expect(optimization).toMatchObject({ splitChunks: false, runtimeChunk: 'single', minimize: true })
+  })
+})
+
 describe('debug', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
