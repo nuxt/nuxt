@@ -37,6 +37,7 @@ const explicitKeyArguments: Record<string, { index: number, source: string }> = 
   useLazyFetch: { index: 1, source: '#app/composables/fetch' },
   useAsyncData: { index: 0, source: '#app/composables/asyncData' },
   useLazyAsyncData: { index: 0, source: '#app/composables/asyncData' },
+  useAsyncRouteData: { index: 0, source: '#app/composables/asyncRouteData' },
 }
 
 /**
