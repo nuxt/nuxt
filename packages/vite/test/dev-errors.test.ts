@@ -120,6 +120,48 @@ describe('createDevErrorReporter', () => {
     }
   })
 
+  it('only quotes files outside `server.fs.allow` that the client environment may load', async () => {
+    const root = realpathSync(mkdtempSync(join(tmpdir(), 'nuxt-dev-errors-')))
+    const app = join(root, 'app')
+    mkdirSync(app)
+    const clientSafe = join(root, 'client-safe.js')
+    const ssrSafe = join(root, 'ssr-safe.js')
+    writeFileSync(clientSafe, 'export const value = "CLIENT_SOURCE"\n')
+    writeFileSync(ssrSafe, 'export const value = "SSR_SOURCE"\n')
+    const nuxt = createNuxt()
+    nuxt.options.rootDir = app
+    const server = await createServer({
+      configFile: false,
+      logLevel: 'silent',
+      root: app,
+      server: { middlewareMode: true, ws: false, watch: null, fs: { allow: [app] } },
+    })
+    server.environments.client!.addSafeModule(clientSafe)
+    server.environments.ssr!.addSafeModule(ssrSafe)
+    const { messages, channel } = listen()
+    const reporter = createDevErrorReporter(nuxt, { print: () => {} })
+    reporter.attach(server)
+    const failure = (file: string) => ({ message: 'Parse failed', plugin: 'test', id: file, loc: { file, line: 1, column: 1 } })
+    const thrown = (file: string) => Object.assign(new Error('boom'), { stack: `Error: boom\n    at handler (${file}:1:1)` })
+
+    try {
+      expect(JSON.stringify(await reporter.report(failure(clientSafe)))).toContain('CLIENT_SOURCE')
+      expect(JSON.stringify(await reporter.report(failure(ssrSafe)))).not.toContain('SSR_SOURCE')
+
+      await reporter.reportRequestError(thrown(clientSafe), 'GET /client')
+      await reporter.reportRequestError(thrown(ssrSafe), 'GET /ssr')
+      const reportFor = (request: string) => messages.find(message => message.request === request)
+      await vi.waitFor(() => expect(reportFor('GET /ssr')).toBeDefined())
+      expect(JSON.stringify(reportFor('GET /client'))).toContain('CLIENT_SOURCE')
+      expect(JSON.stringify(reportFor('GET /ssr'))).not.toContain('SSR_SOURCE')
+    } finally {
+      channel.close()
+      await server.close()
+      nuxt.close()
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   it('leaves printing to a dev server that owns the channel', async () => {
     vi.stubEnv('NUXT_DEV_ERROR_CHANNEL', '/__nuxt_dev__/error')
     const nuxt = createNuxt()
