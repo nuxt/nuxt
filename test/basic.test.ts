@@ -559,8 +559,8 @@ describe('pages', () => {
     await page.locator('#to-server-only').click()
     await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
     await page.getByText('ServerOnly test page').waitFor()
-    // A universal parent's slot is not serialized, so client navigation has no server HTML to keep.
-    expect(await page.locator('#server-only-content').count()).toBe(0)
+    // No SSR HTML to keep after navigation, so the slot runs on the client.
+    expect(await page.locator('#server-only-content').textContent()).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
     expect(await page.locator('[data-server-only]').count()).toBe(1)
     await page.close()
   })

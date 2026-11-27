@@ -166,7 +166,7 @@ For content that must stay fixed at render time (e.g. build timestamp in a foote
 </template>
 ```
 
-On client-side navigation the slot is not rendered again, so the wrapper is empty. Content that must be fetched on navigation belongs in a [server component](/docs/directory-structure/app/components#server-components).
+On client-side navigation there is no server HTML to keep, so the slot runs in the browser and its values may differ from the server render. Content that must be rendered on the server during navigation belongs in a [server component](/docs/directory-structure/app/components#server-components).
 
 ```html
 <template>
