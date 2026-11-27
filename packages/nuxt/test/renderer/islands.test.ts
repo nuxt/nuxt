@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { NuxtSSRContext } from 'nuxt/app'
 
-import { replaceIslandTeleports } from '../../src/runtime/server/renderer/islands.ts'
+import { getClientIslandResponse, renderStreamedIslandTeleports, replaceIslandTeleports } from '../../src/runtime/server/renderer/islands.ts'
 
 function ssrContext (teleports: Record<string, string>) {
   return { teleports } as unknown as NuxtSSRContext
@@ -42,5 +42,38 @@ describe('replaceIslandTeleports', () => {
     }), '<div data-island-uid="outer" data-island-slot="default"></div>')
 
     expect(result).toBe('<div data-island-uid="outer" data-island-slot="default"><div data-island-uid="inner" data-island-slot="default"><p>deep</p></div></div>')
+  })
+})
+
+describe('renderStreamedIslandTeleports', () => {
+  it('emits a template per slot and component teleport, skipping other keys', () => {
+    const result = renderStreamedIslandTeleports(ssrContext({
+      'uid=v-0-1;slot=default': '<p>slot</p>',
+      'uid=v-0-1;client=Counter': '<p>client</p>',
+      'uid=;slot=nameless': '<p>no uid</p>',
+      'uid=v-0-1;slot=': '<p>no name</p>',
+      'island-fallback=default': '<p>fallback</p>',
+    }), ' nonce="n"')
+
+    expect(result.split('<script')[0]).toBe('<template data-island-uid="v-0-1" data-island-slot="default"><p>slot</p></template><template data-island-uid="v-0-1" data-island-component="Counter"><p>client</p></template>')
+    expect(result).toContain('<script nonce="n">')
+  })
+
+  it('returns an empty string without island teleports', () => {
+    expect(renderStreamedIslandTeleports(ssrContext({ 'island-fallback=default': '<p>fallback</p>' }))).toBe('')
+  })
+})
+
+describe('getClientIslandResponse', () => {
+  it('falls back to the client teleport keyed by component uid, not a slot with the same name', () => {
+    const response = getClientIslandResponse({
+      islandContext: { components: { Counter: { props: {} } }, slots: {} },
+      teleports: {
+        'uid=v-0-1;slot=Counter': '<p>slot</p>',
+        'uid=v-0-1;client=Counter': '<!--teleport start anchor--><p>client</p>',
+      },
+    } as unknown as NuxtSSRContext)
+
+    expect(response?.Counter?.html).toBe('<p>client</p>')
   })
 })
