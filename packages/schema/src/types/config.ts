@@ -13,6 +13,9 @@ import type { ConfigSchema } from './schema.ts'
 import type { Nuxt } from './nuxt.ts'
 import type { AppHeadMetaObject } from './head.ts'
 import type { RuntimeConfigSchemaEntry } from './runtime-config.ts'
+import type { ComponentsOptions } from './components.ts'
+import type { NuxtDebugOptions } from './debug.ts'
+import type { NuxtModule } from './module.ts'
 
 export type { SchemaDefinition } from 'untyped'
 
@@ -102,16 +105,13 @@ export interface RuntimeConfig extends RuntimeConfigNamespace {
 // - the server builder's config interface (#31908)
 // - vite config interface (#4772)
 // - rsbuild config interface
+// - the config loader options, which contain `NuxtConfig` themselves
 
 /**
  * User configuration in `nuxt.config` file
  */
-export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'rsbuild' | 'runtimeConfig' | 'webpack' | 'nitro'>> {
-  components?: ConfigSchema['components']
+export interface NuxtConfig extends DeepPartial<Omit<ConfigSchema, 'components' | 'vue' | 'vite' | 'rsbuild' | 'runtimeConfig' | 'webpack' | 'nitro' | '_loadOptions'>>, Partial<Pick<ConfigSchema, 'components' | 'vite' | 'nitro' | 'rsbuild' | '_loadOptions'>> {
   vue?: Omit<DeepPartial<ConfigSchema['vue']>, 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
-  vite?: ConfigSchema['vite']
-  nitro?: ConfigSchema['nitro']
-  rsbuild?: ConfigSchema['rsbuild']
   runtimeConfig?: Overrideable<RuntimeConfig> | RuntimeConfigSchema<Record<string, unknown>>
   webpack?: DeepPartial<ConfigSchema['webpack']> & {
     $client?: DeepPartial<ConfigSchema['webpack']>
@@ -155,14 +155,53 @@ export interface NuxtBuilder {
   setupWatcher?: (nuxt: Nuxt) => Promise<void> | void
 }
 
-// Normalized Nuxt options available as `nuxt.options.*`
-export interface NuxtOptions extends Omit<ConfigSchema, 'vue' | 'sourcemap' | 'debug' | 'builder' | 'postcss' | 'webpack'> {
-  vue: Omit<ConfigSchema['vue'], 'config'> & { config?: Partial<Filter<VueAppConfig, string | boolean>> }
+type IsNamespace<T> = [T] extends [Record<string, any>]
+  ? [T] extends [(...args: any[]) => any] ? false : [T] extends [any[]] ? false : true
+  : false
+
+/**
+ * `T` with the properties of `Overrides` replacing its own. Nested objects are replaced
+ * property by property, so `Overrides` only lists what differs.
+ */
+type Override<T, Overrides> = {
+  [K in keyof T]: K extends keyof Overrides
+    ? IsNamespace<T[K]> extends true
+      ? IsNamespace<Overrides[K]> extends true ? Override<T[K], Overrides[K]> : Overrides[K]
+      : Overrides[K]
+    : T[K]
+}
+
+type WebpackAnalyzeOptions = Exclude<ConfigSchema['webpack']['analyze'], boolean>
+
+/** Properties of `ConfigSchema` whose resolved value is narrower than the value accepted in `nuxt.config`. */
+interface ResolvedConfigSchema {
+  vue: { config?: Partial<Filter<VueAppConfig, string | boolean>> }
+  components: ComponentsOptions
+  modules: Array<NuxtModule<any> | string | [NuxtModule | string, Record<string, any>]>
   sourcemap: Required<Exclude<ConfigSchema['sourcemap'], boolean>>
-  debug: Required<Exclude<ConfigSchema['debug'], true>>
+  debug: NuxtDebugOptions | false
   builder: '@nuxt/vite-builder' | '@nuxt/webpack-builder' | '@nuxt/rsbuild-builder' | '@nuxt/rspack-builder' | NuxtBuilder
-  postcss: Omit<ConfigSchema['postcss'], 'order'> & { order: Exclude<ConfigSchema['postcss']['order'], string> }
-  webpack: ConfigSchema['webpack'] & {
+  spaLoadingTemplate: string | boolean | null
+  app: { viewTransition: ViewTransitionOptions }
+  build: { analyze: Exclude<ConfigSchema['build']['analyze'], boolean> }
+  postcss: { order: Exclude<ConfigSchema['postcss']['order'], string> }
+  typescript: { builder: Exclude<ConfigSchema['typescript']['builder'], undefined> }
+  future: { compatibilityVersion: 5 }
+  features: { noScripts: Exclude<ConfigSchema['features']['noScripts'], true> }
+  experimental: {
+    payloadExtraction: Exclude<ConfigSchema['experimental']['payloadExtraction'], undefined>
+    componentIslands: Exclude<ConfigSchema['experimental']['componentIslands'], 'local' | 'local+remote'>
+    ssrStreaming: { enabled: boolean, botRegex: RegExp }
+    parseErrorData: true
+  }
+  unhead: { legacy: false }
+  routeRules: Exclude<ConfigSchema['routeRules'], undefined>
+  tracingChannel: Exclude<ConfigSchema['tracingChannel'], true>
+}
+
+/** Resolved options, available as `nuxt.options`. */
+export interface NuxtOptions extends Override<Omit<ConfigSchema, 'webpack'>, ResolvedConfigSchema> {
+  webpack: Override<ConfigSchema['webpack'], { analyze: WebpackAnalyzeOptions }> & {
     $client: ConfigSchema['webpack']
     $server: ConfigSchema['webpack']
   }

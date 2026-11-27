@@ -7,7 +7,6 @@ export default defineConfig({
   exports: { devExports: true },
   plugins: [failOnInvalidAnnotation()],
   deps: {
-    onlyBundle: ['untyped'],
     neverBundle: true,
     // `untyped` is not a dependency, so its types are bundled into the declarations.
     dts: { alwaysBundle: ['untyped'] },

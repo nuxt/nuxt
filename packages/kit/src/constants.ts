@@ -1,4 +1,4 @@
-// Keep in sync with `packages/schema/src/constants.ts`
+// Keep in sync with `packages/nuxt/src/config/constants.ts`
 /**
  * Default extensions for files that may contain JSX.
  * @internal

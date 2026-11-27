@@ -410,7 +410,7 @@ export default defineNuxtModule<ComponentsOptions>({
 })
 
 /** Flatten the shapes `components` accepts in a layer config into directories resolved against `cwd`. */
-function normalizeDirs (dir: undefined | boolean | ComponentsOptions | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, priority = 0): ComponentsDir[] {
+function normalizeDirs (dir: undefined | boolean | Partial<ComponentsOptions> | ComponentsOptions['dirs'] | ComponentsOptions['dirs'][number], cwd: string, priority = 0): ComponentsDir[] {
   if (Array.isArray(dir)) {
     return dir.flatMap(dir => normalizeDirs(dir, cwd, priority)).sort(compareDirByPathLength)
   }
@@ -429,7 +429,7 @@ function normalizeDirs (dir: undefined | boolean | ComponentsOptions | Component
   }
 
   const normalizedDirs: ComponentsDir[] = []
-  for (const d of ('dirs' in dir ? dir.dirs || [] : [dir])) {
+  for (const d of ('path' in dir ? [dir] : dir.dirs || [])) {
     const normalizedDir = typeof d === 'string' ? { path: d } : d
     if (!normalizedDir.path) {
       continue

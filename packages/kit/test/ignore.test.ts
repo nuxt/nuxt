@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { applyDefaults } from 'untyped'
-import { NuxtConfigSchema } from '@nuxt/schema'
 import type { Nuxt, NuxtConfig } from '@nuxt/schema'
+import { resolveNuxtOptions } from '../../nuxt/src/config/index.ts'
 import { isIgnored, resolveGroupSyntax, resolveIgnorePatterns } from '../src/ignore.ts'
 import * as context from '../src/context.ts'
 
@@ -14,8 +13,8 @@ describe('isIgnored', () => {
     expect(resolveIgnorePatterns()?.includes('my-dir')).toBe(true)
   })
 
-  it('should ignore the local state of deploy target tooling by default', async () => {
-    const { ignore } = await applyDefaults(NuxtConfigSchema, {})
+  it('should ignore the local state of deploy target tooling by default', () => {
+    const { ignore } = resolveNuxtOptions({})
     const mockNuxt = { options: { ignore, _layers: [] } as unknown as NuxtConfig } as unknown as Nuxt
     vi.spyOn(context, 'tryUseNuxt').mockReturnValue(mockNuxt)
 

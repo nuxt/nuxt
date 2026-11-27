@@ -1,9 +1,16 @@
-import { existsSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'pathe'
 
 const JSONC_COMMENT_RE = /("(?:\\.|[^"\\])*")|\/\/[^\n]*|\/\*[\s\S]*?\*\//g
 const JSONC_TRAILING_COMMA_RE = /("(?:\\.|[^"\\])*")|,(\s*[}\]])/g
+
+function readText (path: string): string {
+  try {
+    return readFileSync(path, 'utf8')
+  } catch {
+    return ''
+  }
+}
 
 function declaresDenoWorkspace (contents: string): boolean {
   const json = contents
@@ -26,11 +33,11 @@ const WORKSPACE_FILES: Array<[file: string, declaresWorkspace?: (contents: strin
   ['deno.jsonc', declaresDenoWorkspace],
 ]
 
-async function declaresWorkspace (dir: string): Promise<boolean> {
+function declaresWorkspace (dir: string): boolean {
   for (const [file, declaresWorkspace] of WORKSPACE_FILES) {
     const path = join(dir, file)
     if (!existsSync(path)) { continue }
-    if (!declaresWorkspace || declaresWorkspace(await readFile(path, 'utf8').catch(() => ''))) {
+    if (!declaresWorkspace || declaresWorkspace(readText(path))) {
       return true
     }
   }
@@ -38,15 +45,15 @@ async function declaresWorkspace (dir: string): Promise<boolean> {
 }
 
 /** Whether `dir` is the root of a git repository, worktree or submodule. */
-async function isGitRoot (dir: string): Promise<boolean> {
+function isGitRoot (dir: string): boolean {
   if (existsSync(join(dir, '.git/config'))) { return true }
-  const gitFile = await readFile(join(dir, '.git'), 'utf8').catch(() => '')
-  return gitFile.startsWith('gitdir:')
+  const gitFile = join(dir, '.git')
+  return existsSync(gitFile) && readText(gitFile).startsWith('gitdir:')
 }
 
-async function declaresPackageWorkspaces (path: string): Promise<boolean> {
+function declaresPackageWorkspaces (path: string): boolean {
   try {
-    return !!JSON.parse(await readFile(path, 'utf8'))?.workspaces
+    return !!JSON.parse(readFileSync(path, 'utf8'))?.workspaces
   } catch {
     return false
   }
@@ -57,7 +64,7 @@ async function declaresPackageWorkspaces (path: string): Promise<boolean> {
  * workspace, the closest git repository, or the closest `package.json` declaring `workspaces`,
  * in that order. Falls back to `rootDir`.
  */
-export async function findWorkspaceDir (rootDir: string): Promise<string> {
+export function findWorkspaceDir (rootDir: string): string {
   const dirs: string[] = []
   for (let dir = rootDir; ; dir = dirname(dir)) {
     dirs.push(dir)
@@ -65,16 +72,16 @@ export async function findWorkspaceDir (rootDir: string): Promise<string> {
   }
 
   for (const dir of [...dirs].reverse()) {
-    if (await declaresWorkspace(dir)) { return dir }
+    if (declaresWorkspace(dir)) { return dir }
   }
 
   for (const dir of dirs) {
-    if (await isGitRoot(dir)) { return dir }
+    if (isGitRoot(dir)) { return dir }
   }
 
   for (const dir of dirs) {
     const path = join(dir, 'package.json')
-    if (existsSync(path) && await declaresPackageWorkspaces(path)) { return dir }
+    if (existsSync(path) && declaresPackageWorkspaces(path)) { return dir }
   }
   return rootDir
 }

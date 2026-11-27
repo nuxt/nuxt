@@ -34,12 +34,12 @@ import type { ModuleMeta, NuxtModule } from './module.ts'
 import type { NuxtDebugOptions } from './debug.ts'
 import type { Nuxt, NuxtPlugin, NuxtTemplate } from './nuxt.ts'
 import type { SerializableHtmlAttributes } from './head.ts'
-import type { NuxtAppConfig, NuxtOptions, RsbuildOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
+import type { NuxtAppConfig, NuxtConfig, NuxtOptions, RsbuildOptions, RuntimeConfig, Serializable, SharedAppConfig, ViewTransitionOptions, ViteOptions } from './config.ts'
 import type { NuxtIgnoreOptions } from './ignore.ts'
 import type { ImportsOptions } from './imports.ts'
 import type { ComponentsOptions } from './components.ts'
 import type { KeyedFunction, KeyedFunctionFactory, NuxtCompilerOptions } from './compiler.ts'
-import type { DevServerHandler, NitroConfig, PrerenderOptions, RendererPluginEntry, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
+import type { DevServerHandler, NitroConfig, NitroLegacyOptions, PrerenderOptions, RendererPluginEntry, ResolveNuxtNitroConfig, RouteRuleConfig, ServerHandler, ServerPlugin, TracingChannelOptions } from './nitro.ts'
 
 export interface ConfigSchema {
   /**
@@ -49,7 +49,7 @@ export interface ConfigSchema {
    *
    * @see [`components/` directory documentation](https://nuxt.com/docs/5.x/directory-structure/app/components)
    */
-  components: boolean | ComponentsOptions | ComponentsOptions['dirs']
+  components: boolean | Partial<ComponentsOptions> | ComponentsOptions['dirs']
 
   /**
    * Configure how Nuxt auto-imports composables into your application.
@@ -2027,7 +2027,7 @@ export interface ConfigSchema {
    *
    * @private
    */
-  _loadOptions: { dotenv?: boolean | NuxtDotenvOptions, envName?: string | false }
+  _loadOptions: { dotenv?: boolean | NuxtDotenvOptions, envName?: string | false, overrides?: NuxtConfig } | undefined
 
   /**
    *
@@ -2168,6 +2168,24 @@ export interface ConfigSchema {
    * @see [Untracing naming registry](https://github.com/unjs/untracing)
    */
   tracingChannel: boolean | TracingChannelOptions
+
+  /**
+   * Opt-in Nitro v2 compatibility for your own server code (the `server/` directory
+   * and project code it imports). Pass `true` to enable every toggle, or an object to
+   * disable individual ones. Modules registering Nitro v2 server code through
+   * `@nuxt/kit` are handled automatically and are unaffected by this option.
+   *
+   * Transitional: this option and the compatibility layer behind it are removed in
+   * Nuxt 6. Prefer importing from `nuxt/server`.
+   *
+   * @note Enabling this, or installing any module whose server code gets the
+   * compatibility layer, also turns on Nitro v2 error-shape recovery app-wide: an error
+   * thrown as `{ statusCode, statusMessage }` keeps that status instead of being
+   * scrubbed to a 500.
+   *
+   * @default false
+   */
+  nitroLegacy: boolean | NitroLegacyOptions
 
   postcss: {
   /**

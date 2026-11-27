@@ -1,4 +1,4 @@
-import type { JavascriptExtension } from '../utils/definition.ts'
+import type { JavascriptExtension } from './utils.ts'
 
 export interface KeyedFunction {
   /**

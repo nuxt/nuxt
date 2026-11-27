@@ -77,6 +77,22 @@ export default defineConfig([
     },
   },
   {
+    // types are declared by hand in `config.d.ts`, so that `DefineNuxtConfig` stays augmentable
+    dts: false,
+    entry: { config: 'src/config/index.ts' },
+    plugins: [failOnInvalidAnnotation()],
+    deps: {
+      // only `escapeHtml` is used, and loading the CommonJS build of `@vue/shared` costs more than inlining it
+      alwaysBundle: ['@vue/shared'],
+      onlyBundle: ['@vue/shared'],
+    },
+    alias: { '@vue/shared': '@vue/shared/dist/shared.esm-bundler.js' },
+    clean: false,
+    hooks: {
+      'build:prepare': ({ options }) => cleanDist(options.outDir),
+    },
+  },
+  {
     unbundle: true,
     clean: false,
     hooks: {

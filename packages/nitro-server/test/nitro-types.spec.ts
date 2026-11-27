@@ -45,8 +45,8 @@ describe('contributed configuration types', () => {
     expectTypeOf<NonNullable<NuxtConfig['nitro']>>().toExtend<NitroConfig>()
     expectTypeOf<NuxtOptions['nitro']['preset']>().toEqualTypeOf<NitroConfig['preset']>()
     expectTypeOf<NonNullable<NuxtOptions['nitro']['prerender']>['concurrency']>().toEqualTypeOf<NonNullable<NitroConfig['prerender']>['concurrency']>()
-    expectTypeOf<NuxtOptions['routeRules']>().toEqualTypeOf<Record<string, RouteRuleConfig> | undefined>()
-    expectTypeOf<NuxtOptions['tracingChannel']>().toEqualTypeOf<boolean | ({ nuxt?: boolean } & TracingChannelOptions)>()
+    expectTypeOf<NuxtOptions['routeRules']>().toEqualTypeOf<Record<string, RouteRuleConfig>>()
+    expectTypeOf<NuxtOptions['tracingChannel']>().toEqualTypeOf<false | ({ nuxt?: boolean } & TracingChannelOptions)>()
   })
 
   it('resolves the route rules a page may declare', () => {

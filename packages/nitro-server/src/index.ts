@@ -283,7 +283,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
 
   // `noExternals: false` adds nothing to the entries below, which the server build needs
   const nitroConfig: NitroConfig = defu({ ...nuxt.options.nitro, noExternals: nuxt.options.nitro.noExternals || undefined }, {
-    debug: nuxt.options.debug ? nuxt.options.debug.nitro : false,
+    debug: nuxt.options.debug ? nuxt.options.debug.nitro ?? false : false,
     rootDir: nuxt.options.rootDir,
     workspaceDir: nuxt.options.workspaceDir,
     serverDir: nuxt.options.serverDir,
@@ -386,9 +386,7 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       ignoreUnprefixedPublicAssets: true,
       failOnError: true,
       concurrency: cpus().length * 4 || 4,
-      routes: ([] as string[])
-        // @ts-expect-error TODO: remove in nuxt v5
-        .concat(nuxt.options.generate.routes),
+      routes: [],
     },
     sourcemap: !!nuxt.options.sourcemap.server,
     traceDeps: [

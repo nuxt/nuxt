@@ -212,6 +212,37 @@ export type ResolveTracingChannelOptions<T> = TracingChannelOptionsBase & (T ext
  */
 export type TracingChannelOptions = ResolveTracingChannelOptions<NitroTypes>
 
+/**
+ * Granular toggles for the opt-in `nitroLegacy` layer.
+ *
+ * Transitional: the whole compatibility layer is removed in Nuxt 6.
+ */
+export interface NitroLegacyOptions {
+  /**
+   * Turn on the server auto-imports (as `experimental.nitroAutoImports` does), register the Nitro v2
+   * auto-import names (`defineNitroPlugin`, `cachedEventHandler`, `useEvent`, …) and auto-import from
+   * subdirectories of `server/utils/`.
+   */
+  imports?: boolean
+  /**
+   * Resolve `h3` to the bundled h3 v1 helpers in server code and, on Nuxt 4, in the server build of
+   * the app, and remove server aliases that point `h3` at h3 v1.
+   */
+  h3?: boolean
+  /** Resolve `nitropack`, `nitropack/runtime` and `#internal/nitro` to their Nitro v3 equivalents. */
+  specifiers?: boolean
+  /** Support the `useRuntimeConfig(event)` signature and its per-request semantics. */
+  runtimeConfig?: boolean
+  /**
+   * Accept Nitro v2 config shapes (handlers without a `route`) and keep dotted suffixes in
+   * server file names that Nitro v3 rejects.
+   */
+  config?: boolean
+}
+
+/** Every `nitroLegacy` toggle, set. */
+export type ResolvedNitroLegacyOptions = Required<NitroLegacyOptions>
+
 /** Prerender options shared by every server builder. */
 export interface PrerenderOptions {
   /** Routes to prerender, in addition to those discovered by crawling or matched by `prerender` route rules. */

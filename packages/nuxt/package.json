@@ -22,8 +22,7 @@
     },
     "./config": {
       "types": "./config.d.ts",
-      "import": "./config.js",
-      "require": "./config.js"
+      "default": "./src/config/index.ts"
     },
     "./schema": "./schema.js",
     "./kit": "./kit.js",
@@ -196,8 +195,7 @@
       },
       "./config": {
         "types": "./config.d.ts",
-        "import": "./config.js",
-        "require": "./config.js"
+        "default": "./dist/config.mjs"
       },
       "./schema": "./schema.js",
       "./kit": "./kit.js",

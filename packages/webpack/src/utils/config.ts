@@ -1,11 +1,12 @@
 import type { Configuration } from 'webpack'
-import type { Nuxt, NuxtOptions } from '@nuxt/schema'
+import type { ConfigSchema, Nuxt, NuxtOptions } from '@nuxt/schema'
 import { configDiagnostics } from '@nuxt/kit/internal'
 
 export interface WebpackConfigContext {
   nuxt: Nuxt
   options: NuxtOptions
-  userConfig: Omit<NuxtOptions['webpack'], '$client' | '$server'>
+  /** The `webpack` options, merged with `webpack.$client` or `webpack.$server` for the build being configured. */
+  userConfig: ConfigSchema['webpack']
   config: Configuration
   name: string
   isDev: boolean

@@ -6,14 +6,14 @@ This is a map of the `nuxt/nuxt` monorepo for contributors: what each package do
 
 | Package | Published as | Role |
 | --- | --- | --- |
-| `packages/nuxt` | `nuxt` | Core: config loading, the build pipeline, internal modules, the Vue app runtime and the portable server renderer |
+| `packages/nuxt` | `nuxt` | Core: config loading and resolution (`nuxt/config`), the build pipeline, internal modules, the Vue app runtime and the portable server renderer |
 | `packages/kit` | `@nuxt/kit` | Toolkit for module authors, also used by every other package to read and extend the current Nuxt instance |
-| `packages/schema` | `@nuxt/schema` | Public types (`NuxtConfig`, `NuxtOptions`, hooks) and the config resolvers that produce defaults |
+| `packages/schema` | `@nuxt/schema` | Public types (`NuxtConfig`, `NuxtOptions`, hooks) |
 | `packages/vite` | `@nuxt/vite-builder` | Default bundler for the app (client and SSR bundles) |
 | `packages/webpack`, `packages/rsbuild`, `packages/rspack` | `@nuxt/webpack-builder`, `@nuxt/rsbuild-builder`, `@nuxt/rspack-builder` | Alternative bundlers (`builder: 'webpack' \| 'rsbuild' \| 'rspack'`); rspack is deprecated in favour of rsbuild |
 | `packages/nitro-server` | `@nuxt/nitro-server` | Default server builder: builds the server with Nitro and adapts Nitro to the renderer |
 | `packages/vite-server` | `@nuxt/vite-server` | Experimental server builder that builds the server with Vite alone (`server.builder: 'vite'`) |
-| `packages/ui-templates` | private | Source of the HTML templates (error pages, loading screen, welcome page); the build writes them into `nuxt`, `kit` and `schema`, where they are committed |
+| `packages/ui-templates` | private | Source of the HTML templates (error pages, loading screen, welcome page); the build writes them into `nuxt` and `kit`, where they are committed |
 
 Two kinds of builder are pluggable. The **bundler** (`nuxt.options.builder`, loaded in `packages/nuxt/src/core/builder.ts`) compiles the Vue app. The **server builder** (`nuxt.options.server.builder`, loaded in `packages/nuxt/src/core/server.ts`, default `@nuxt/nitro-server`) produces the server that renders it.
 
@@ -21,7 +21,7 @@ Two kinds of builder are pluggable. The **bundler** (`nuxt.options.builder`, loa
 
 ### Loading (`packages/nuxt/src/core/nuxt.ts`)
 
-`loadNuxt` calls `@nuxt/kit`'s `loadNuxtConfig`, which wraps c12. That function scans and dedupes `layers/`, resolves `extends`, imports config files natively with a jiti fallback, and applies the `@nuxt/schema` resolvers. `loadNuxt` then normalises options and pushes the internal modules onto `options._modules`: `pages`, `head`, `components`, `compiler`, `imports` and `schema`. Finally it creates the instance.
+`loadNuxt` calls `@nuxt/kit`'s `loadNuxtConfig`, which wraps c12. That function scans and dedupes `layers/`, resolves `extends`, imports config files natively with a jiti fallback, and resolves the merged config with `resolveNuxtOptions` from `nuxt/config`. `loadNuxt` then normalises options and pushes the internal modules onto `options._modules`: `pages`, `head`, `components`, `compiler`, `imports` and `schema`. Finally it creates the instance.
 
 `initNuxt` reads top to bottom as the boot sequence:
 
@@ -131,7 +131,7 @@ To add a fixture test, prefer adding a page to an existing fixture that is alrea
 
 ## Where to change things
 
-- **A config option or its default:** the resolver in `packages/schema/src/config/*.ts`, tested in `packages/schema/test/config.test.ts`.
+- **A config option or its default:** the resolver in `packages/nuxt/src/config/resolve/*.ts`, tested in `packages/nuxt/test/config/resolve.test.ts` and `packages/nuxt/test/options-resolution.test.ts`.
 - **A composable or built-in component:** `packages/nuxt/src/app/composables` or `app/components`, tested in `test/nuxt/<feature>.test.ts`, or in `packages/nuxt/test` if it needs no app. Built-in components are registered in `core/builtins.ts`.
 - **Routing or page meta:** `packages/nuxt/src/pages`. To decide which `definePageMeta` keys reach the route record, edit `classifyPageMetaProperty`. For generated route code, edit `normalizeRoutes`.
 - **Component resolution:** `components/compiler-resolver.ts`, and `components/plugins/loader.ts` for the legacy path.
