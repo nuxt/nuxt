@@ -749,13 +749,15 @@ function resolveLayerExtendsAlias (source: string, rootDir: string): string | un
  * listed in `extends` (first entry = highest priority). Unlisted local layers keep their
  * alphabetical order after them. Nested extends rank each depender above its base (#34691).
  */
-function reorderLocalLayersByExtends (
+export function reorderLocalLayersByExtends (
   layers: LoadedConfigLayer[],
   extendsOrder: string[],
   localLayerDirs: Set<string>,
   extendEdges: Array<[depender: string, dependency: string]>,
 ) {
-  const layerDir = (layer: LoadedConfigLayer) => normalize(tryRealPath((layer.config?.rootDir ?? layer.cwd ?? '').replace(/\/$/, '')))
+  // Use the canonical directory the layer was loaded from, not `config.rootDir`: a layer may
+  // override `rootDir`, but slots, `extends` priorities and dependency edges all use loading dirs.
+  const layerDir = (layer: LoadedConfigLayer) => layer.cwd ? normalize(tryRealPath(layer.cwd)) : ''
 
   const priorityByDir = new Map(extendsOrder.map((dir, index) => [dir, index]))
 
@@ -778,28 +780,39 @@ function reorderLocalLayersByExtends (
     .map(entry => entry.layer)
 
   const orderedDirs = orderedLocalLayers.map(layerDir)
-  const layerByDir = new Map(orderedDirs.map((dir, index) => [dir, orderedLocalLayers[index]!]))
-  const dependers = new Map(orderedDirs.map(dir => [dir, new Set<string>()]))
+  const dependers = new Map<string, Set<string>>()
+  for (const dir of orderedDirs) {
+    if (!dependers.has(dir)) { dependers.set(dir, new Set()) }
+  }
   for (const [depender, dependency] of extendEdges) {
     if (dependers.has(depender) && dependers.has(dependency)) {
       dependers.get(dependency)!.add(depender)
     }
   }
 
-  const pending = new Set(orderedDirs)
-  let constrained: LoadedConfigLayer[] = []
+  // Rank loading directories, then sort layers by rank so distinct dirs keep their own slot
+  // even when a layer overrides `rootDir` to a path another layer also uses.
+  const pending = new Set(dependers.keys())
+  const rankByDir = new Map<string, number>()
+  let rank = 0
   while (pending.size) {
-    const next = orderedDirs.find(dir =>
-      pending.has(dir) && ![...dependers.get(dir)!].some(depender => pending.has(depender)),
+    const next = [...pending].find(dir =>
+      ![...dependers.get(dir)!].some(depender => pending.has(depender)),
     )
     // A cycle cannot satisfy every constraint, so preserve the preferred input order.
     if (!next) {
-      constrained = orderedLocalLayers
+      rankByDir.clear()
+      ;[...new Set(orderedDirs)].forEach((dir, index) => rankByDir.set(dir, index))
       break
     }
-    constrained.push(layerByDir.get(next)!)
+    rankByDir.set(next, rank++)
     pending.delete(next)
   }
+
+  const constrained = orderedLocalLayers
+    .map((layer, index) => ({ layer, index, rank: rankByDir.get(orderedDirs[index]!) ?? rank }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map(entry => entry.layer)
 
   localSlots.forEach((slot, index) => {
     layers[slot] = constrained[index]!
