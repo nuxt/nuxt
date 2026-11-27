@@ -10,7 +10,7 @@ import { joinURL, withTrailingSlash, withoutTrailingSlash } from 'ufo'
 import nuxtPkg from 'nuxt/package.json' with { type: 'json' }
 import { resolveDevAllowedHosts } from 'nuxt/internal/dev-error'
 import { createNitro } from 'nitro/builder'
-import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig } from 'nitro/types'
+import type { Nitro, NitroOptions as NitroBuilderOptions, NitroConfig, NormalizedRouteRules } from 'nitro/types'
 import { addPlugin, addTemplate, addTypeTemplate, addVitePlugin, directoryToURL, ensureDependencyInstalled, getAddDependencyCommand, getDirectory, getLayerDirectories, isNuxtMajorVersion, packageName, resolveAlias, resolveIgnorePatterns, resolveNuxtModule, resolveTypePaths } from '@nuxt/kit'
 import { MAY_CONTAIN_DECORATOR_RE, assertSingleCatchAllRouteRuleKey, bundlerDiagnostics, encodeRoutePath, foldRouteCase, getServerRuntime, hasDecoratorSyntax, isWithinDir, lookupNodeModuleSubpath, mergeMethodRouteRulesRoutes, normalizeAppMiddlewareRules, parseNodeModulePath, reportNitroPrerender, resolveNitroDeployCommand, resolveSpaLoadingTemplate, resolveSpaLoadingTemplatePath, setServerBuild } from '@nuxt/kit/internal'
 import escapeRE from 'escape-string-regexp'
@@ -30,7 +30,7 @@ import { canReuseSsrBuild, setupNitroViteEnvironment } from './vite.ts'
 import { setupLegacyDevAndBuild } from './legacy.ts'
 import { LOOPBACK_HOSTS, isLocalDevRequest, isLoopbackPeer, vouchForLoopbackPeer } from './dev-request.ts'
 import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
-import { addRoute as addRou3Route, createRouter as createRou3Router, routeNodeKeys } from 'rou3'
+import { addRoute as addRou3Route, createRouter as createRou3Router, findAllRoutes, routeNodeKeys, routeToRegExp } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
 import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
@@ -1220,7 +1220,11 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
         routes.add(`/${status}.html`)
       }
       if (clientOnlyApp) {
-        routes.add('/index.html')
+        if (routes.has('/') && canPrerenderRoot(nitro)) {
+          routes.delete('/index.html')
+        } else {
+          routes.add('/index.html')
+        }
       }
     })
   }
@@ -1230,6 +1234,20 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
   } else {
     setupLegacyDevAndBuild(nuxt, nitro)
   }
+}
+
+function canPrerenderRoot (nitro: Nitro): boolean {
+  const ignored = nitro.options.prerender.ignore?.some((pattern) => {
+    if (typeof pattern === 'function') { return pattern('/') === true }
+    if (typeof pattern === 'string') { return /[*:]/.test(pattern) ? routeToRegExp(pattern).test('/') : '/'.startsWith(pattern) }
+    return new RegExp(pattern.source, pattern.flags).test('/')
+  })
+  if (ignored) { return false }
+  const router = createRou3Router<NormalizedRouteRules>()
+  for (const [route, rules] of Object.entries(nitro.options.routeRules)) {
+    addRou3Route(router, undefined, route, rules)
+  }
+  return defu({} as NormalizedRouteRules, ...findAllRoutes(router, undefined, '/').map(match => match.data).reverse()).prerender !== false
 }
 
 /** Resolves a dependency of the app builder, so Nitro shares its copy rather than installing another. */
