@@ -593,6 +593,24 @@ describe('nitro config', () => {
     })
   })
 
+  it.each<[name: string, overrides: NuxtConfig, routes: string[], indexRoutes: string[]]>([
+    ['root enabled', { nitro: { prerender: { ignore: ['/about'] } } }, ['/'], ['/']],
+    ['both index routes configured', {}, ['/', '/index.html'], ['/']],
+    ['root not scheduled', {}, ['/about'], ['/index.html']],
+    ['root ignored', { nitro: { prerender: { ignore: [/^\/$/] } } }, ['/'], ['/', '/index.html']],
+    ['root ignored by prefix', { nitro: { prerender: { ignore: ['/'] } } }, ['/'], ['/', '/index.html']],
+    ['root ignored by function', { nitro: { prerender: { ignore: [(path: string) => path === '/'] } } }, ['/'], ['/', '/index.html']],
+    ['root ignored by route pattern', { nitro: { prerender: { ignore: ['/:page(\\d+)?'] } } }, ['/'], ['/', '/index.html']],
+    ['root disabled by route rule', { routeRules: { '/': { prerender: false } } }, ['/'], ['/', '/index.html']],
+    ['root re-enabled by a more specific route rule', { routeRules: { '/**': { prerender: false }, '/': { prerender: true } } }, ['/'], ['/']],
+  ])('schedules the index.html fallback of a client-only app when %s', async (_name, overrides, routes, indexRoutes) => {
+    await withNitro({ ...overrides, dev: false, ssr: false, nitro: { ...overrides.nitro, static: true } }, async (nitro) => {
+      const scheduled = new Set(routes)
+      await nitro.hooks.callHook('prerender:routes', scheduled)
+      expect([...scheduled].filter(route => route === '/' || route === '/index.html')).toEqual(indexRoutes)
+    })
+  }, 60_000)
+
   it('describes the deploy command of the preset, to run from the project root', async () => {
     await withNitro({ dev: false, nitro: { commands: { deploy: 'npx wrangler --cwd ./ pages deploy' }, output: { dir: 'my output' } } }, (_nitro, _nitroConfig, nuxt) => {
       expect(nuxt.serverBuild.deploy?.command?.()).toBe('npx wrangler --cwd "my output/" pages deploy')
