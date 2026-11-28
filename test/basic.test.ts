@@ -487,7 +487,7 @@ describe('pages', () => {
     await page.close()
   })
 
-  it.runIf(isDev && oncePerEnv)('returns 500 when there is an infinite redirect', async () => {
+  it.runIf(oncePerEnv)('returns 500 when there is an infinite redirect', async () => {
     const { status } = await fetch('/catchall/redirect-infinite', { redirect: 'manual' })
     expect(status).toEqual(500)
   })
