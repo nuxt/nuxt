@@ -447,67 +447,60 @@ describe('addon promise-method wrappers on Safari 26', () => {
   function emulateSafari26 () {
     const original = Promise.resolve
     const spy = vi.spyOn(Promise, 'resolve').mockImplementation(function (this: PromiseConstructor, value?: unknown) {
-      if (this !== Promise && value instanceof Promise) { return value }
+      if (this !== Promise && value instanceof Promise && value.constructor === Promise) { return value }
       return original.call(this, value)
     } as typeof Promise.resolve)
     onTestFinished(() => spy.mockRestore())
   }
 
-  it('applies `then`, `catch` and `finally` wrappers to useAsyncData', () => {
+  function createDelegatingWrappers () {
+    const delegate = (next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args)
+    return {
+      then: vi.fn(delegate),
+      catch: vi.fn(delegate),
+      finally: vi.fn(delegate),
+    }
+  }
+
+  it('applies promise-method wrappers and resolves `await` for useAsyncData', async () => {
     emulateSafari26()
-    const wrappers = { then: vi.fn(), catch: vi.fn(), finally: vi.fn() }
+    const wrappers = createDelegatingWrappers()
     const addon = defineUseAsyncDataAddon({ setup: () => () => wrappers })
 
     const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
     const result = useWrappedAsyncData('addons:safari26-wrappers', () => Promise.resolve('data'))
-    const [onFulfilled, onRejected, onFinally] = [() => {}, () => {}, () => {}]
-    result.then(onFulfilled)
-    result.catch(onRejected)
-    result.finally(onFinally)
+    expect(isRef(result.data)).toBe(true)
 
-    expect(wrappers.then).toHaveBeenCalledWith(expect.any(Function), onFulfilled)
+    const onRejected = () => {}
+    const onFinally = async () => {}
+    const { data } = await result
+    await result.catch(onRejected)
+    await result.finally(onFinally)
+
+    expect(data.value).toBe('data')
+    expect(wrappers.then).toHaveBeenCalled()
     expect(wrappers.catch).toHaveBeenCalledWith(expect.any(Function), onRejected)
     expect(wrappers.finally).toHaveBeenCalledWith(expect.any(Function), onFinally)
-    expect(isRef(result.data)).toBe(true)
   })
 
-  it('resolves `await` with data when only `catch` and `finally` are wrapped', async () => {
+  it('applies promise-method wrappers and resolves `await` for useFetch', async () => {
     emulateSafari26()
-    const addon = defineUseAsyncDataAddon({ setup: () => () => ({ catch: vi.fn(), finally: vi.fn() }) })
-
-    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
-    const { data } = await useWrappedAsyncData('addons:safari26-await', () => Promise.resolve('data'))
-
-    expect(data.value).toBe('data')
-  })
-
-  it('resolves `await` with data through a delegating `then` wrapper', async () => {
-    emulateSafari26()
-    const then = vi.fn((next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args))
-    const addon = defineUseAsyncDataAddon({ setup: () => () => ({ then }) })
-
-    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
-    const { data } = await useWrappedAsyncData('addons:safari26-await-then', () => Promise.resolve('data'))
-
-    expect(then).toHaveBeenCalled()
-    expect(data.value).toBe('data')
-  })
-
-  it('applies `then`, `catch` and `finally` wrappers to useFetch', () => {
-    emulateSafari26()
-    const wrappers = { then: vi.fn(), catch: vi.fn(), finally: vi.fn() }
+    const wrappers = createDelegatingWrappers()
     const addon = defineUseFetchAddon({ setup: () => () => wrappers })
 
     const useWrappedFetch = createUseFetch({ addons: [addon] })
     const result = useWrappedFetch('/api/addons-test', { key: 'addons:safari26-fetch-wrappers' })
-    const [onFulfilled, onRejected, onFinally] = [() => {}, () => {}, () => {}]
-    result.then(onFulfilled)
-    result.catch(onRejected)
-    result.finally(onFinally)
+    expect(isRef(result.data)).toBe(true)
 
-    expect(wrappers.then).toHaveBeenCalledWith(expect.any(Function), onFulfilled)
+    const onRejected = () => {}
+    const onFinally = async () => {}
+    const { data } = await result
+    await result.catch(onRejected)
+    await result.finally(onFinally)
+
+    expect(data.value).toEqual({ method: 'GET' })
+    expect(wrappers.then).toHaveBeenCalled()
     expect(wrappers.catch).toHaveBeenCalledWith(expect.any(Function), onRejected)
     expect(wrappers.finally).toHaveBeenCalledWith(expect.any(Function), onFinally)
-    expect(isRef(result.data)).toBe(true)
   })
 })
