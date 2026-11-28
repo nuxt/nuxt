@@ -28,45 +28,38 @@ export function getSlotIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandRe
 
 export function getClientIslandResponse (ssrContext: NuxtSSRContext): NuxtIslandResponse['components'] {
   if (!ssrContext.islandContext || !Object.keys(ssrContext.islandContext.components).length) { return undefined }
-  const response: NuxtIslandResponse['components'] = {}
+  const teleports = ssrContext.teleports ?? {}
 
-  for (const [clientUid, component] of Object.entries(ssrContext.islandContext.components)) {
-    // remove teleport anchor to avoid hydration issues
-    let html = ssrContext.teleports?.[clientUid]?.replaceAll('<!--teleport start anchor-->', '') || ''
-
-    // when there's no matching teleport for the component UID, we use the teleport key (includes both island and component UID)
-    if (!html && ssrContext.teleports) {
-      for (const [key, value] of Object.entries(ssrContext.teleports)) {
-        const [, , kind, componentUid] = key.match(SSR_ISLAND_TELEPORT_MARKER) ?? []
-        if (kind === 'client' && componentUid === clientUid) {
-          html = value.replaceAll('<!--teleport start anchor-->', '')
-          break
-        }
-      }
+  const clientTeleports = new Map<string, string>()
+  const slotTeleports = new Map<string, Record<string, string>>()
+  for (const key in teleports) {
+    const [, , kind, componentUid] = key.match(SSR_ISLAND_TELEPORT_MARKER) ?? []
+    if (kind === 'client') {
+      if (!clientTeleports.has(componentUid!)) { clientTeleports.set(componentUid!, teleports[key]!) }
+      continue
     }
+    const [, id, slot] = key.match(SSR_CLIENT_SLOT_MARKER) ?? []
+    if (!slot) { continue }
+    const slots = slotTeleports.get(id!) ?? {}
+    slots[slot] = teleports[key]!
+    slotTeleports.set(id!, slots)
+  }
 
+  const response: NuxtIslandResponse['components'] = {}
+  for (const [clientUid, component] of Object.entries(ssrContext.islandContext.components)) {
     response[clientUid] = {
       ...component,
-      html,
-      slots: getComponentSlotTeleport(clientUid, ssrContext.teleports ?? {}),
+      // when there's no teleport for the component UID, use the one keyed by island and component UID
+      html: withoutTeleportAnchor(teleports[clientUid]) || withoutTeleportAnchor(clientTeleports.get(clientUid)),
+      slots: slotTeleports.get(clientUid) ?? {},
     }
   }
   return response
 }
 
-function getComponentSlotTeleport (clientUid: string, teleports: Record<string, string>): Record<string, string> {
-  const entries = Object.entries(teleports)
-  const slots: Record<string, string> = {}
-
-  for (const [key, value] of entries) {
-    const match = key.match(SSR_CLIENT_SLOT_MARKER)
-    if (match) {
-      const [, id, slot] = match
-      if (!slot || clientUid !== id) { continue }
-      slots[slot] = value
-    }
-  }
-  return slots
+/** Remove the teleport anchor to avoid hydration issues. */
+function withoutTeleportAnchor (html: string | undefined): string {
+  return html?.replaceAll('<!--teleport start anchor-->', '') || ''
 }
 
 // Inline script that runs synchronously during streaming, before the
