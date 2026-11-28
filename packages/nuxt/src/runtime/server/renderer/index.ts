@@ -327,9 +327,6 @@ async function renderRoute (instance: NuxtRendererInstance, event: RendererEvent
   for (const href of inlinedHrefs) {
     excludeHrefs.add(href)
   }
-  for (const resource of Object.values(scripts)) {
-    excludeHrefs.add(rendererContext.buildAssetsURL(resource.file))
-  }
   for (const id of ssrContext['~neverHydratedModules'] ?? []) {
     const file = (rendererContext.manifest ?? rendererContext.precomputed?.modules)?.[id]?.file
     if (file) {

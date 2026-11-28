@@ -141,7 +141,7 @@ describe('renderer without a server builder', () => {
     ['buffered render', { ssr: true, streaming: false }],
     ['streamed render', { ssr: true, streaming: true }],
     ['spa shell', { ssr: false, streaming: false }],
-  ])('does not modulepreload the entry script of a %s', async (_, rules) => {
+  ])('modulepreloads the entry script of a %s, which a hash-based CSP relies on', async (_, rules) => {
     const event = createEvent('/', { headers: { 'user-agent': 'Mozilla/5.0' } })
     const { html } = await render('/', { getRouteRules: () => rules }, event)
 
@@ -150,7 +150,8 @@ describe('renderer without a server builder', () => {
 
     const entry = html.match(/<script type="module" src="([^"]+)"/)?.[1]
     expect(entry).toBeTruthy()
-    expect(html).not.toMatch(new RegExp(`<link rel="modulepreload"[^>]*href="${entry}"`))
+    const preloaded = [...html.matchAll(/<link rel="modulepreload"[^>]*href="([^"]+)"/g)].map(match => match[1])
+    expect(preloaded).toContain(entry)
   })
 
   it('does not key the payload url of a cached route on the build id', async () => {
