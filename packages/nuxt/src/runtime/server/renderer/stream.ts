@@ -20,7 +20,7 @@ import { renderPayloadJsonScript } from './payload'
 import { renderStreamedIslandTeleports } from './islands'
 import { rendererDiagnostics } from './diagnostics'
 import { warnNoScriptsClientReliance } from './no-scripts'
-import { extractCspNonce } from './csp-nonce'
+import { addNonceToTags, extractCspNonce } from './csp-nonce'
 import { appEvent } from './runtime'
 import type { RendererEvent } from './runtime'
 import type { NuxtRendererInstance } from './instance'
@@ -173,28 +173,19 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   // pushed so far, including those from the synchronous part of setup).
   const { headTags, bodyTags, bodyTagsOpen, htmlAttrs, bodyAttrs } = renderShell(ssrContext.head)
 
-  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
-  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
-  // a strict `script-src 'nonce-…'` policy would block them. Reuse whatever
-  // nonce a security module stamped onto the rendered head scripts; if none is
-  // present the attribute is omitted and behaviour is unchanged.
-  const cspNonce = extractCspNonce(headTags)
-  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
-  const headChunkScript = (chunk: string) => `<script${nonceAttr}>${chunk};document.currentScript.remove()</script>`
-
   // 6. Fire `render:html` with `streaming: true` on the shell. Changes to
   // `htmlAttrs`/`head`/`bodyAttrs`/`bodyPrepend` land in the shell; `body` and
   // `bodyAppend` are dropped, as the body is about to stream.
   let iifeScript = ''
   if (!NO_SCRIPTS) {
     iifeScript = !import.meta.dev && iifeChunkFileName
-      ? `<script async${nonceAttr} src="${runtime.buildAssetsURL(iifeChunkFileName)}"></script>`
-      : `<script${nonceAttr}>${streamingIifeCode}</script>`
+      ? `<script async src="${runtime.buildAssetsURL(iifeChunkFileName)}"></script>`
+      : `<script>${streamingIifeCode}</script>`
   }
-  const devBadge = import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS, cspNonce) : undefined
+  let devBadge = import.meta.dev ? await renderDevBadge(runtime, event, NO_SCRIPTS) : undefined
   const shellContext: NuxtRenderHTMLContext = {
     htmlAttrs: htmlAttrs ? [htmlAttrs] : [],
-    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(undefined, cspNonce), headTags, DEFER_PREFETCH ? renderDeferredPrefetchHints(prefetchHints) : undefined, devBadge]),
+    head: normalizeChunks([NO_SCRIPTS ? '' : createBootstrapScript(), headTags, DEFER_PREFETCH ? renderDeferredPrefetchHints(prefetchHints) : undefined, devBadge]),
     bodyAttrs: bodyAttrs ? [bodyAttrs] : [],
     bodyPrepend: normalizeChunks([iifeScript, bodyTagsOpen]),
     body: [],
@@ -203,6 +194,33 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
   const hooks = instance.hooks
   const renderHtmlResult = hooks.callHook('render:html', shellContext, { event: hookEvent, streaming: true })
   if (renderHtmlResult instanceof Promise) { await renderHtmlResult }
+
+  // CSP nonce: streaming emits several inline `<script>`s that bypass unhead
+  // (bootstrap queue, IIFE, mid-stream head-push chunks, island relocation), so
+  // a strict `script-src 'nonce-…'` policy would block them. Scan the shell
+  // head tags after `render:html` has run, so nonce-injecting
+  // modules have already stamped their nonce; if none is
+  // present the attribute is omitted and behaviour is unchanged.
+  let cspNonce: string | undefined
+
+  for (const html of shellContext.head) {
+    cspNonce ||= extractCspNonce(html)
+
+    if (cspNonce) { break }
+  }
+
+  const nonceAttr = cspNonce ? ` nonce="${cspNonce}"` : ''
+  const headChunkScript = (chunk: string) => `<script${nonceAttr}>${chunk};document.currentScript.remove()</script>`
+
+  // A `render:html` may rewrite the shellContext entries entirely,
+  // so patch any `<script>` or `<style>` that is missing a `nonce=` rather than assuming
+  // these are the exact bootstrap/IIFE strings assigned above.
+  if (cspNonce) {
+    const patch = (html: string) => addNonceToTags(html, cspNonce)
+    shellContext.head = shellContext.head.map(patch)
+    shellContext.bodyPrepend = shellContext.bodyPrepend.map(patch)
+    if (import.meta.dev && devBadge) { devBadge = addNonceToTags(devBadge, cspNonce) }
+  }
   if (import.meta.dev) {
     await stampDevBadgeNonce(runtime, event, shellContext, devBadge, cspNonce)
   }
@@ -329,7 +347,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
         }
 
         if (!NO_SCRIPTS) {
-          pushPayloadScript(ssrContext, payloadInline, payloadURL)
+          pushPayloadScript(ssrContext, payloadInline, payloadURL, cspNonce)
         }
 
         // Render any final head updates (payload scripts, etc.) and fire the
@@ -340,6 +358,10 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
         const closeContext = { bodyAppend: normalizeChunks([streamBodyTags, bodyTags, closingHead.bodyTags]) }
         const closeResult = hooks.callHook('render:html:close', closeContext, { event: hookEvent })
         if (closeResult instanceof Promise) { await closeResult }
+
+        if (cspNonce) {
+          closeContext.bodyAppend = closeContext.bodyAppend.map(html => addNonceToTags(html, cspNonce))
+        }
 
         const closingHtml = APP_ROOT_CLOSE_TAG
           // Styles for modules registered after the first chunk (deeply nested
@@ -396,7 +418,7 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
         try {
           if (!NO_SCRIPTS) {
             ssrContext.head.push({
-              script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload }),
+              script: renderPayloadJsonScript({ ssrContext, data: ssrContext.payload, cspNonce }),
             }, { tagPosition: 'bodyClose', tagPriority: 'high' })
           }
           // a tag getter that throws on the error's broken state must not take

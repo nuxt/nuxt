@@ -47,11 +47,11 @@ export function pushPayloadPreload (ssrContext: NuxtSSRContext, href: string | u
  * `prefetchLinks` is only read from a `_payload.json` another page prefetched, so an inlined
  * payload leaves it out.
  */
-export function pushPayloadScript (ssrContext: NuxtSSRContext, inline: boolean, src: string | undefined): void {
+export function pushPayloadScript (ssrContext: NuxtSSRContext, inline: boolean, src: string | undefined, cspNonce?: string): void {
   ssrContext.head.push({
     script: inline
-      ? renderPayloadJsonScript({ ssrContext, data: withoutPrefetchLinks(ssrContext.payload) })
-      : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src }),
+      ? renderPayloadJsonScript({ ssrContext, data: withoutPrefetchLinks(ssrContext.payload), cspNonce })
+      : renderPayloadJsonScript({ ssrContext, data: splitPayload(ssrContext).initial, src, cspNonce }),
   }, {
     // ahead of any other end of body scripts
     tagPosition: 'bodyClose',
