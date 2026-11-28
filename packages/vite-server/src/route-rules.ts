@@ -51,7 +51,7 @@ export function addRouteRulesTemplate (): string {
           matchAll: true,
           serialize: rules => `{${Object.entries(rules)
             .flatMap(([name, value]) => {
-              if (value === undefined || name === '__proto__' || SERVER_ONLY_RULES.has(name)) { return [] }
+              if (name === '__proto__' || SERVER_ONLY_RULES.has(name)) { return [] }
               const json = serializeRule(nuxt, name, name === 'redirect' ? withRedirectBase(value, basePrefix) : value)
               return json === undefined ? [] : [`${JSON.stringify(name)}: ${json}`]
             })
@@ -74,21 +74,41 @@ export function addRouteRulesTemplate (): string {
 }
 
 /**
- * Whether a rule value can be written into the compiled matcher as an object literal: a value
- * JSON cannot round-trip (a function, a class instance, a non-finite number) has no
- * representation there.
+ * Whether a rule value can be written into the compiled matcher as an object literal. A
+ * function, a class instance, a non-finite number, or a container that holds itself cannot,
+ * since JSON has no representation for it. `undefined` is tolerated: `JSON.stringify` writes
+ * it as a missing property, or as `null` in an array.
+ *
+ * `ancestors` holds the containers on the path down to `value`, so a container met twice while
+ * descending is a cycle rather than a value to walk again, while a value referenced twice side
+ * by side is accepted.
  */
-function isSerializable (value: unknown): boolean {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean') { return true }
+function isSerializable (value: unknown, ancestors: Set<unknown> = new Set()): boolean {
+  if (value === undefined || value === null || typeof value === 'string' || typeof value === 'boolean') { return true }
   if (typeof value === 'number') { return Number.isFinite(value) }
-  if (Array.isArray(value)) { return value.every(isSerializable) }
-  const proto = typeof value === 'object' ? Object.getPrototypeOf(value) : undefined
-  if (proto !== Object.prototype && proto !== null) { return false }
-  return Object.entries(value as Record<string, unknown>).every(([key, item]) => key !== '__proto__' && isSerializable(item))
+  if (typeof value !== 'object') { return false }
+  if (ancestors.has(value)) { return false }
+  const proto = Object.getPrototypeOf(value)
+  if (!Array.isArray(value) && proto !== Object.prototype && proto !== null) { return false }
+
+  ancestors.add(value)
+  const serializable = Array.isArray(value)
+    ? value.every(item => isSerializable(item, ancestors))
+    : Object.entries(value).every(([key, item]) => key !== '__proto__' && isSerializable(item, ancestors))
+  ancestors.delete(value)
+  return serializable
 }
 
 function serializeRule (nuxt: Nuxt, name: string, value: unknown): string | undefined {
-  if (isSerializable(value)) { return JSON.stringify(value) }
+  if (value === undefined) { return undefined }
+
+  if (isSerializable(value)) {
+    try {
+      return JSON.stringify(value)
+    } catch {
+      // a getter or a `toJSON` that throws leaves nothing to write
+    }
+  }
 
   const warned = warnedRules.get(nuxt) ?? warnedRules.set(nuxt, new Set()).get(nuxt)!
   if (!warned.has(name)) {

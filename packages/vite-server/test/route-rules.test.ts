@@ -90,6 +90,29 @@ describe('vite server route rules matcher', () => {
     expect(warnings.join('\n')).toContain('`images`')
     warn.mockRestore()
   })
+
+  it('keeps a rule whose optional fields are unset', () => {
+    const match = compileMatcher({ '/**': { fonts: { families: ['Inter'], default: undefined } } })
+
+    expect(match('/')).toEqual({ fonts: { families: ['Inter'] } })
+  })
+
+  it('leaves out a rule value that holds itself, and keeps one referenced twice', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const shared = { families: ['Inter'] }
+    const circular: Record<string, unknown> = { families: ['Inter'] }
+    circular.fallback = circular
+
+    const match = compileMatcher({
+      '/shared': { fonts: { primary: shared, fallback: shared } },
+      '/loop': { fonts: circular },
+    })
+
+    expect(match('/shared')).toEqual({ fonts: { primary: { families: ['Inter'] }, fallback: { families: ['Inter'] } } })
+    expect(match('/loop')).toEqual({})
+    expect(warn.mock.calls.map(([message]) => String(message))).toEqual([expect.stringContaining('`fonts`')])
+    warn.mockRestore()
+  })
 })
 
 describe('vite server wildcard redirects', () => {
