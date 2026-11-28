@@ -150,6 +150,249 @@ describe('NuxtRouteAnnouncer', () => {
     el.unmount()
   })
 
+  it('keeps polite and assertive announcements in separate live regions', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Draft saved')
+    announcer.assertive('Upload failed')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Draft saved')
+    expect(el.get('[role="alert"]').text()).toBe('Upload failed')
+    el.unmount()
+  })
+
+  it('updates the live region when the public message ref changes', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.message.value = 'Direct update'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Direct update')
+    el.unmount()
+  })
+
+  it('keeps direct ref updates made before the component mounts', async () => {
+    const el = await mountSuspended({
+      setup () {
+        const announcer = useAnnouncer()
+        announcer.message.value = 'Ready before mount'
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    expect(el.get('[role="status"]').text()).toBe('Ready before mount')
+    el.unmount()
+  })
+
+  it('does not restore an old repeated message after a direct ref update', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Old')
+    announcer.polite('Old')
+    announcer.message.value = 'New'
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('New')
+    el.unmount()
+  })
+
+  it('does not copy an existing announcement when the politeness ref changes', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Draft saved')
+    announcer.politeness.value = 'assertive'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Draft saved')
+    expect(el.get('[role="alert"]').text()).toBe('')
+    el.unmount()
+  })
+
+  it.each(['message-first', 'politeness-first'])('uses the final urgency for direct ref updates: %s', async (order) => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    if (order === 'message-first') {
+      announcer.message.value = 'Upload failed'
+      announcer.politeness.value = 'assertive'
+    } else {
+      announcer.politeness.value = 'assertive'
+      announcer.message.value = 'Upload failed'
+    }
+    await flushPromises()
+    expect(el.get('[role="alert"]').text()).toBe('Upload failed')
+    expect(el.get('[role="status"]').text()).toBe('')
+    el.unmount()
+  })
+
+  it('routes a direct message from off to the final urgency in the same tick', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer({ politeness: 'off' })
+        return () => h(NuxtAnnouncer, { politeness: 'off' })
+      },
+    })
+    announcer.message.value = 'Upload failed'
+    announcer.politeness.value = 'assertive'
+    await flushPromises()
+    expect(el.get('[role="alert"]').text()).toBe('Upload failed')
+    expect(el.get('[aria-live="off"]').text()).toBe('')
+    el.unmount()
+  })
+
+  it('does not restore a queued direct update after set()', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.message.value = 'Old'
+    announcer.polite('New')
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('New')
+    el.unmount()
+  })
+
+  it('re-announces a direct update matching the target region', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    announcer.politeness.value = 'polite'
+    announcer.message.value = 'Saved'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('')
+    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Saved'))
+    expect(el.get('[role="alert"]').text()).toBe('Failed')
+    el.unmount()
+  })
+
+  it('cancels a repeated direct update when a newer message arrives', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    announcer.politeness.value = 'polite'
+    announcer.message.value = 'Saved'
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('')
+    announcer.message.value = 'Updated'
+    await new Promise(resolve => setTimeout(resolve, 150))
+    await flushPromises()
+    expect(el.get('[role="status"]').text()).toBe('Updated')
+    el.unmount()
+  })
+
+  it('cancels a repeated direct update on unmount', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    announcer.politeness.value = 'polite'
+    announcer.message.value = 'Saved'
+    await flushPromises()
+    el.unmount()
+    await new Promise(resolve => setTimeout(resolve, 150))
+    expect(announcer._regions.polite.value).toBe('')
+  })
+
+  it('keeps another region pending when the public refs are changed', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.polite('Saved')
+    announcer.politeness.value = 'assertive'
+    announcer.message.value = 'Failed'
+    await vi.waitFor(() => {
+      expect(el.get('[role="status"]').text()).toBe('Saved')
+      expect(el.get('[role="alert"]').text()).toBe('Failed')
+    })
+    el.unmount()
+  })
+
+  it('restores a repeated message without losing an announcement in the other region', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer)
+      },
+    })
+    announcer.polite('Saved')
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    expect(el.get('[role="alert"]').text()).toBe('Failed')
+    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Saved'))
+    el.unmount()
+  })
+
+  it('renders custom slot content for each active region', async () => {
+    let announcer!: ReturnType<typeof useAnnouncer>
+    const el = await mountSuspended({
+      setup () {
+        announcer = useAnnouncer()
+        return () => h(NuxtAnnouncer, null, { default: ({ message }: { message: string }) => h('strong', message) })
+      },
+    })
+    expect(el.findAll('strong')).toHaveLength(1)
+    expect(el.get('[role="status"] strong').text()).toBe('')
+    announcer.polite('Saved')
+    announcer.assertive('Failed')
+    await flushPromises()
+    expect(el.get('[role="status"] strong').text()).toBe('Saved')
+    expect(el.get('[role="alert"] strong').text()).toBe('Failed')
+    expect(el.findAll('strong')).toHaveLength(2)
+    el.unmount()
+  })
+
   it('`useAnnouncer` should announce assertive message', async () => {
     const el = await mountSuspended({
       setup () {
@@ -188,9 +431,10 @@ describe('NuxtRouteAnnouncer', () => {
 
     await el.get('[data-testid="polite-button"]').trigger('click')
     expect(el.get('[role="status"]').text()).toBe('')
-    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Item saved'))
-
-    expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    await vi.waitFor(() => {
+      expect(el.get('[role="status"]').text()).toBe('Item saved')
+      expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    })
 
     el.unmount()
   })
@@ -217,9 +461,10 @@ describe('NuxtRouteAnnouncer', () => {
     await button.trigger('click')
     await button.trigger('click')
     expect(el.get('[role="status"]').text()).toBe('')
-    await vi.waitFor(() => expect(el.get('[role="status"]').text()).toBe('Item saved'))
-
-    expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    await vi.waitFor(() => {
+      expect(el.get('[role="status"]').text()).toBe('Item saved')
+      expect(messages).toEqual(['Item saved', '', 'Item saved'])
+    })
 
     el.unmount()
   })

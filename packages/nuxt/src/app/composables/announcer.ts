@@ -1,5 +1,5 @@
 import type { Ref } from 'vue'
-import { getCurrentScope, onScopeDispose, shallowRef } from 'vue'
+import { effectScope, getCurrentScope, onScopeDispose, shallowRef, watch } from 'vue'
 import { useNuxtApp } from '../nuxt'
 
 export type AnnouncerPoliteness = 'assertive' | 'polite' | 'off'
@@ -15,42 +15,121 @@ export type NuxtAnnouncer = {
   set: (message: string, politeness?: AnnouncerPoliteness) => void
   polite: (message: string) => void
   assertive: (message: string) => void
+  _regions: Record<AnnouncerPoliteness, Ref<string>>
   _cleanup: () => void
 }
 
+// Each live region owns its message and repeat timer independently.
+function createLiveRegion () {
+  const message = shallowRef('')
+  let pendingMessage: string | undefined
+  let restoreTimer: ReturnType<typeof setTimeout> | undefined
+
+  function update (value: string) {
+    clearTimeout(restoreTimer)
+
+    // A repeated announcement needs a content change to be announced again.
+    if (import.meta.client && value && (message.value === value || pendingMessage === value)) {
+      pendingMessage = value
+      message.value = ''
+      restoreTimer = setTimeout(() => {
+        pendingMessage = undefined
+        restoreTimer = undefined
+        message.value = value
+      }, 100)
+      return
+    }
+
+    pendingMessage = undefined
+    message.value = value
+  }
+
+  function clear () {
+    clearTimeout(restoreTimer)
+    pendingMessage = undefined
+    message.value = ''
+  }
+
+  return { message, update, clear }
+}
+
 /** @internal */
-export function createAnnouncer (opts: NuxtAnnouncerOpts = {}): NuxtAnnouncer {
+export function createAnnouncer (opts: NuxtAnnouncerOpts = {}, separateRegions = false): NuxtAnnouncer {
   const message = shallowRef('')
   const politeness = shallowRef<AnnouncerPoliteness>(opts.politeness || 'polite')
-  let restore: ReturnType<typeof setTimeout> | undefined
+  const liveRegions = {
+    polite: createLiveRegion(),
+    assertive: createLiveRegion(),
+    off: createLiveRegion(),
+  }
+  const regions = {
+    polite: liveRegions.polite.message,
+    assertive: liveRegions.assertive.message,
+    off: liveRegions.off.message,
+  }
+  let isUpdatingMessage = false
+  let directUpdateVersion = 0
+  let messageRestoreTimer: ReturnType<typeof setTimeout> | undefined
   let pendingMessage: string | undefined
+  const scope = separateRegions ? effectScope(true) : undefined
+
+  if (scope) {
+    // A direct ref update replaces pending repetitions, just like set().
+    scope.run(() => watch(message, (value) => {
+      if (isUpdatingMessage) { return }
+      clearTimeout(messageRestoreTimer)
+      pendingMessage = undefined
+      const version = ++directUpdateVersion
+      // Wait for synchronous ref writes so the final politeness selects the region.
+      queueMicrotask(() => {
+        if (version !== directUpdateVersion) { return }
+        liveRegions[politeness.value].update(value)
+      })
+    }, { flush: 'sync' }))
+  }
 
   function set (messageValue: string = '', politenessSetting: AnnouncerPoliteness = 'polite') {
-    clearTimeout(restore)
+    directUpdateVersion++
+    if (separateRegions) {
+      // Each urgency has its own timer, so one announcement cannot cancel another.
+      liveRegions[politenessSetting].update(messageValue)
+    }
+    clearTimeout(messageRestoreTimer)
+    isUpdatingMessage = true
     politeness.value = politenessSetting
     // a live region is only announced when its content changes
     if (import.meta.client && messageValue && (message.value === messageValue || (message.value === '' && pendingMessage === messageValue))) {
       pendingMessage = messageValue
       message.value = ''
-      restore = setTimeout(() => {
-        restore = undefined
+      isUpdatingMessage = false
+      messageRestoreTimer = setTimeout(() => {
+        messageRestoreTimer = undefined
         pendingMessage = undefined
+        isUpdatingMessage = true
         message.value = messageValue
+        isUpdatingMessage = false
       }, 100)
       return
     }
     pendingMessage = undefined
     message.value = messageValue
+    isUpdatingMessage = false
   }
 
   return {
     message,
     politeness,
+    _regions: regions,
     set,
     polite: msg => set(msg, 'polite'),
     assertive: msg => set(msg, 'assertive'),
     _cleanup () {
-      clearTimeout(restore)
+      directUpdateVersion++
+      scope?.stop()
+      for (const urgency of ['polite', 'assertive', 'off'] as const) {
+        liveRegions[urgency].clear()
+      }
+      clearTimeout(messageRestoreTimer)
       pendingMessage = undefined
       message.value = ''
       politeness.value = opts.politeness || 'polite'
@@ -90,5 +169,5 @@ export function useSharedAnnouncer (key: '_announcer' | '_routeAnnouncer', opts:
  * assertive('Error: Form is invalid')
  */
 export function useAnnouncer (opts: NuxtAnnouncerOpts = {}): Omit<NuxtAnnouncer, '_cleanup'> {
-  return useSharedAnnouncer('_announcer', opts, () => createAnnouncer(opts))
+  return useSharedAnnouncer('_announcer', opts, () => createAnnouncer(opts, true))
 }
