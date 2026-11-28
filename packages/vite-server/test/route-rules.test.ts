@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defu } from 'defu'
+import { logger } from '@nuxt/kit'
 import type { Nuxt } from '@nuxt/schema'
 
 import { addRouteRulesTemplate } from '../src/route-rules'
@@ -47,6 +48,82 @@ describe('vite server route rules matcher', () => {
     expect(match('/old', 'GET').redirect).toMatchObject({ to: '/new' })
     expect(match('/old', 'HEAD').redirect).toMatchObject({ to: '/new' })
     expect(match('/old', 'POST')).not.toHaveProperty('redirect')
+  })
+
+  it('matches the route rules a module declares a key for', () => {
+    const match = compileMatcher({
+      '/**': { fonts: { families: ['Inter'] } },
+      '/blog/**': { fonts: { default: 'Inter' } },
+    })
+
+    expect(match('/blog/post')).toEqual({ fonts: { families: ['Inter'], default: 'Inter' } })
+    expect(match('/about')).toEqual({ fonts: { families: ['Inter'] } })
+  })
+
+  it('matches a rule key that is not an identifier', () => {
+    const match = compileMatcher({ '/**': { 'my-module': { enabled: true } } })
+
+    expect(match('/')).toEqual({ 'my-module': { enabled: true } })
+  })
+
+  it('leaves out the rule keys an HTTP layer handles', () => {
+    const match = compileMatcher({
+      '/**': { cache: { maxAge: 60 }, cors: true, headers: { 'x-all': '1' } },
+      '/blog/**': { swr: 10, proxy: '/elsewhere' },
+    })
+
+    expect(match('/blog/post')).toEqual({ headers: { 'x-all': '1' } })
+  })
+
+  it('leaves out a rule value it cannot write into the matcher, and reports each key once', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+
+    const match = compileMatcher({
+      '/**': { fonts: { loader: () => 'Inter' } },
+      '/blog/**': { fonts: { loader: () => 'Mono' }, images: { sizes: [Number.POSITIVE_INFINITY] } },
+    })
+
+    expect(match('/blog/post')).toEqual({})
+    const warnings = warn.mock.calls.map(([message]) => String(message))
+    expect(warnings).toHaveLength(2)
+    expect(warnings.join('\n')).toContain('`fonts`')
+    expect(warnings.join('\n')).toContain('`images`')
+    warn.mockRestore()
+  })
+
+  it('keeps a rule whose optional fields are unset', () => {
+    const match = compileMatcher({ '/**': { fonts: { families: ['Inter'], default: undefined } } })
+
+    expect(match('/')).toEqual({ fonts: { families: ['Inter'] } })
+  })
+
+  it('leaves out a rule value whose property throws when read', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const fonts: Record<string, unknown> = { families: ['Inter'] }
+    Object.defineProperty(fonts, 'fallback', { enumerable: true, get () { throw new Error('unreadable') } })
+
+    const match = compileMatcher({ '/**': { fonts } })
+
+    expect(match('/')).toEqual({})
+    expect(warn.mock.calls.map(([message]) => String(message))).toEqual([expect.stringContaining('`fonts`')])
+    warn.mockRestore()
+  })
+
+  it('leaves out a rule value that holds itself, and keeps one referenced twice', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const shared = { families: ['Inter'] }
+    const circular: Record<string, unknown> = { families: ['Inter'] }
+    circular.fallback = circular
+
+    const match = compileMatcher({
+      '/shared': { fonts: { primary: shared, fallback: shared } },
+      '/loop': { fonts: circular },
+    })
+
+    expect(match('/shared')).toEqual({ fonts: { primary: { families: ['Inter'] }, fallback: { families: ['Inter'] } } })
+    expect(match('/loop')).toEqual({})
+    expect(warn.mock.calls.map(([message]) => String(message))).toEqual([expect.stringContaining('`fonts`')])
+    warn.mockRestore()
   })
 })
 

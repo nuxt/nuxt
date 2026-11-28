@@ -17,6 +17,8 @@ export default defineNuxtConfig({
     '/moved': { redirect: '/about?from=rule#top' },
     '/guarded': { appMiddleware: 'guard' },
     '/themed': { appLayout: 'themed' },
+    '/**': { rendererPlugin: { scope: 'every route' } },
+    '/rules': { rendererPlugin: { label: 'from a route rule' } },
   },
   sourcemap: false,
   compatibilityDate: 'latest',

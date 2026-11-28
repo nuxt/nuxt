@@ -1,9 +1,25 @@
-import { addRendererPlugin, addServerTemplate, addTemplate, addVitePlugin, createResolver, defineNuxtModule, updateTemplates } from '@nuxt/kit'
+import { addRendererPlugin, addServerTemplate, addTemplate, addTypeTemplate, addVitePlugin, createResolver, defineNuxtModule, updateTemplates } from '@nuxt/kit'
+
+const ruleExtension = ['@nuxt/schema', 'nuxt/schema'].flatMap(module => [
+  `declare module '${module}' {`,
+  '  interface RouteRuleConfigExtensions {',
+  '    rendererPlugin?: { scope?: string, label?: string }',
+  '  }',
+  '  interface AppRouteRulesExtensions {',
+  '    rendererPlugin?: { scope?: string, label?: string }',
+  '  }',
+  '}',
+])
 
 export default defineNuxtModule({
   meta: { name: 'renderer-plugin' },
   setup (_options, nuxt) {
     let mark = 'from a server template'
+
+    addTypeTemplate({
+      filename: 'types/renderer-plugin.d.ts',
+      getContents: () => [...ruleExtension, 'export {}'].join('\n'),
+    }, { nuxt: true, node: true })
 
     addServerTemplate({
       filename: '#renderer-plugin/template',
