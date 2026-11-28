@@ -16,7 +16,10 @@ export interface NuxtRenderer {
   fetch: (event: ReturnType<typeof createRequestEvent>) => Promise<Response>
 }
 
-/** Route rules matched for a path and request method, as the build's compiled matcher resolves them. */
+/**
+ * Route rules matched for a path and request method, as the build's compiled matcher resolves
+ * them. Keys a module declares through `RouteRuleConfigExtensions` are carried as well.
+ */
 export type MatchRouteRules = (path: string, method?: string) => {
   ssr?: boolean
   streaming?: boolean

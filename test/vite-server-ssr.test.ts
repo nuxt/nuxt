@@ -63,6 +63,13 @@ describe.skipIf(!runsDev)('pure vite dev server with ssr', () => {
     expect(await $fetch<string>('/')).toContain('<meta name="server-template" content="from a server template">')
   })
 
+  it('matches the route rules a module declares a key for', async () => {
+    const html = await $fetch<string>('/rules')
+
+    expect(html).toContain('<meta name="route-rule-scope" content="every route">')
+    expect(html).toContain('<meta name="route-rule-label" content="from a route rule">')
+  })
+
   it('renders the error page for a request that accepts JSON', async () => {
     const response = await fetch('/not-a-page', { headers: { accept: 'application/json' } })
 
@@ -181,6 +188,13 @@ describe.skipIf(!runsOnceInMatrix)('pure vite server build', () => {
 
   it('resolves a module registered with `addServerTemplate()`', () => {
     expect(html).toContain('<meta name="server-template" content="from a server template">')
+  })
+
+  it('matches the route rules a module declares a key for', async () => {
+    const rendered = await (await render('/rules')).text()
+
+    expect(rendered).toContain('<meta name="route-rule-scope" content="every route">')
+    expect(rendered).toContain('<meta name="route-rule-label" content="from a route rule">')
   })
 
   it('renders a route ruled `noScripts` without scripts', async () => {

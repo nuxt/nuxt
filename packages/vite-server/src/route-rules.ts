@@ -1,4 +1,4 @@
-import { addTemplate } from '@nuxt/kit'
+import { addTemplate, logger } from '@nuxt/kit'
 import { defu } from 'defu'
 import { resolveModulePath } from 'exsolve'
 import type { Nuxt } from '@nuxt/schema'
@@ -6,13 +6,14 @@ import type { Nuxt } from '@nuxt/schema'
 import { createNormalizedRouteRulesRouter, genNormalizePathCode, matchAllRouteRules, normalizeRouteRuleLookupPath, parseRouteRulesRoute, resolveRouteRulesRoutes } from '@nuxt/kit/internal'
 
 /**
- * The rules this builder resolves for itself: the renderer reads `ssr`, `streaming`,
- * `noScripts` and `prerender`, and the fetch handler answers `redirect` and sets `headers`.
- * Caching, proxying and CORS belong to an HTTP layer, which this builder does not provide.
+ * Rules an HTTP layer handles, which this builder reports as unsupported. The matcher leaves
+ * them out: the renderer reads `cache` when no page matches the request.
  */
-const SUPPORTED_RULES = new Set(['ssr', 'streaming', 'noScripts', 'prerender', 'redirect', 'headers'])
+export const SERVER_ONLY_RULES = new Set(['cache', 'swr', 'isr', 'proxy', 'cors'])
 
 const defuPath = resolveModulePath('defu', { try: true, from: import.meta.url }) ?? 'defu'
+
+const warnedRules = new WeakMap<Nuxt, Set<string>>()
 
 /**
  * Build-time matcher over the resolved route rules, looked up by a path without the base URL:
@@ -28,6 +29,10 @@ export function createRouteRulesMatcher (nuxt: Nuxt): (path: string) => Record<s
  * Emit the matcher the server bundle resolves rules through, so that a render and the
  * handler in front of it read the same rules the build compiled. A lookup takes the request
  * method, `GET` by default.
+ *
+ * Every JSON-serialisable rule is emitted, not only the ones this builder acts on: a module
+ * declares its own keys through `RouteRuleConfigExtensions`, and a renderer plugin reads them
+ * back through `getRouteRules()`.
  */
 export function addRouteRulesTemplate (): string {
   const { dst } = addTemplate({
@@ -45,8 +50,11 @@ export function addRouteRulesTemplate (): string {
         const matcher = createNormalizedRouteRulesRouter(routes, baseURL, fold, undefined, method).compileToString({
           matchAll: true,
           serialize: rules => `{${Object.entries(rules)
-            .filter(([name, value]) => value !== undefined && SUPPORTED_RULES.has(name))
-            .map(([name, value]) => `${name}: ${JSON.stringify(name === 'redirect' ? withRedirectBase(value, basePrefix) : value)}`)
+            .flatMap(([name, value]) => {
+              if (value === undefined || name === '__proto__' || SERVER_ONLY_RULES.has(name)) { return [] }
+              const json = serializeRule(nuxt, name, name === 'redirect' ? withRedirectBase(value, basePrefix) : value)
+              return json === undefined ? [] : [`${JSON.stringify(name)}: ${json}`]
+            })
             .join(',')}}`,
         })
         return `[${JSON.stringify(method)}, ${matcher}]`
@@ -63,6 +71,31 @@ export function addRouteRulesTemplate (): string {
     },
   })
   return dst
+}
+
+/**
+ * Whether a rule value can be written into the compiled matcher as an object literal: a value
+ * JSON cannot round-trip (a function, a class instance, a non-finite number) has no
+ * representation there.
+ */
+function isSerializable (value: unknown): boolean {
+  if (value === null || typeof value === 'string' || typeof value === 'boolean') { return true }
+  if (typeof value === 'number') { return Number.isFinite(value) }
+  if (Array.isArray(value)) { return value.every(isSerializable) }
+  const proto = typeof value === 'object' ? Object.getPrototypeOf(value) : undefined
+  if (proto !== Object.prototype && proto !== null) { return false }
+  return Object.entries(value as Record<string, unknown>).every(([key, item]) => key !== '__proto__' && isSerializable(item))
+}
+
+function serializeRule (nuxt: Nuxt, name: string, value: unknown): string | undefined {
+  if (isSerializable(value)) { return JSON.stringify(value) }
+
+  const warned = warnedRules.get(nuxt) ?? warnedRules.set(nuxt, new Set()).get(nuxt)!
+  if (!warned.has(name)) {
+    warned.add(name)
+    logger.warn(`[nuxt:vite-server] Route rule \`${name}\` is not JSON-serialisable, so it is left out of the rules a request is matched against.`)
+  }
+  return undefined
 }
 
 function withRedirectBase (redirect: unknown, prefix: string): unknown {

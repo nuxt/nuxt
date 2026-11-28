@@ -9,6 +9,7 @@ import type { Nuxt } from '@nuxt/schema'
 
 import { distDir } from './dirs.ts'
 import { setupSSR } from './ssr.ts'
+import { SERVER_ONLY_RULES } from './route-rules.ts'
 import { setupDevServer } from './dev.ts'
 import { BuildEnvironmentsPlugin, DocumentPlugin, EntryImportMapPlugin, documentPath } from './document.ts'
 import { finishStaticOutput, writeStaticOutput } from './output.ts'
@@ -215,12 +216,6 @@ function setupAppManifest (nuxt: Nuxt, prerender: boolean): void {
   nuxt.options.prerender.ignore ||= []
   nuxt.options.prerender.ignore.push(joinURL(nuxt.options.app.baseURL, nuxt.options.app.buildAssetsDir, 'builds'))
 }
-
-/**
- * Rules a request has to reach a server runtime to be answered: this builder brings none, so
- * nothing caches, proxies or negotiates CORS for a request it serves.
- */
-const SERVER_ONLY_RULES = new Set(['cache', 'swr', 'isr', 'proxy', 'cors'])
 
 function warnExperimental (nuxt: Nuxt, build: { ssr: boolean, unsupported: string[] }) {
   const unsupported = [...build.unsupported]
