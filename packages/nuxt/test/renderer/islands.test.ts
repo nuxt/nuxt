@@ -76,4 +76,38 @@ describe('getClientIslandResponse', () => {
 
     expect(response?.Counter?.html).toBe('<p>client</p>')
   })
+
+  it('prefers the teleport keyed by component uid and strips teleport anchors', () => {
+    const response = getClientIslandResponse({
+      islandContext: { components: { A: { props: {} }, B: { props: {} }, C: { props: {} } }, slots: {} },
+      teleports: {
+        'A': '<!--teleport start anchor--><p>direct</p>',
+        'uid=v-0-1;client=A': '<p>keyed</p>',
+        'B': '<!--teleport start anchor-->',
+        'uid=v-0-1;client=B': '<!--teleport start anchor--><p>first</p>',
+        'uid=v-0-2;client=B': '<p>second</p>',
+      },
+    } as unknown as NuxtSSRContext)
+
+    expect(response?.A?.html).toBe('<p>direct</p>')
+    expect(response?.B?.html).toBe('<p>first</p>')
+    expect(response?.C?.html).toBe('')
+  })
+
+  it('gives each component only its own slot teleports', () => {
+    const response = getClientIslandResponse({
+      islandContext: { components: { A: { props: {} }, B: { props: {} }, C: { props: {} } }, slots: {} },
+      teleports: {
+        'island-slot=A;default': '<p>a default</p>',
+        'island-slot=B;default': '<p>b default</p>',
+        'island-slot=A;footer': '<p>a footer</p>',
+        'island-slot=A;': '<p>nameless</p>',
+        'uid=v-0-1;slot=A': '<p>island slot</p>',
+      },
+    } as unknown as NuxtSSRContext)
+
+    expect(response?.A?.slots).toEqual({ default: '<p>a default</p>', footer: '<p>a footer</p>' })
+    expect(response?.B?.slots).toEqual({ default: '<p>b default</p>' })
+    expect(response?.C?.slots).toEqual({})
+  })
 })
