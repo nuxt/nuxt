@@ -580,6 +580,9 @@ catalogs:
     fast-check:
       specifier: 4.11.0
       version: 4.11.0
+    glosslint:
+      specifier: https://pkg.pr.new/glosslint@eea6ad3
+      version: https://pkg.pr.new/glosslint@eea6ad3
     h3:
       specifier: ^2.0.8
       version: 2.0.8
@@ -922,6 +925,9 @@ importers:
       get-port-please:
         specifier: catalog:build
         version: 3.2.0
+      glosslint:
+        specifier: catalog:dev
+        version: https://pkg.pr.new/glosslint@eea6ad3(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2))
       h3:
         specifier: catalog:dev
         version: 2.0.8(crossws@0.4.17(srvx@1.0.8))(ocache@0.3.2)
@@ -8609,6 +8615,23 @@ packages:
   globby@16.2.4:
     resolution: {integrity: sha512-c8B/VNLmxRcmqqenRA9t+9IyOjf9+V6lTxPaUJLqOCONdQkWZ0ETYgX0qbtJqPsgCNusT9MZ5Jeidw8Eb9tn2g==}
     engines: {node: '>=20'}
+
+  glosslint@https://pkg.pr.new/glosslint@eea6ad3:
+    resolution: {integrity: sha512-vk2Hkw8B516fIbGaKNzjrpodM7F2/02y3WKz9tCeqincnSiHQAnFpVLBgjrwXG3NYah841CgYV2x08VsLYSFuQ==, tarball: https://pkg.pr.new/glosslint@eea6ad3}
+    version: 0.2.0
+    engines: {node: '>=22.18.0'}
+    hasBin: true
+    peerDependencies:
+      '@x18n/core': '>=0.1.14'
+      eslint: '>=9.15.0'
+      oxlint: '>=1.94.0'
+    peerDependenciesMeta:
+      '@x18n/core':
+        optional: true
+      eslint:
+        optional: true
+      oxlint:
+        optional: true
 
   gonzales-pe@4.3.0:
     resolution: {integrity: sha512-otgSPpUmdWJ43VXyiNgEYE4luzHCL2pz4wQ0OnDluC6Eg4Ko3Vexy/SrSynglw/eR+OhkzmqFCZa/OFa/RgAOQ==}
@@ -18718,6 +18741,15 @@ snapshots:
       micromatch: 4.0.8
       slash: 5.1.0
       unicorn-magic: 0.4.1
+
+  glosslint@https://pkg.pr.new/glosslint@eea6ad3(eslint@10.15.0(jiti@2.7.0)(supports-color@10.2.2)):
+    dependencies:
+      cac: 7.1.1
+      scule: 1.3.0
+      tinyglobby: 0.2.17
+      yaml: 2.9.1
+    optionalDependencies:
+      eslint: 10.15.0(jiti@2.7.0)(supports-color@10.2.2)
 
   gonzales-pe@4.3.0:
     dependencies:
