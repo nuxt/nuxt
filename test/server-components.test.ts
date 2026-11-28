@@ -42,6 +42,8 @@ await setupFixture('server-components', oncePerBuild || errorProjects, {
 describe.skipIf(!oncePerBuild)('server components/islands', () => {
   it('/islands', async () => {
     const { page } = await renderPage('/islands')
+    await page.waitForFunction(() => document.querySelector('#server-component-ref')?.textContent)
+    expect(await page.locator('#server-component-ref').textContent()).toBe('DIV')
     const islandRequest = page.waitForResponse(response => response.url().includes('/__nuxt_island/') && response.status() === 200)
     await page.locator('#increase-pure-component').click()
     await islandRequest
