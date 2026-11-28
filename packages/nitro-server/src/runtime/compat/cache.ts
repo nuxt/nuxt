@@ -1,11 +1,11 @@
 /**
- * The Nitro v2 cached handler helpers, implemented on `nitro/cache`.
+ * The Nitro v2 cached handler and function helpers, implemented on `nitro/cache`.
  */
-import { defineCachedHandler } from 'nitro/cache'
+import { defineCachedHandler, defineCachedFunction as nitroDefineCachedFunction } from 'nitro/cache'
 import { handleCacheHeaders, toResponse } from 'nitro/h3'
 import type { EventHandler, EventHandlerRequest, EventHandlerResponse, EventHandlerWithFetch, H3Event } from 'nitro/h3'
 import { FastResponse } from 'srvx'
-import type { CachedHandlerOptions } from 'nitro/types'
+import type { CachedFunction, CachedFunctionOptions, CachedHandlerOptions } from 'nitro/types'
 import { legacyResponseHeaders } from '#nuxt-compat/flags'
 
 import { fromLegacyBody } from './event.ts'
@@ -92,4 +92,9 @@ export function defineCachedEventHandler<RequestT extends EventHandlerRequest = 
   } as CachedHandlerOptions) as unknown as CachedEventHandler<RequestT, ResponseT>
 }
 
-export { defineCachedEventHandler as cachedEventHandler }
+/** v2 `defineCachedFunction`, which serves an expired entry while it revalidates unless `swr` is `false`. */
+export function defineCachedFunction<T, ArgsT extends unknown[] = any[]> (fn: (...args: ArgsT) => T | Promise<T>, options?: CachedFunctionOptions<T, ArgsT>): CachedFunction<T, ArgsT> {
+  return nitroDefineCachedFunction(fn, { ...options, swr: options?.swr ?? true })
+}
+
+export { defineCachedEventHandler as cachedEventHandler, defineCachedFunction as cachedFunction }

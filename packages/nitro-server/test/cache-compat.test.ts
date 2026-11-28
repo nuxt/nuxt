@@ -17,9 +17,13 @@ vi.mock('nitro/cache', () => ({
     defined.push(options)
     return handler
   },
+  defineCachedFunction: (fn: unknown, options?: Record<string, any>) => {
+    defined.push(options)
+    return fn
+  },
 }))
 
-const { cachedEventHandler, defineCachedEventHandler, legacyCacheControl } = await import('../src/runtime/compat/cache.ts')
+const { cachedEventHandler, cachedFunction, defineCachedEventHandler, defineCachedFunction, legacyCacheControl } = await import('../src/runtime/compat/cache.ts')
 const { default: plugin } = await import('../src/runtime/compat/cache-control-plugin.ts')
 
 function optionsOf (options?: Record<string, any>, define = defineCachedEventHandler) {
@@ -75,6 +79,18 @@ describe('nitro v2 cached handlers', () => {
     for (const options of [{ maxAge: 60, sendCacheControl: true }, { maxAge: 60, sendCacheControl: false }, { maxAge: 60, headersOnly: true }, { maxAge: 60, stream: true }]) {
       expect(optionsOf(options)).toEqual({ ...options, swr: true, toResponse: expect.any(Function) })
     }
+  })
+})
+
+describe('nitro v2 cached functions', () => {
+  it.each([['defineCachedFunction', defineCachedFunction], ['cachedFunction', cachedFunction]] as const)('serve an expired entry with `%s` unless `swr` is `false`', (_name, define) => {
+    defined.length = 0
+    define(() => 'value', { maxAge: 60 })
+    expect(defined[0]).toEqual({ maxAge: 60, swr: true })
+
+    defined.length = 0
+    define(() => 'value', { maxAge: 60, swr: false })
+    expect(defined[0]).toEqual({ maxAge: 60, swr: false })
   })
 })
 

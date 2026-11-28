@@ -1708,11 +1708,13 @@ describe('getServerImportsPresets', () => {
     [{ h3: true, config: false }, /compat[\\/]cache/],
     [{ h3: false, config: true }, /compat[\\/]cache/],
     [{ h3: false, config: false }, /^nitro\/cache$/],
-  ])('resolves the Nitro v2 cached handler names with %o', async (toggles, expected) => {
+  ])('resolves the Nitro v2 cached handler and function names with %o', async (toggles, expected) => {
     const source = new Map(flatten(await getServerImportsPresets(resolveNitroLegacyOptions(toggles))))
 
     expect(source.get('defineCachedEventHandler')).toMatch(expected)
     expect(source.get('cachedEventHandler')).toMatch(expected)
+    expect(source.get('defineCachedFunction')).toMatch(expected)
+    expect(source.get('cachedFunction')).toMatch(expected)
     expect(source.get('defineCachedHandler')).toBe('nitro/cache')
   })
 
