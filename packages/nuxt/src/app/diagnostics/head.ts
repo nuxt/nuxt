@@ -13,7 +13,7 @@ export const unheadDiagnostics = !import.meta.dev
       codes: {
         NUXT_E6001: {
           why: 'The Unhead instance is missing.',
-          fix: 'Ensure `useHead()` is called inside a component `setup()` function, a Nuxt plugin, or Nuxt middleware.',
+          fix: 'Ensure `useHead()` is called inside a component `setup()` function, a Nuxt plugin, or route middleware.',
         },
         NUXT_E6002: {
           why: '`<Title>` received more than one child in its default slot.',

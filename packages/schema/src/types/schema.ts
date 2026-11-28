@@ -798,7 +798,7 @@ export interface ConfigSchema {
     layouts: string
 
     /**
-     * The middleware directory, each file of which will be auto-registered as a Nuxt middleware.
+     * The middleware directory, each file of which will be auto-registered as route middleware.
      */
     middleware: string
 
@@ -1891,7 +1891,7 @@ export interface ConfigSchema {
     runtimeBaseURL: boolean
 
     /**
-     * Whether to enable a compatibility layer for Nitro auto imports.
+     * Whether to enable a compatibility layer for Nitro auto-imports.
      * We recommend migrating to direct imports instead.
      * @default false
      */

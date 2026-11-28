@@ -55,7 +55,7 @@ In development, the cause chain is exposed to your [error page](/docs/getting-st
 
 ## In API Routes
 
-Use `createError` to trigger error handling in server API routes.
+Use `createError` to trigger error handling in server routes.
 
 ### Example
 

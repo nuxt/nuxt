@@ -271,6 +271,7 @@ catalogs:
     eslint-plugin-perfectionist: 5.14.0
     eslint-typegen: 2.3.2
     fast-check: 4.11.0
+    glosslint: https://pkg.pr.new/glosslint@eea6ad3
     h3: ^2.0.8
     h3-next: 'npm:h3@^2.0.8'
     happy-dom: 21.0.4

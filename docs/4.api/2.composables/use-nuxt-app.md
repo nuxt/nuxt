@@ -182,7 +182,7 @@ export default defineComponent({
 ### `runWithContext`
 
 ::note
-You are likely here because you got a "Nuxt instance unavailable" message. Please use this method sparingly, and report examples that are causing issues, so that it can ultimately be solved at the framework level.
+You are likely here because you got a [`NUXT_E1001`](/docs/errors/e1001) error. Please use this method sparingly, and report examples that are causing issues, so that it can ultimately be solved at the framework level.
 ::
 
 The `runWithContext` method is meant to be used to call a function and give it an explicit Nuxt context. Typically, the Nuxt context is passed around implicitly and you do not need to worry about this. However, when working with complex `async`/`await` scenarios in middleware/plugins, you can run into instances where the current instance has been unset after an async call.
@@ -216,7 +216,7 @@ const result = nuxtApp.runWithContext(() => functionWithContext())
 
 #### A Deeper Explanation of Context
 
-Vue.js Composition API (and Nuxt composables similarly) work by depending on an implicit context. During the lifecycle, Vue sets the temporary instance of the current component (and Nuxt temporary instance of nuxtApp) to a global variable and unsets it in same tick. When rendering on the server side, there are multiple requests from different users and nuxtApp running in a same global context. Because of this, Nuxt and Vue immediately unset this global instance to avoid leaking a shared reference between two users or components.
+Vue.js Composition API (and Nuxt composables similarly) work by depending on an implicit context. During the lifecycle, Vue sets the temporary instance of the current component (and Nuxt temporary instance of `nuxtApp`) to a global variable and unsets it in same tick. When rendering on the server side, there are multiple requests from different users and `nuxtApp` running in a same global context. Because of this, Nuxt and Vue immediately unset this global instance to avoid leaking a shared reference between two users or components.
 
 What it does mean? The Composition API and Nuxt Composables are only available during lifecycle and in same tick before any async operation:
 

@@ -563,9 +563,9 @@ export function callWithNuxt<T extends (...args: any[]) => any> (nuxt: NuxtApp |
 }
 
 /**
- * Returns the current Nuxt instance.
+ * Returns the current Nuxt app.
  *
- * Returns `null` if Nuxt instance is unavailable.
+ * Returns `null` if no Nuxt app is available.
  * @since 3.10.0
  */
 export function tryUseNuxtApp (): NuxtApp | null
@@ -582,9 +582,9 @@ export function tryUseNuxtApp (id?: string): NuxtApp | null {
 }
 
 /**
- * Returns the current Nuxt instance.
+ * Returns the current Nuxt app.
  *
- * Throws an error if Nuxt instance is unavailable.
+ * Throws an error if no Nuxt app is available.
  * @since 3.0.0
  */
 export function useNuxtApp (): NuxtApp

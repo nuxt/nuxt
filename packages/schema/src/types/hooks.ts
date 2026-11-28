@@ -476,9 +476,9 @@ export interface NuxtHooks {
   'components:extend': (components: Component[]) => HookResult
 
   /**
-   * Allows extending the routes to be pre-rendered.
+   * Allows extending the routes to be prerendered.
    * @param ctx Nuxt context
-   * @param ctx.routes Set of routes to be pre-rendered
+   * @param ctx.routes Set of routes to be prerendered
    * @returns Promise
    */
   'prerender:routes': (ctx: { routes: Set<string> }) => HookResult
