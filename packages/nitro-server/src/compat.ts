@@ -656,16 +656,19 @@ function getLegacyImportsPreset (): Array<LegacyImportsPreset & { priority?: num
   ]
 }
 
-const LEGACY_CACHED_HANDLER_NAMES = ['defineCachedEventHandler', 'cachedEventHandler']
+const LEGACY_CACHE_NAMES = ['defineCachedFunction', 'cachedFunction', 'defineCachedEventHandler', 'cachedEventHandler']
 
-/** The Nitro v2 names, with the cached handler helpers from the compat runtime. */
+/** The Nitro v2 names, with the cached handler and function helpers from the compat runtime. */
 function getV2ImportsPreset (): LegacyImportsPreset[] {
   return [
     ...v2ImportsPreset.map(preset => ({
       from: preset.from,
-      imports: preset.imports.filter(entry => typeof entry === 'string' || !LEGACY_CACHED_HANDLER_NAMES.includes(entry.as ?? entry.name)),
+      imports: preset.imports.filter((entry) => {
+        const name = typeof entry === 'string' ? entry : entry.as ?? entry.name
+        return !LEGACY_CACHE_NAMES.includes(name)
+      }),
     })),
-    { from: compatRuntimePath('cache'), imports: LEGACY_CACHED_HANDLER_NAMES },
+    { from: compatRuntimePath('cache'), imports: LEGACY_CACHE_NAMES },
   ]
 }
 
