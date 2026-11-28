@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { joinURL } from 'ufo'
 import { isCI, isWindows } from 'std-env'
 import { join } from 'pathe'
-import { $fetch, createPage, fetch, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
+import { $fetch, createPage, fetch, getBrowser, startServer, url, useTestContext } from '@nuxt/test-utils/e2e'
 import { $fetchComponent } from '@nuxt/test-utils/experimental'
 
 import { asyncContext, builder, isBuilt, isDev, isTestingAppManifest, isWebpack, legacyComponentResolution, legacyErrorRendering, runsOnceInMatrix as once, runsOncePerBuildInMatrix as oncePerBuild, runsOncePerEnvInMatrix as oncePerEnv, runsOncePerViteBuilderInMatrix as oncePerServer } from './matrix'
@@ -531,6 +531,38 @@ describe('pages', () => {
       expect(html).toContain(content)
     }
     await expectNoClientErrors(path)
+  })
+
+  it('/server-only', async () => {
+    const html = await $fetch<string>('/server-only')
+    expect(html).toContain('ServerOnly test page')
+    expect(html).toContain('Rendered at')
+    expect(html).toContain('data-server-only')
+    expect(html).toContain('server-only-content')
+    await expectNoClientErrors('/server-only')
+    const browser = await getBrowser()
+    const page = await browser.newPage({})
+    const response = await page.goto(url('/server-only'))
+    const responseHtml = await response!.text()
+    const ssrMatch = responseHtml.match(/id="server-only-content">([^<]+)</)
+    const ssrContent = ssrMatch?.[1]?.trim() ?? null
+    expect(ssrContent).toBeTruthy()
+    expect(ssrContent).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    expect(await page.locator('#server-only-content').textContent()).toBe(ssrContent)
+    expect(await page.locator('[data-server-only]').count()).toBe(1)
+    await page.close()
+  })
+
+  it('/server-only client-side navigation', async () => {
+    const { page } = await renderPage('/')
+    await page.locator('#to-server-only').click()
+    await page.waitForFunction(path => window.useNuxtApp?.()._route.fullPath === path && !window.useNuxtApp?.().isHydrating, '/server-only')
+    await page.getByText('ServerOnly test page').waitFor()
+    // No SSR HTML to keep after navigation, so the slot runs on the client.
+    expect(await page.locator('#server-only-content').textContent()).toMatch(/Rendered at \d{4}-\d{2}-\d{2}T/)
+    expect(await page.locator('[data-server-only]').count()).toBe(1)
+    await page.close()
   })
 
   it.skipIf(!componentProjects)('/client-server', async () => {
