@@ -1,8 +1,8 @@
 /// <reference path="../fixtures/basic/.nuxt/nuxt.d.ts" />
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, onTestFinished, vi } from 'vitest'
 import { defineEventHandler } from 'h3'
 import { registerEndpoint } from '@nuxt/test-utils/runtime'
-import { computed, toValue } from 'vue'
+import { computed, isRef, toValue } from 'vue'
 import { defineUseAsyncDataAddon, defineUseFetchAddon } from '#app/composables/addons'
 import type { AsyncDataAddonInstance, UseAsyncDataAddonOptions, UseFetchAddonOptions } from '#app/composables/addons'
 import { createUseFetch as _createUseFetch } from '#app/composables/fetch'
@@ -439,5 +439,68 @@ describe('addon extension objects', () => {
     expect(first.marker).toBe(true)
     expect(second.marker).toBe(true)
     expect('then' in second).toBe(false)
+  })
+})
+
+// https://github.com/nuxt/nuxt/issues/37249
+describe('addon promise-method wrappers on Safari 26', () => {
+  function emulateSafari26 () {
+    const original = Promise.resolve
+    const spy = vi.spyOn(Promise, 'resolve').mockImplementation(function (this: PromiseConstructor, value?: unknown) {
+      if (this !== Promise && value instanceof Promise && value.constructor === Promise) { return value }
+      return original.call(this, value)
+    } as typeof Promise.resolve)
+    onTestFinished(() => spy.mockRestore())
+  }
+
+  function createDelegatingWrappers () {
+    const delegate = (next: (...args: unknown[]) => Promise<unknown>, ...args: unknown[]) => next(...args)
+    return {
+      then: vi.fn(delegate),
+      catch: vi.fn(delegate),
+      finally: vi.fn(delegate),
+    }
+  }
+
+  it('applies promise-method wrappers and resolves `await` for useAsyncData', async () => {
+    emulateSafari26()
+    const wrappers = createDelegatingWrappers()
+    const addon = defineUseAsyncDataAddon({ setup: () => () => wrappers })
+
+    const useWrappedAsyncData = createUseAsyncData({ addons: [addon] })
+    const result = useWrappedAsyncData('addons:safari26-wrappers', () => Promise.resolve('data'))
+    expect(isRef(result.data)).toBe(true)
+
+    const onRejected = () => {}
+    const onFinally = async () => {}
+    const { data } = await result
+    await result.catch(onRejected)
+    await result.finally(onFinally)
+
+    expect(data.value).toBe('data')
+    expect(wrappers.then).toHaveBeenCalled()
+    expect(wrappers.catch).toHaveBeenCalledWith(expect.any(Function), onRejected)
+    expect(wrappers.finally).toHaveBeenCalledWith(expect.any(Function), onFinally)
+  })
+
+  it('applies promise-method wrappers and resolves `await` for useFetch', async () => {
+    emulateSafari26()
+    const wrappers = createDelegatingWrappers()
+    const addon = defineUseFetchAddon({ setup: () => () => wrappers })
+
+    const useWrappedFetch = createUseFetch({ addons: [addon] })
+    const result = useWrappedFetch('/api/addons-test', { key: 'addons:safari26-fetch-wrappers' })
+    expect(isRef(result.data)).toBe(true)
+
+    const onRejected = () => {}
+    const onFinally = async () => {}
+    const { data } = await result
+    await result.catch(onRejected)
+    await result.finally(onFinally)
+
+    expect(data.value).toEqual({ method: 'GET' })
+    expect(wrappers.then).toHaveBeenCalled()
+    expect(wrappers.catch).toHaveBeenCalledWith(expect.any(Function), onRejected)
+    expect(wrappers.finally).toHaveBeenCalledWith(expect.any(Function), onFinally)
   })
 })
