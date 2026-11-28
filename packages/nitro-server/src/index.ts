@@ -18,7 +18,7 @@ import { defu } from 'defu'
 import { defineEventHandler } from 'nitro/h3'
 import { isWindows } from 'std-env'
 import { rou3PatternToURLPattern } from 'unrouting'
-import { ImpoundPlugin } from 'impound'
+import { ImpoundPlugin, type ImpoundViolationInfo } from 'impound'
 import { resolveModulePath } from 'exsolve'
 import { runtimeDir as nitroRuntimeDir, runtimeDependencies } from 'nitro/meta'
 
@@ -33,7 +33,7 @@ import { DEV_PEER_TOKEN_ENV } from 'nuxt/internal/dev/peer'
 import { addRoute as addRou3Route, createRouter as createRou3Router, findAllRoutes, routeNodeKeys, routeToRegExp } from 'rou3'
 import { compileRouterToString } from 'rou3/compiler'
 // TODO: figure out a good way to share this
-import { createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
+import { IMPORT_PROTECTION_ALLOWED, createImportProtectionPatterns } from '../../nuxt/src/core/plugins/import-protection.ts'
 import { nitroSchemaTemplate, nuxt4HostTypeTemplate } from './templates.ts'
 import { createServerAutoImports, resolveNestedServerUtilsDirs, resolveServerImportDirs } from './auto-imports.ts'
 import { keepCachedIslandQuery, keepCachedQuery, normalizeLegacyRouteRules, routeRulesCaseFoldPlugin } from './route-rules.ts'
@@ -600,7 +600,25 @@ export async function bundle (nuxt: Nuxt & { _nitro?: Nitro }): Promise<void> {
       },
       {
         patterns: createImportProtectionPatterns(nuxt, { context: 'nitro-app' as const }),
-        exclude: [/node_modules[\\/]nitro(?:pack)?(?:-nightly)?[\\/]|(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/, ...sharedPatterns],
+        exclude: [
+          /node_modules[\\/]/, // Don't apply import protection to deps (ufo, unhead, @vue/server-renderer, srvx, etc.)
+          /[\\/]h3[\\/]/, // h3 legitimately imports srvx/node for Node adapter
+          /[\\/]\.nuxt[\\/]/, // Default build output (styles.mjs, server.mjs, _nuxt/*)
+          // A custom buildDir such as `.nuxt-vite-built-…` is still inside srcDir when srcDir is the
+          // project root, so the server bundle would otherwise be treated as app source.
+          new RegExp(escapeRE(withTrailingSlash(normalize(nuxt.options.buildDir))).replace(/\//g, '[\\\\/]')),
+          /(packages|@nuxt)[\\/]nitro-server(?:-nightly)?[\\/](src|dist)[\\/]runtime[\\/]/,
+          ...sharedPatterns,
+        ],
+        // excludeFiles: skips when resolved import target matches (e.g. srvx/node after resolution).
+        // onViolation: fallback when id is bare (srvx) before resolution or when excludeFiles misses edge cases.
+        excludeFiles: [IMPORT_PROTECTION_ALLOWED.srvxPattern],
+        onViolation (info: ImpoundViolationInfo) {
+          // Fallback: when id is bare/unresolved, message contains importer path (e.g. "from `node_modules/...`")
+          if (IMPORT_PROTECTION_ALLOWED.isAllowed(info.id ?? '', info.message)) {
+            return false
+          }
+        },
       },
     ],
   }
