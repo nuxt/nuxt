@@ -21,5 +21,24 @@ prerenderRoutes('/hinted/from-hint')
     >
       about
     </NuxtLink>
+    <NuxtLink
+      v-slot="{ navigate }"
+      custom
+      to="/hinted/from-link"
+    >
+      <button
+        id="custom-link"
+        type="button"
+        @click="navigate"
+      >
+        custom
+      </button>
+    </NuxtLink>
+    <NuxtLink
+      id="external-link"
+      to="https://example.com"
+    >
+      external
+    </NuxtLink>
   </div>
 </template>

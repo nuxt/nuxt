@@ -21,6 +21,7 @@ import { hasProtocol, joinURL, withTrailingSlash, withoutTrailingSlash } from 'u
 import { prefetchRouteComponents } from '../composables/preload'
 import { onNuxtReady } from '../composables/ready'
 import { encodeRoutePath, navigateTo, resolveRouteObject, useRouter } from '../composables/router'
+import { prerenderRoutes } from '../composables/prerender-routes'
 import { useNuxtApp, useRuntimeConfig } from '../nuxt'
 import { isAbsoluteHref, isRootedPath, sanitizeAnchorHref } from '../utils'
 import { canPrefetch, prefetchGroup } from '../internal/prefetch-util'
@@ -29,7 +30,7 @@ import type { NuxtApp } from '../nuxt'
 import { renderDiagnostics } from '../diagnostics/render'
 import { navigationDiagnostics } from '../diagnostics/navigation'
 
-import { componentIslands, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
+import { componentIslands, hintPrerenderedLinks, nuxtLinkDefaults } from '#build/nuxt.config.mjs'
 
 import { hashMode } from '#build/router.options.mjs'
 import { parseQuery } from '#build/pages'
@@ -296,6 +297,19 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     }
   }
 
+  /**
+   * Record an internal path for the prerenderer.
+   *
+   * The HTML crawl only sees an `href`. A `custom` link can point at a route without rendering
+   * one, and a link with `target` other than `_self` can too. The prerenderer reads these hints
+   * from the response. `prerender.crawlLinks: false` turns them off, so Nuxt prerenders only the
+   * routes you listed.
+   */
+  function hintPrerender (path: string) {
+    if (!import.meta.prerender || !hintPrerenderedLinks || hashMode || !path.startsWith('/')) { return }
+    prerenderRoutes(path)
+  }
+
   function checkNuxtLinkNesting () {
     if (inject(NuxtLinkDevKeySymbol, false)) {
       renderDiagnostics.NUXT_E4009()
@@ -320,8 +334,10 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
     // the router used without pages has no `history`
     if (typeof rawTo === 'string' && router.options.history && isPlainAbsolutePath(rawTo) && !hashMode && !props.trailingSlash && !options.trailingSlash && !mayMatchCurrentRoute(currentRoute, rawTo)) {
       href = router.options.history.base + rawTo
+      hintPrerender(rawTo)
     } else {
       route = router.resolve(resolveTrailingSlashBehavior(rawTo, router.resolve, props.trailingSlash))
+      hintPrerender(route.path)
       href = route.href
       const index = activeRecordIndex(route, currentRoute)
       isActive = index > -1 && includesParams(currentRoute.params, route.params)
@@ -539,6 +555,16 @@ export function defineNuxtLink (options: NuxtLinkOptions): NuxtLinkComponent & R
             checkNuxtLinkNesting()
           }
           return () => renderStaticInternalLink(props, slots, router, rawTo, nuxtApp)
+        }
+        // A `target` other than `_self` falls through and renders a plain `<a href>` at the
+        // end of `setup`, so the HTML crawler already sees it. Resolve the route during
+        // prerender and record the path. A `custom` link renders no `href`, so that
+        // recording is what gets it prerendered.
+        if (import.meta.prerender && props.target && props.target !== '_self' && attrs.download === undefined) {
+          const isExternalLink = props.external || (typeof rawTo === 'string' && (rawTo === '' || isAbsoluteHref(rawTo)))
+          if (!isExternalLink && !isHashLinkWithoutHashMode(rawTo)) {
+            resolveStaticLink(props, router, rawTo)
+          }
         }
       }
 
