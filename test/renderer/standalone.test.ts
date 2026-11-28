@@ -150,7 +150,8 @@ describe('renderer without a server builder', () => {
 
     const entry = html.match(/<script type="module" src="([^"]+)"/)?.[1]
     expect(entry).toBeTruthy()
-    expect(html).toMatch(new RegExp(`<link rel="modulepreload"[^>]*href="${entry}"`))
+    const preloaded = [...html.matchAll(/<link rel="modulepreload"[^>]*href="([^"]+)"/g)].map(match => match[1])
+    expect(preloaded).toContain(entry)
   })
 
   it('does not key the payload url of a cached route on the build id', async () => {
