@@ -308,6 +308,9 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
   // priority). Used to reorder the auto-scanned layers so ordering can be driven from
   // `nuxt.config` without renaming directories.
   const extendsLocalLayerOrder: string[] = []
+  // Nested local-layer extends (depender → dependency). Prevents a base layer from
+  // outranking a layer that extends it (#34691).
+  const localLayerExtendEdges: Array<[depender: string, dependency: string]> = []
 
   // populate process.env before the schema imports its env-based defaults
   if (opts.dotenv !== false) {
@@ -460,6 +463,16 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
         if (base === rootCwd && !autoScanSources.has(source) && localLayerDirs.has(layerDir)) {
           extendsLocalLayerOrder.push(layerDir)
         }
+        if (base !== rootCwd) {
+          try {
+            const dependerDir = canonicalLayerDir(base)
+            if (localLayerDirs.has(dependerDir) && localLayerDirs.has(layerDir) && dependerDir !== layerDir) {
+              localLayerExtendEdges.push([dependerDir, layerDir])
+            }
+          } catch {
+            // ignore unreadable base paths
+          }
+        }
         if (seenLayerDirs.has(layerDir)) {
           // Empty layer so the repeat contributes nothing to the merge; a nullish
           // return would let c12 resolve and merge the same layer again
@@ -501,6 +514,7 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     // to an empty config on the way past
     seenLayerDirs.clear()
     extendsLocalLayerOrder.length = 0
+    localLayerExtendEdges.length = 0
     return loadRootConfig()
   })
 
@@ -593,11 +607,10 @@ export async function loadNuxtConfig (opts: LoadNuxtConfigOptions): Promise<Nuxt
     _layers.push(layer)
   }
 
-  // Reorder auto-scanned local layers to follow the order they are listed in `extends`
-  // (first entry = highest priority); unlisted local layers keep their alphabetical order
-  // below the listed ones. Other layers are left untouched.
-  if (extendsLocalLayerOrder.length) {
-    reorderLocalLayersByExtends(_layers, extendsLocalLayerOrder, localLayerDirs)
+  // Reorder auto-scanned local layers to follow root `extends` (first entry = highest
+  // priority). Nested extends then rank each depender above its base (#34691).
+  if (extendsLocalLayerOrder.length || localLayerExtendEdges.length) {
+    reorderLocalLayersByExtends(_layers, extendsLocalLayerOrder, localLayerDirs, localLayerExtendEdges)
   }
 
   ;(nuxtConfig as any)._layers = _layers
@@ -726,16 +739,18 @@ function resolveLayerExtendsAlias (source: string, rootDir: string): string | un
 
 /**
  * Reorder local layers (from the `~~/layers/` directory) in place to match the order they are
- * listed in `extends` (first entry = highest priority). Listed layers come first in that order;
- * unlisted local layers keep their existing alphabetical order after them. Non-local layers keep
- * their positions.
+ * listed in `extends` (first entry = highest priority). Unlisted local layers keep their
+ * alphabetical order after them. Nested extends rank each depender above its base (#34691).
  */
-function reorderLocalLayersByExtends (
+export function reorderLocalLayersByExtends (
   layers: LoadedConfigLayer[],
   extendsOrder: string[],
   localLayerDirs: Set<string>,
+  extendEdges: Array<[depender: string, dependency: string]>,
 ) {
-  const layerDir = (layer: LoadedConfigLayer) => normalize(tryRealPath((layer.config?.rootDir ?? layer.cwd ?? '').replace(/\/$/, '')))
+  // Use the canonical directory the layer was loaded from, not `config.rootDir`: a layer may
+  // override `rootDir`, but slots, `extends` priorities and dependency edges all use loading dirs.
+  const layerDir = (layer: LoadedConfigLayer) => layer.cwd ? normalize(tryRealPath(layer.cwd)) : ''
 
   const priorityByDir = new Map(extendsOrder.map((dir, index) => [dir, index]))
 
@@ -757,8 +772,43 @@ function reorderLocalLayersByExtends (
     })
     .map(entry => entry.layer)
 
+  const orderedDirs = orderedLocalLayers.map(layerDir)
+  const dependers = new Map<string, Set<string>>()
+  for (const dir of orderedDirs) {
+    if (!dependers.has(dir)) { dependers.set(dir, new Set()) }
+  }
+  for (const [depender, dependency] of extendEdges) {
+    if (dependers.has(depender) && dependers.has(dependency)) {
+      dependers.get(dependency)!.add(depender)
+    }
+  }
+
+  // Rank loading directories, then sort layers by rank so distinct dirs keep their own slot
+  // even when a layer overrides `rootDir` to a path another layer also uses.
+  const pending = new Set(dependers.keys())
+  const rankByDir = new Map<string, number>()
+  let rank = 0
+  while (pending.size) {
+    const next = [...pending].find(dir =>
+      ![...dependers.get(dir)!].some(depender => pending.has(depender)),
+    )
+    // A cycle cannot satisfy every constraint, so preserve the preferred input order.
+    if (!next) {
+      rankByDir.clear()
+      ;[...new Set(orderedDirs)].forEach((dir, index) => rankByDir.set(dir, index))
+      break
+    }
+    rankByDir.set(next, rank++)
+    pending.delete(next)
+  }
+
+  const constrained = orderedLocalLayers
+    .map((layer, index) => ({ layer, index, rank: rankByDir.get(orderedDirs[index]!) ?? rank }))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map(entry => entry.layer)
+
   localSlots.forEach((slot, index) => {
-    layers[slot] = orderedLocalLayers[index]!
+    layers[slot] = constrained[index]!
   })
 }
 

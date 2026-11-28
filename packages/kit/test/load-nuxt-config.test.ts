@@ -62,6 +62,16 @@ describe('loadNuxtConfig', () => {
     expect(config._layers.map(l => basename(l.cwd))).toEqual(order)
   })
 
+  it('should rank a nested local extend above its base when root extends lists the base first (#34691)', async () => {
+    const cwd = fileURLToPath(new URL('./layer-extend-chain-fixture', import.meta.url)).replace(/\\/g, '/')
+    const config = await loadNuxtConfig({ cwd })
+    expect(config._layers.map(l => basename(l.cwd!))).toEqual([
+      'layer-extend-chain-fixture',
+      'layer-b',
+      'layer-a',
+    ])
+  })
+
   it('should preserve and resolve a custom env name', async () => {
     const config = await loadNuxtConfig({ cwd: layerFixture, envName: 'staging' })
     expect(config.envName).toBe('staging')
