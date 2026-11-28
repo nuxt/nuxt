@@ -1182,7 +1182,7 @@ export async function setupNitroCompat (nuxt: Nuxt, nitroConfig: NitroConfig, le
         const base = widenLegacyHandlerRoute(entry, lateWidened)
         // the file is in scope, so its imports are rewritten either way; the wrapper is
         // what strips the base off the event, and only a widened handler needs it
-        if (base && virtuals) {
+        if (base !== undefined && virtuals) {
           entry.handler = wrapHandlerFile(isModuleVirtual(entry.handler) ? entry.handler : normalize(resolveAlias(entry.handler, aliases)), base, virtuals)
         }
       }
@@ -1404,7 +1404,8 @@ const LITERAL_WILDCARD_ROUTE_RE = /^([^:*]*[^:*/])\/\*\*(?::\w+)?$/
  * its route and saw the route stripped from `event.path`. Nitro v3 matches routed
  * middleware exactly, through the same router as a route handler, and strips nothing. The
  * wildcard route matches the base path as well, so one registration covers both; the base
- * it was mounted at is returned for the wrapper to strip.
+ * it was mounted at is returned for the wrapper to strip. That base is empty for a route of
+ * `/`, and `undefined` when nothing was widened.
  *
  * A routed handler that is not middleware needs none of this: nitro v2 registered it on
  * the h3 router, which matched it exactly too.
@@ -1417,7 +1418,7 @@ function widenLegacyHandlerRoute (handler: { route?: string, middleware?: boolea
   const base = route.replace(/\/+$/, '')
   handler.route = `${base}/**`
   widened.push(`\`${route}\` as \`${handler.route}\``)
-  return base || undefined
+  return base
 }
 
 interface ResolvePluginContext {

@@ -1398,11 +1398,12 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     silence('NUXT_B9003')
     const dir = mkdtempSync(join(tmpdir(), 'nitro-compat-root-'))
     writeFileSync(join(dir, 'guard.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => {})`)
+    writeFileSync(join(dir, 'untagged.ts'), `import { defineEventHandler } from 'h3'\nexport default defineEventHandler(() => {})`)
 
     const nitroConfig: NitroConfig = {
       handlers: [
         declared({ route: '/', middleware: true, handler: join(dir, 'guard.ts') }, 'nitro2'),
-        { route: '/', middleware: true, handler: join(dir, 'guard.ts') } as any,
+        { route: '/', middleware: true, handler: join(dir, 'untagged.ts') } as any,
       ],
     }
     const devServerHandlers: any[] = [
@@ -1414,6 +1415,7 @@ export default defineCachedHandler(() => createError({ statusCode: 404 }))`)
     expect(nitroConfig.handlers![0]).toMatchObject({ route: '/**', middleware: true })
     expect(nitroConfig.handlers![1]).toMatchObject({ route: '/**', middleware: true })
     expect((nitroConfig.virtual![nitroConfig.handlers![0]!.handler] as () => string)()).toContain('wrapLegacyHandler(_handler)')
+    expect((nitroConfig.virtual![nitroConfig.handlers![1]!.handler] as () => string)()).toContain('wrapLegacyHandler(_handler)')
     expect(devServerHandlers[0]).toMatchObject({ route: '/**', middleware: true })
     expect(devServerHandlers[1]).toMatchObject({ route: '/**', middleware: true })
     expect(report.mock.calls.flat()).toEqual([
