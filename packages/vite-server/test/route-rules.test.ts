@@ -97,6 +97,18 @@ describe('vite server route rules matcher', () => {
     expect(match('/')).toEqual({ fonts: { families: ['Inter'] } })
   })
 
+  it('leaves out a rule value whose property throws when read', () => {
+    const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
+    const fonts: Record<string, unknown> = { families: ['Inter'] }
+    Object.defineProperty(fonts, 'fallback', { enumerable: true, get () { throw new Error('unreadable') } })
+
+    const match = compileMatcher({ '/**': { fonts } })
+
+    expect(match('/')).toEqual({})
+    expect(warn.mock.calls.map(([message]) => String(message))).toEqual([expect.stringContaining('`fonts`')])
+    warn.mockRestore()
+  })
+
   it('leaves out a rule value that holds itself, and keeps one referenced twice', () => {
     const warn = vi.spyOn(logger, 'warn').mockImplementation(() => {})
     const shared = { families: ['Inter'] }

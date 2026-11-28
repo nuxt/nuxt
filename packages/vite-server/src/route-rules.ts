@@ -102,12 +102,10 @@ function isSerializable (value: unknown, ancestors: Set<unknown> = new Set()): b
 function serializeRule (nuxt: Nuxt, name: string, value: unknown): string | undefined {
   if (value === undefined) { return undefined }
 
-  if (isSerializable(value)) {
-    try {
-      return JSON.stringify(value)
-    } catch {
-      // a getter or a `toJSON` that throws leaves nothing to write
-    }
+  try {
+    if (isSerializable(value)) { return JSON.stringify(value) }
+  } catch {
+    // a getter or a `toJSON` that throws leaves nothing to write
   }
 
   const warned = warnedRules.get(nuxt) ?? warnedRules.set(nuxt, new Set()).get(nuxt)!
