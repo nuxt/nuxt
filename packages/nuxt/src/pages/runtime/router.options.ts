@@ -27,7 +27,7 @@ export default <RouterConfig>{
       if (from.hash && !to.hash) {
         return savedPosition ?? { left: 0, top: 0 }
       }
-      if (to.hash) {
+      if (to.hash && (to.hash !== from.hash || to.fullPath === from.fullPath)) {
         return { el: to.hash, top: _getHashElementScrollMarginTop(to.hash), behavior: hashScrollBehaviour }
       }
       // The route isn't changing so keep current scroll position
