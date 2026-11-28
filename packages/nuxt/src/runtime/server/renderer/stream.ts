@@ -78,10 +78,9 @@ export async function renderStreamedResponse ({ instance, event, ssrContext, ren
     pushPayloadPreload(ssrContext, payloadURL)
   }
 
-  const entryScriptHrefs = new Set(Object.values(entryScripts).map(resource => rendererContext.buildAssetsURL(resource.file)))
   const prefetchHints = getPrefetchLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]
   const entryHints = [
-    ...(getPreloadLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[]).filter(l => !(l.href && entryScriptHrefs.has(l.href))),
+    ...getPreloadLinks({}, rendererContext, { scripts: !NO_SCRIPTS }) as Link[],
     ...DEFER_PREFETCH ? [] : prefetchHints,
   ]
   if (entryHints.length) {
